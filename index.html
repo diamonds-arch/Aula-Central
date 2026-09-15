@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
     darkMode: 'class',
@@ -47,9 +48,7 @@
 </head>
 <body class="font-sans bg-paper-100 text-ink-900 dark:bg-ink-950 dark:text-paper-100 min-h-screen">
 
-<!-- ======================= LOGIN VIEW ======================= -->
 <div id="view-login" class="min-h-screen flex flex-col md:flex-row">
-  <!-- Hero / brand panel -->
   <div class="relative md:w-1/2 bg-ink-900 text-paper-100 flex flex-col justify-between p-8 md:p-14 overflow-hidden">
     <svg class="absolute inset-0 w-full h-full opacity-[0.07]" preserveAspectRatio="xMidYMid slice">
       <defs>
@@ -79,19 +78,17 @@
     </div>
   </div>
 
-  <!-- Form panel -->
   <div class="md:w-1/2 flex items-center justify-center p-8 md:p-14">
     <div class="w-full max-w-sm">
       <h1 class="font-serif text-2xl mb-1">Ingresar a Aula Central</h1>
       <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-8">Usa tus credenciales del colegio para continuar.</p>
 
-      <!-- Role toggle -->
       <div class="grid grid-cols-2 gap-2 mb-6 p-1 bg-paper-200 dark:bg-ink-800 rounded-md">
-        <button id="role-btn-student" onclick="setLoginRole('student')"
+        <button id="role-btn-student" type="button" onclick="setLoginRole('student')"
           class="py-2 text-sm font-medium rounded-[4px] transition-colors bg-white dark:bg-ink-700 text-ink-900 dark:text-paper-100 shadow-sm">
           Estudiante
         </button>
-        <button id="role-btn-teacher" onclick="setLoginRole('teacher')"
+        <button id="role-btn-teacher" type="button" onclick="setLoginRole('teacher')"
           class="py-2 text-sm font-medium rounded-[4px] transition-colors text-ink-500 dark:text-paper-300/70">
           Profesor
         </button>
@@ -114,19 +111,15 @@
       </form>
 
       <p class="text-xs text-ink-500 dark:text-paper-300/50 mt-6 leading-relaxed">
-        Modo de demostración: cualquier correo y contraseña abren el campus. No se almacenan datos reales.
+        Conectado a Base de Datos Supabase (Producción).
       </p>
     </div>
   </div>
 </div>
 
-<!-- ======================= APP VIEW ======================= -->
 <div id="view-app" class="hidden min-h-screen md:flex">
-
-  <!-- Mobile overlay -->
   <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="hidden fixed inset-0 bg-black/40 z-30 md:hidden"></div>
 
-  <!-- Sidebar -->
   <aside id="sidebar" class="fixed md:static z-40 inset-y-0 left-0 w-64 -translate-x-full md:translate-x-0 transition-transform duration-200 bg-ink-900 text-paper-200 flex flex-col">
     <div class="flex items-center gap-2 px-5 h-16 border-b border-white/10 shrink-0">
       <div class="w-7 h-7 rounded-sm bg-gold-500 flex items-center justify-center text-ink-900 font-serif font-bold text-sm">A</div>
@@ -135,18 +128,12 @@
     <nav id="sidebar-nav" class="flex-1 py-4 overflow-y-auto"></nav>
     <div class="p-4 border-t border-white/10 text-xs text-paper-300/60">
       <div class="flex items-center justify-between">
-        <span>Vista de demostración</span>
+        <span>Sesión Supabase Activa</span>
       </div>
-      <select id="role-switch" onchange="switchRole(this.value)" class="mt-2 w-full bg-ink-800 border border-white/10 rounded px-2 py-1.5 text-paper-100">
-        <option value="student">Ver como estudiante</option>
-        <option value="teacher">Ver como profesor</option>
-      </select>
     </div>
   </aside>
 
-  <!-- Main column -->
   <div class="flex-1 flex flex-col min-w-0">
-    <!-- Topbar -->
     <header class="h-16 shrink-0 flex items-center justify-between gap-4 px-4 md:px-8 border-b border-paper-300/70 dark:border-ink-700 bg-paper-50/80 dark:bg-ink-900/80 backdrop-blur sticky top-0 z-20">
       <div class="flex items-center gap-3 min-w-0">
         <button onclick="toggleSidebar(true)" class="md:hidden p-1.5 -ml-1.5 rounded hover:bg-paper-200 dark:hover:bg-ink-800">
@@ -173,12 +160,10 @@
       </div>
     </header>
 
-    <!-- Content -->
     <main id="main-content" class="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto"></main>
   </div>
 </div>
 
-<!-- Document modal -->
 <div id="doc-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
   <div class="absolute inset-0 bg-black/50" onclick="closeDocModal()"></div>
   <div class="relative bg-white dark:bg-ink-800 rounded-lg max-w-md w-full p-6 shadow-xl">
@@ -189,10 +174,14 @@
   </div>
 </div>
 
-<!-- Toasts -->
 <div id="toast-container" class="fixed bottom-5 right-5 z-[60] space-y-2"></div>
 
 <script>
+/* ======================= SUPABASE CONFIG ======================= */
+const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; // Reemplaza esto con tu clave real
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
 /* ======================= ICONS ======================= */
 const ICONS = {
   home: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11.5 12 4l9 7.5M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -204,97 +193,12 @@ const ICONS = {
   download: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 20h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chevron: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chevronDown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  calendar: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-  users: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16.5 5.2a3.2 3.2 0 0 1 0 6M20 20a5.5 5.5 0 0 0-4.3-6.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
   paperclip: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M8 12.5 15.5 5a3 3 0 0 1 4.24 4.24L11.5 17.5a5 5 0 1 1-7.07-7.07L12 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 
-/* ======================= DATA ======================= */
-let subjectSeq = 100;
-let topicSeq = 100;
-
-const SUBJECTS = [
-  {
-    id: 'bio', name: 'Biología', teacher: 'Prof. Ana Martínez', color: 'forest', progress: 72,
-    nextExam: { date: '2026-09-22', label: 'Sistema Reproductor' },
-    topics: [
-      {
-        id: 'bio-t1', name: 'Sistema Reproductor', desc: 'Anatomía y funciones de los sistemas reproductores femenino y masculino.',
-        documents: [
-          { name: 'Guía de estudio — Sistema reproductor.pdf', ext: 'pdf', size: '2.4 MB' },
-          { name: 'Diagrama — Aparato reproductor femenino.pdf', ext: 'pdf', size: '1.1 MB' },
-          { name: 'Cuestionario de repaso — Unidad 4.docx', ext: 'docx', size: '340 KB' },
-        ]
-      },
-      {
-        id: 'bio-t2', name: 'Sistema Circulatorio', desc: 'Circulación mayor y menor, estructura del corazón.',
-        documents: [
-          { name: 'Presentación — Circulación mayor y menor.pptx', ext: 'pptx', size: '3.8 MB' },
-          { name: 'Ficha de trabajo — El corazón.pdf', ext: 'pdf', size: '860 KB' },
-        ]
-      },
-    ]
-  },
-  {
-    id: 'mat', name: 'Matemáticas', teacher: 'Prof. Carlos Ruiz', color: 'steel', progress: 58,
-    nextExam: { date: '2026-09-18', label: 'Ecuaciones de segundo grado' },
-    topics: [
-      {
-        id: 'mat-t1', name: 'Ecuaciones de segundo grado', desc: 'Factorización, fórmula general y aplicaciones.',
-        documents: [
-          { name: 'Guía — Fórmula general.pdf', ext: 'pdf', size: '780 KB' },
-          { name: 'Ejercicios resueltos — Unidad 3.pdf', ext: 'pdf', size: '1.4 MB' },
-        ]
-      },
-      {
-        id: 'mat-t2', name: 'Funciones trigonométricas', desc: 'Seno, coseno y tangente en el círculo unitario.',
-        documents: [
-          { name: 'Tabla de identidades trigonométricas.pdf', ext: 'pdf', size: '210 KB' },
-        ]
-      },
-    ]
-  },
-  {
-    id: 'hist', name: 'Historia', teacher: 'Prof. Marta Gómez', color: 'gold', progress: 85,
-    nextExam: { date: '2026-09-30', label: 'Guerras Mundiales' },
-    topics: [
-      {
-        id: 'hist-t1', name: 'La Independencia', desc: 'Procesos independentistas en América Latina.',
-        documents: [
-          { name: 'Línea de tiempo — Independencia.pdf', ext: 'pdf', size: '1.2 MB' },
-        ]
-      },
-      {
-        id: 'hist-t2', name: 'Guerras Mundiales', desc: 'Causas, desarrollo y consecuencias de ambas guerras.',
-        documents: [
-          { name: 'Mapa conceptual — Primera Guerra Mundial.pdf', ext: 'pdf', size: '950 KB' },
-          { name: 'Guía de repaso — Segunda Guerra Mundial.docx', ext: 'docx', size: '410 KB' },
-        ]
-      },
-    ]
-  },
-  {
-    id: 'ing', name: 'Inglés', teacher: 'Prof. John Davis', color: 'brick', progress: 64,
-    nextExam: { date: '2026-10-05', label: 'Present Perfect' },
-    topics: [
-      {
-        id: 'ing-t1', name: 'Present Perfect', desc: 'Estructura y uso del present perfect en contexto.',
-        documents: [
-          { name: 'Worksheet — Present Perfect.pdf', ext: 'pdf', size: '300 KB' },
-        ]
-      },
-      {
-        id: 'ing-t2', name: 'Comprensión lectora', desc: 'Estrategias de lectura y vocabulario en contexto.',
-        documents: [
-          { name: 'Reading practice — Set 2.pdf', ext: 'pdf', size: '500 KB' },
-        ]
-      },
-    ]
-  },
-];
-
+let SUBJECTS = [];
 const COLOR_MAP = {
   forest: { border: 'border-forest-500', text: 'text-forest-600 dark:text-forest-400', bg: 'bg-forest-500', soft: 'bg-forest-500/10' },
   steel:  { border: 'border-steel-500',  text: 'text-steel-600 dark:text-steel-400',   bg: 'bg-steel-500',  soft: 'bg-steel-500/10' },
@@ -302,18 +206,17 @@ const COLOR_MAP = {
   brick:  { border: 'border-brick-500',  text: 'text-brick-600 dark:text-brick-400',   bg: 'bg-brick-500',  soft: 'bg-brick-500/10' },
 };
 
-/* ======================= STATE ======================= */
 const state = {
   role: 'student',
   view: 'dashboard',
   activeSubjectId: null,
   darkMode: false,
   sidebarOpen: false,
-  teacherSelectedSubject: 'bio',
-  pendingAttachments: [],
+  teacherSelectedSubject: null,
+  pendingFiles: [],
+  currentUser: null
 };
 
-/* ======================= LOGIN ======================= */
 function setLoginRole(role) {
   state.role = role;
   document.getElementById('role-btn-student').className = 'py-2 text-sm font-medium rounded-[4px] transition-colors ' + (role==='student' ? 'bg-white dark:bg-ink-700 text-ink-900 dark:text-paper-100 shadow-sm' : 'text-ink-500 dark:text-paper-300/70');
@@ -321,39 +224,60 @@ function setLoginRole(role) {
   document.getElementById('login-role-label').textContent = role === 'student' ? 'estudiante' : 'profesor';
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    alert('Error al iniciar sesión: ' + error.message);
+    return;
+  }
+
+  state.currentUser = data.user;
+  
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+  if (profile) state.role = profile.role;
+
   document.getElementById('view-login').classList.add('hidden');
   document.getElementById('view-app').classList.remove('hidden');
-  document.getElementById('role-switch').value = state.role;
+  
+  await fetchSubjectsFromDB();
   renderSidebar();
   navigate(state.role === 'student' ? 'dashboard' : 'teacher');
   updateUserBadge();
 }
 
-function logout() {
+async function fetchSubjectsFromDB() {
+  const { data: subjectsData, error } = await supabase.from('subjects').select('*, topics(*, documents(*))');
+  if (!error && subjectsData) {
+    SUBJECTS = subjectsData.map(s => ({
+      id: s.id,
+      name: s.name,
+      teacher: s.teacher_name,
+      color: s.color || 'forest',
+      progress: s.progress || 50,
+      nextExam: s.next_exam_date ? { date: s.next_exam_date, label: s.next_exam_label } : null,
+      topics: s.topics.map(t => ({
+        id: t.id,
+        name: t.name,
+        desc: t.description,
+        documents: t.documents.map(d => ({ name: d.name, url: d.file_url, size: d.file_size, ext: d.file_ext }))
+      }))
+    }));
+    if (SUBJECTS.length > 0 && !state.teacherSelectedSubject) {
+      state.teacherSelectedSubject = SUBJECTS[0].id;
+    }
+  }
+}
+
+async function logout() {
+  await supabase.auth.signOut();
   document.getElementById('view-app').classList.add('hidden');
   document.getElementById('view-login').classList.remove('hidden');
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-password').value = '';
 }
 
-function switchRole(role) {
-  state.role = role;
-  renderSidebar();
-  navigate(role === 'student' ? 'dashboard' : 'teacher');
-  updateUserBadge();
-}
-
-function updateUserBadge() {
-  const isStudent = state.role === 'student';
-  document.getElementById('user-avatar').textContent = isStudent ? 'ES' : 'AM';
-  document.getElementById('user-avatar').className = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white ' + (isStudent ? 'bg-steel-500' : 'bg-gold-600');
-  document.getElementById('user-name').textContent = isStudent ? 'Elena Suárez' : 'Ana Martínez';
-  document.getElementById('user-role').textContent = isStudent ? 'Estudiante · 10°B' : 'Profesora · Biología';
-}
-
-/* ======================= SIDEBAR / NAV ======================= */
 function toggleSidebar(open) {
   state.sidebarOpen = open;
   const sb = document.getElementById('sidebar');
@@ -364,18 +288,14 @@ function toggleSidebar(open) {
 
 function renderSidebar() {
   const nav = document.getElementById('sidebar-nav');
-  let links = [];
-  if (state.role === 'student') {
-    links = [
-      { id: 'dashboard', label: 'Mi panel', icon: ICONS.home },
-      { id: 'subjects', label: 'Materias', icon: ICONS.book },
-      { id: 'search', label: 'Buscar material', icon: ICONS.search },
-    ];
-  } else {
-    links = [
-      { id: 'teacher', label: 'Gestión de materias', icon: ICONS.manage },
-    ];
-  }
+  let links = state.role === 'student' ? [
+    { id: 'dashboard', label: 'Mi panel', icon: ICONS.home },
+    { id: 'subjects', label: 'Materias', icon: ICONS.book },
+    { id: 'search', label: 'Buscar material', icon: ICONS.search },
+  ] : [
+    { id: 'teacher', label: 'Gestión de materias', icon: ICONS.manage },
+  ];
+
   nav.innerHTML = links.map(l => `
     <button onclick="navigate('${l.id}')" data-nav="${l.id}"
       class="sidebar-link w-full flex items-center gap-3 px-5 py-2.5 text-sm border-l-2 border-transparent text-paper-300/80 hover:bg-white/5 hover:text-paper-50 transition-colors">
@@ -401,414 +321,112 @@ function navigate(view, params) {
   document.getElementById('main-content').scrollTop = 0;
 }
 
-function setBreadcrumb(html) {
-  document.getElementById('breadcrumb').innerHTML = html;
-}
-
-/* ======================= HELPERS ======================= */
-function daysUntil(dateStr) {
-  const today = new Date('2026-09-15T00:00:00');
-  const target = new Date(dateStr + 'T00:00:00');
-  return Math.round((target - today) / 86400000);
-}
-
-function formatDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
-}
-
-function relativeDays(n) {
-  if (n < 0) return 'Ya pasó';
-  if (n === 0) return 'Hoy';
-  if (n === 1) return 'Mañana';
-  return `En ${n} días`;
-}
-
-function fileIconColor(ext) {
-  if (ext === 'pdf') return 'text-brick-500';
-  if (ext === 'docx') return 'text-steel-500';
-  if (ext === 'pptx') return 'text-gold-600';
-  return 'text-ink-500';
-}
-
+function setBreadcrumb(html) { document.getElementById('breadcrumb').innerHTML = html; }
+function daysUntil(dateStr) { return Math.round((new Date(dateStr) - new Date()) / 86400000); }
+function formatDate(dateStr) { return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }); }
+function relativeDays(n) { return n < 0 ? 'Ya pasó' : n === 0 ? 'Hoy' : n === 1 ? 'Mañana' : `En ${n} días`; }
+function fileIconColor(ext) { return ext === 'pdf' ? 'text-brick-500' : ext === 'docx' ? 'text-steel-500' : 'text-gold-600'; }
 function findSubject(id) { return SUBJECTS.find(s => s.id === id); }
 
-/* ======================= STUDENT: DASHBOARD ======================= */
+function updateUserBadge() {
+  const isStudent = state.role === 'student';
+  document.getElementById('user-avatar').textContent = isStudent ? 'ES' : 'PR';
+  document.getElementById('user-name').textContent = isStudent ? 'Estudiante' : 'Profesor';
+  document.getElementById('user-role').textContent = isStudent ? 'Estudiante · Supabase' : 'Docente · Supabase';
+}
+
 function renderStudentDashboard() {
-  const upcoming = SUBJECTS
-    .filter(s => s.nextExam)
-    .map(s => ({ ...s.nextExam, subject: s.name, color: s.color, days: daysUntil(s.nextExam.date) }))
-    .sort((a, b) => a.days - b.days);
-
-  const agendaHtml = upcoming.map(e => `
-    <div class="flex items-center gap-4 py-3 pl-4 border-l-2 ${COLOR_MAP[e.color].border}">
-      <div class="w-14 shrink-0">
-        <p class="font-serif text-xl leading-none">${formatDate(e.date).split(' ')[0]}</p>
-        <p class="text-[11px] text-ink-500 dark:text-paper-300/50 mt-0.5">${formatDate(e.date).split(' ').slice(-1)}</p>
-      </div>
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium truncate">${e.label}</p>
-        <p class="text-xs text-ink-500 dark:text-paper-300/60">${e.subject}</p>
-      </div>
-      <span class="text-xs ${COLOR_MAP[e.color].text} font-medium whitespace-nowrap">${relativeDays(e.days)}</span>
-    </div>
-  `).join('');
-
-  const subjectsHtml = SUBJECTS.map(s => `
-    <button onclick="navigate('subject-detail','${s.id}')" class="w-full flex items-center gap-4 py-4 text-left group">
-      <div class="w-2 h-10 rounded-full ${COLOR_MAP[s.color].bg} shrink-0"></div>
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium">${s.name}</p>
-        <p class="text-xs text-ink-500 dark:text-paper-300/60">${s.teacher}</p>
-      </div>
-      <div class="hidden sm:block w-32 shrink-0">
-        <div class="h-1.5 rounded-full bg-paper-200 dark:bg-ink-700 overflow-hidden">
-          <div class="h-full ${COLOR_MAP[s.color].bg}" style="width:${s.progress}%"></div>
-        </div>
-        <p class="text-[11px] text-ink-500 dark:text-paper-300/50 mt-1">${s.progress}% completado</p>
-      </div>
-      <span class="text-ink-400 dark:text-paper-300/40 group-hover:translate-x-0.5 transition-transform">${ICONS.chevron}</span>
-    </button>
-  `).join('');
-
+  const upcoming = SUBJECTS.filter(s => s.nextExam).map(s => ({ ...s.nextExam, subject: s.name, color: s.color, days: daysUntil(s.nextExam.date) }));
   document.getElementById('main-content').innerHTML = `
     <div class="transition-view">
-      <div class="mb-8">
-        <h1 class="font-serif text-2xl md:text-3xl mb-1">Hola, Elena</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/60">Martes 15 de septiembre — 10°B</p>
-      </div>
-
-      <div class="grid md:grid-cols-5 gap-8">
-        <section class="md:col-span-2">
-          <h2 class="text-sm font-medium text-ink-700 dark:text-paper-200 mb-1">Próximos exámenes</h2>
-          <div class="divide-y divide-paper-300/60 dark:divide-ink-700">${agendaHtml || '<p class="text-sm text-ink-500 py-4">No tienes exámenes programados.</p>'}</div>
-        </section>
-
-        <section class="md:col-span-3">
-          <div class="flex items-center justify-between mb-1">
-            <h2 class="text-sm font-medium text-ink-700 dark:text-paper-200">Mis materias</h2>
-            <button onclick="navigate('subjects')" class="text-xs text-gold-600 dark:text-gold-400 hover:underline">Ver todas</button>
-          </div>
-          <div class="divide-y divide-paper-300/60 dark:divide-ink-700">${subjectsHtml}</div>
-        </section>
-      </div>
-    </div>
-  `;
-}
-
-/* ======================= STUDENT: SUBJECTS LIST ======================= */
-function renderSubjectsList() {
-  const rows = SUBJECTS.map(s => `
-    <button onclick="navigate('subject-detail','${s.id}')" class="w-full flex items-center gap-4 py-4 text-left group">
-      <div class="w-2 h-10 rounded-full ${COLOR_MAP[s.color].bg} shrink-0"></div>
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium">${s.name}</p>
-        <p class="text-xs text-ink-500 dark:text-paper-300/60">${s.teacher} · ${s.topics.length} temas</p>
-      </div>
-      <div class="hidden sm:block w-40 shrink-0">
-        <div class="h-1.5 rounded-full bg-paper-200 dark:bg-ink-700 overflow-hidden">
-          <div class="h-full ${COLOR_MAP[s.color].bg}" style="width:${s.progress}%"></div>
-        </div>
-      </div>
-      <span class="text-ink-400 dark:text-paper-300/40 group-hover:translate-x-0.5 transition-transform">${ICONS.chevron}</span>
-    </button>
-  `).join('');
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="transition-view">
-      <h1 class="font-serif text-2xl mb-6">Materias inscritas</h1>
-      <div class="divide-y divide-paper-300/60 dark:divide-ink-700">${rows}</div>
-    </div>
-  `;
-}
-
-/* ======================= STUDENT: SUBJECT DETAIL ======================= */
-function renderSubjectDetail(subjectId) {
-  state.activeSubjectId = subjectId;
-  const s = findSubject(subjectId);
-  if (!s) return;
-  setBreadcrumb(`<button onclick="navigate('subjects')" class="hover:underline">Materias</button> <span class="mx-1">/</span> ${s.name}`);
-
-  const topicsHtml = s.topics.map((t, i) => `
-    <div class="border-b border-paper-300/60 dark:border-ink-700">
-      <button onclick="toggleTopic('${t.id}')" class="w-full flex items-center justify-between py-4 text-left">
+      <h1 class="font-serif text-3xl mb-6">Panel Principal (Supabase Real)</h1>
+      <div class="grid md:grid-cols-2 gap-6">
         <div>
-          <p class="text-sm font-medium">${t.name}</p>
-          <p class="text-xs text-ink-500 dark:text-paper-300/60 mt-0.5">${t.desc}</p>
+          <h2 class="text-sm font-medium mb-3">Próximos exámenes</h2>
+          <div class="space-y-2">${upcoming.map(e => `<div class="p-3 bg-white dark:bg-ink-800 rounded border">${e.label} - ${e.subject} (${relativeDays(e.days)})</div>`).join('') || '<p class="text-sm">Sin exámenes</p>'}</div>
         </div>
-        <span id="chev-${t.id}" class="text-ink-400 dark:text-paper-300/40 shrink-0 ml-4 transition-transform">${ICONS.chevronDown}</span>
-      </button>
-      <div id="topic-${t.id}" class="hidden pb-4 pl-1 space-y-1.5">
-        ${t.documents.map(d => `
-          <div class="flex items-center gap-3 px-3 py-2.5 rounded-md bg-paper-50 dark:bg-ink-800 border border-paper-300/60 dark:border-ink-700">
-            <span class="${fileIconColor(d.ext)} shrink-0">${ICONS.file}</span>
-            <div class="min-w-0 flex-1">
-              <p class="text-sm truncate">${d.name}</p>
-              <p class="text-xs text-ink-500 dark:text-paper-300/50">${d.size}</p>
-            </div>
-            <button onclick='openDocModal(${JSON.stringify(d)})' class="p-1.5 rounded hover:bg-paper-200 dark:hover:bg-ink-700 text-ink-600 dark:text-paper-300" title="Ver">${ICONS.eye}</button>
-            <button onclick="simulateDownload('${d.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded hover:bg-paper-200 dark:hover:bg-ink-700 text-ink-600 dark:text-paper-300" title="Descargar">${ICONS.download}</button>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="transition-view">
-      <div class="flex items-start gap-4 mb-8">
-        <div class="w-2.5 h-14 rounded-full ${COLOR_MAP[s.color].bg} shrink-0 mt-1"></div>
-        <div class="flex-1 min-w-0">
-          <h1 class="font-serif text-2xl md:text-3xl">${s.name}</h1>
-          <p class="text-sm text-ink-500 dark:text-paper-300/60 mt-1">${s.teacher}</p>
-          <div class="flex items-center gap-3 mt-3 max-w-xs">
-            <div class="h-1.5 flex-1 rounded-full bg-paper-200 dark:bg-ink-700 overflow-hidden">
-              <div class="h-full ${COLOR_MAP[s.color].bg}" style="width:${s.progress}%"></div>
-            </div>
-            <span class="text-xs text-ink-500 dark:text-paper-300/60 shrink-0">${s.progress}% completado</span>
-          </div>
+        <div>
+          <h2 class="text-sm font-medium mb-3">Tus Materias</h2>
+          <div class="space-y-2">${SUBJECTS.map(s => `<button onclick="navigate('subject-detail','${s.id}')" class="w-full text-left p-3 bg-white dark:bg-ink-800 rounded border hover:border-gold-500">${s.name} (${s.teacher})</button>`).join('')}</div>
         </div>
       </div>
-
-      <h2 class="text-sm font-medium text-ink-700 dark:text-paper-200 mb-1">Temas y material autorizado</h2>
-      <div>${topicsHtml}</div>
-    </div>
-  `;
+    </div>`;
 }
 
-function toggleTopic(topicId) {
-  const el = document.getElementById('topic-' + topicId);
-  const chev = document.getElementById('chev-' + topicId);
-  el.classList.toggle('hidden');
-  chev.style.transform = el.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+function renderSubjectsList() {
+  document.getElementById('main-content').innerHTML = `<div class="transition-view"><h1 class="font-serif text-2xl mb-6">Materias</h1><div class="space-y-3">${SUBJECTS.map(s => `<button onclick="navigate('subject-detail','${s.id}')" class="w-full text-left p-4 bg-white dark:bg-ink-800 rounded border">${s.name}</button>`).join('')}</div></div>`;
 }
 
-/* ======================= STUDENT: SEARCH ======================= */
+function renderSubjectDetail(id) {
+  const s = findSubject(id);
+  if (!s) return;
+  setBreadcrumb(`<button onclick="navigate('subjects')">Materias</button> / ${s.name}`);
+  document.getElementById('main-content').innerHTML = `<div class="transition-view"><h1 class="font-serif text-2xl mb-2">${s.name}</h1><p class="text-sm mb-6">${s.teacher}</p><div class="space-y-4">${s.topics.map(t => `<div class="p-4 bg-white dark:bg-ink-800 rounded border"><h3 class="font-medium">${t.name}</h3><p class="text-xs mb-3">${t.desc}</p><div class="space-y-2">${t.documents.map(d => `<div class="flex items-center justify-between p-2 bg-paper-100 dark:bg-ink-700 rounded text-sm"><span>${d.name}</span><a href="${d.url}" target="_blank" class="px-3 py-1 bg-gold-500 text-ink-900 rounded text-xs font-medium">Descargar</a></div>`).join('')}</div></div>`).join('')}</div></div>`;
+}
+
 function renderSearchView() {
-  document.getElementById('main-content').innerHTML = `
-    <div class="transition-view">
-      <h1 class="font-serif text-2xl mb-6">Buscar material de estudio</h1>
-      <div class="flex flex-col sm:flex-row gap-3 mb-6">
-        <div class="relative flex-1">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 dark:text-paper-300/40">${ICONS.search}</span>
-          <input id="search-input" oninput="runSearch()" type="text" placeholder="Buscar por tema, documento o materia…"
-            class="w-full pl-9 pr-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm placeholder:text-ink-500/50 dark:placeholder:text-paper-300/40 focus:border-gold-500">
-        </div>
-        <select id="search-subject" onchange="runSearch()" class="px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-          <option value="">Todas las materias</option>
-          ${SUBJECTS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-        </select>
-      </div>
-      <div id="search-results" class="space-y-1.5"></div>
-    </div>
-  `;
+  document.getElementById('main-content').innerHTML = `<div class="transition-view"><h1 class="font-serif text-2xl mb-4">Buscar material</h1><input id="s-in" oninput="runSearch()" placeholder="Buscar..." class="w-full p-2.5 rounded border bg-white dark:bg-ink-800 mb-4"/><div id="s-res" class="space-y-2"></div></div>`;
   runSearch();
 }
 
 function runSearch() {
-  const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
-  const subjectFilter = document.getElementById('search-subject').value;
-  const results = [];
-
-  SUBJECTS.forEach(s => {
-    if (subjectFilter && s.id !== subjectFilter) return;
-    s.topics.forEach(t => {
-      const topicMatches = !q || t.name.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
-      t.documents.forEach(d => {
-        const docMatches = !q || d.name.toLowerCase().includes(q);
-        if (topicMatches || docMatches) {
-          results.push({ subject: s, topic: t, doc: d });
-        }
-      });
-    });
-  });
-
-  const box = document.getElementById('search-results');
-  if (!results.length) {
-    box.innerHTML = `<p class="text-sm text-ink-500 dark:text-paper-300/60 py-6">No se encontró material que coincida con tu búsqueda.</p>`;
-    return;
-  }
-  box.innerHTML = results.map(r => `
-    <button onclick="navigate('subject-detail','${r.subject.id}')" class="w-full flex items-center gap-3 px-3 py-3 rounded-md hover:bg-paper-50 dark:hover:bg-ink-800 text-left border border-transparent hover:border-paper-300/60 dark:hover:border-ink-700">
-      <span class="${fileIconColor(r.doc.ext)} shrink-0">${ICONS.file}</span>
-      <div class="min-w-0 flex-1">
-        <p class="text-sm truncate">${r.doc.name}</p>
-        <p class="text-xs text-ink-500 dark:text-paper-300/60">${r.subject.name} <span class="mx-1">/</span> ${r.topic.name}</p>
-      </div>
-      <span class="text-ink-400 dark:text-paper-300/40 shrink-0">${ICONS.chevron}</span>
-    </button>
-  `).join('');
+  const q = document.getElementById('s-in')?.value.toLowerCase() || '';
+  const res = [];
+  SUBJECTS.forEach(s => s.topics.forEach(t => t.documents.forEach(d => { if(d.name.toLowerCase().includes(q) || t.name.toLowerCase().includes(q)) res.push({s, t, d}); })));
+  document.getElementById('s-res').innerHTML = res.map(r => `<div class="p-3 bg-white dark:bg-ink-800 rounded border flex justify-between items-center"><span>${r.d.name} (${r.s.name})</span><a href="${r.d.url}" target="_blank" class="text-xs text-gold-500 underline">Abrir</a></div>`).join('');
 }
 
-/* ======================= TEACHER PANEL ======================= */
 function renderTeacherPanel() {
-  const totalTopics = SUBJECTS.reduce((n, s) => n + s.topics.length, 0);
-  const totalDocs = SUBJECTS.reduce((n, s) => n + s.topics.reduce((m, t) => m + t.documents.length, 0), 0);
-
-  const tabs = SUBJECTS.map(s => `
-    <button onclick="selectTeacherSubject('${s.id}')" data-tsub="${s.id}"
-      class="tsub-tab px-3 py-2 text-sm rounded-md border ${state.teacherSelectedSubject===s.id ? COLOR_MAP[s.color].soft+' '+COLOR_MAP[s.color].text+' border-transparent font-medium' : 'border-paper-300 dark:border-ink-700 text-ink-600 dark:text-paper-300/70'}">
-      ${s.name}
-    </button>
-  `).join('');
-
+  const tabs = SUBJECTS.map(s => `<button onclick="state.teacherSelectedSubject='${s.id}';renderTeacherPanel()" class="px-3 py-2 rounded border ${state.teacherSelectedSubject===s.id?'bg-gold-500 text-ink-900 font-medium':''}">${s.name}</button>`).join('');
   document.getElementById('main-content').innerHTML = `
     <div class="transition-view">
-      <h1 class="font-serif text-2xl mb-1">Gestión de materias</h1>
-      <p class="text-sm text-ink-500 dark:text-paper-300/60 mb-6">Organiza tus materias, publica temas nuevos y adjunta recursos para tus estudiantes.</p>
-
-      <div class="flex items-center divide-x divide-paper-300 dark:divide-ink-700 mb-8 border-y border-paper-300/60 dark:border-ink-700 py-4">
-        <div class="px-6 first:pl-0">
-          <p class="font-serif text-3xl">${SUBJECTS.length}</p>
-          <p class="text-xs text-ink-500 dark:text-paper-300/60 mt-1">Materias a cargo</p>
-        </div>
-        <div class="px-6">
-          <p class="font-serif text-3xl">${totalTopics}</p>
-          <p class="text-xs text-ink-500 dark:text-paper-300/60 mt-1">Temas publicados</p>
-        </div>
-        <div class="px-6">
-          <p class="font-serif text-3xl">${totalDocs}</p>
-          <p class="text-xs text-ink-500 dark:text-paper-300/60 mt-1">Recursos disponibles</p>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap gap-2 mb-6">${tabs}</div>
-
-      <div class="grid lg:grid-cols-5 gap-8">
-        <div class="lg:col-span-2">
-          <h2 class="text-sm font-medium text-ink-700 dark:text-paper-200 mb-1">Temas de esta materia</h2>
-          <div id="teacher-topics-list" class="divide-y divide-paper-300/60 dark:divide-ink-700"></div>
-        </div>
-
-        <div class="lg:col-span-3">
-          <h2 class="text-sm font-medium text-ink-700 dark:text-paper-200 mb-3">Publicar un tema nuevo</h2>
-          <form onsubmit="publishTopic(event)" class="space-y-4 p-5 rounded-lg border border-paper-300/60 dark:border-ink-700 bg-paper-50 dark:bg-ink-800/50">
-            <div>
-              <label class="block text-sm mb-1.5">Nombre del tema</label>
-              <input id="new-topic-name" required type="text" placeholder="Ej. Sistema Digestivo"
-                class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm focus:border-gold-500">
-            </div>
-            <div>
-              <label class="block text-sm mb-1.5">Descripción breve</label>
-              <textarea id="new-topic-desc" required rows="2" placeholder="Qué van a aprender los estudiantes en este tema"
-                class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm focus:border-gold-500"></textarea>
-            </div>
-            <div>
-              <label class="block text-sm mb-1.5">Adjuntar recursos</label>
-              <label class="flex items-center gap-2 px-3 py-2.5 rounded-md border border-dashed border-paper-300 dark:border-ink-700 text-sm text-ink-600 dark:text-paper-300/70 cursor-pointer hover:border-gold-500">
-                ${ICONS.paperclip}
-                <span>Seleccionar archivos (PDF, DOCX, PPTX)</span>
-                <input type="file" multiple class="hidden" onchange="addAttachments(event)">
-              </label>
-              <div id="attachments-list" class="mt-2 space-y-1.5"></div>
-            </div>
-            <button type="submit" class="flex items-center gap-2 px-4 py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 dark:hover:bg-gold-400">
-              ${ICONS.plus}<span>Publicar tema</span>
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  `;
-  renderTeacherTopicsList();
+      <h1 class="font-serif text-2xl mb-2">Gestión de Profesores (Supabase)</h1>
+      <div class="flex gap-2 mb-6">${tabs}</div>
+      <form onsubmit="publishTopic(event)" class="p-5 bg-white dark:bg-ink-800 rounded border space-y-3 max-w-xl">
+        <h3 class="font-medium">Publicar Tema y Subir Archivo Real</h3>
+        <input id="tp-name" required placeholder="Nombre del tema" class="w-full p-2 rounded border dark:bg-ink-700 text-sm"/>
+        <textarea id="tp-desc" required placeholder="Descripción" class="w-full p-2 rounded border dark:bg-ink-700 text-sm"></textarea>
+        <input id="tp-file" type="file" required class="w-full text-sm"/>
+        <button type="submit" class="px-4 py-2 bg-gold-500 text-ink-900 font-medium rounded text-sm">Subir a Supabase Storage</button>
+      </form>
+    </div>`;
 }
 
-function selectTeacherSubject(id) {
-  state.teacherSelectedSubject = id;
-  state.pendingAttachments = [];
-  renderTeacherPanel();
-}
+async function publishTopic(e) {
+  e.preventDefault();
+  const name = document.getElementById('tp-name').value;
+  const description = document.getElementById('tp-desc').value;
+  const fileInput = document.getElementById('tp-file').files[0];
+  const subject_id = state.teacherSelectedSubject;
 
-function renderTeacherTopicsList() {
-  const s = findSubject(state.teacherSelectedSubject);
-  const list = document.getElementById('teacher-topics-list');
-  if (!s.topics.length) {
-    list.innerHTML = `<p class="text-sm text-ink-500 dark:text-paper-300/60 py-4">Aún no hay temas publicados en esta materia.</p>`;
+  if (!fileInput) return alert('Selecciona un archivo');
+
+  const fileName = `${Date.now()}_${fileInput.name}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage.from('course-files').upload(fileName, fileInput);
+  
+  if (uploadError) {
+    alert('Error al subir archivo: ' + uploadError.message);
     return;
   }
-  list.innerHTML = s.topics.map(t => `
-    <div class="py-3.5">
-      <p class="text-sm font-medium">${t.name}</p>
-      <p class="text-xs text-ink-500 dark:text-paper-300/60 mt-0.5">${t.desc}</p>
-      <p class="text-xs text-ink-500 dark:text-paper-300/50 mt-1.5">${t.documents.length} recurso${t.documents.length===1?'':'s'} adjunto${t.documents.length===1?'':'s'}</p>
-    </div>
-  `).join('');
-}
 
-function addAttachments(e) {
-  const files = Array.from(e.target.files);
-  files.forEach(f => state.pendingAttachments.push({ name: f.name, ext: (f.name.split('.').pop()||'file').toLowerCase(), size: f.size ? (Math.max(1, Math.round(f.size/1024)) + ' KB') : '—' }));
-  renderAttachmentsList();
-}
+  const { data: { publicUrl } } = supabase.storage.from('course-files').getPublicUrl(fileName);
 
-function removeAttachment(idx) {
-  state.pendingAttachments.splice(idx, 1);
-  renderAttachmentsList();
-}
+  const { data: topicData, error: topicError } = await supabase.from('topics').insert([{ subject_id, name, description }]).select().single();
+  if (topicError) { alert('Error creando tema'); return; }
 
-function renderAttachmentsList() {
-  const box = document.getElementById('attachments-list');
-  if (!box) return;
-  box.innerHTML = state.pendingAttachments.map((f, i) => `
-    <div class="flex items-center gap-2 px-3 py-2 rounded-md bg-white dark:bg-ink-800 border border-paper-300/60 dark:border-ink-700 text-sm">
-      <span class="${fileIconColor(f.ext)} shrink-0">${ICONS.file}</span>
-      <span class="flex-1 truncate">${f.name}</span>
-      <button type="button" onclick="removeAttachment(${i})" class="text-ink-400 hover:text-brick-500">${ICONS.trash}</button>
-    </div>
-  `).join('');
-}
+  await supabase.from('documents').insert([{
+    topic_id: topicData.id,
+    name: fileInput.name,
+    file_url: publicUrl,
+    file_size: Math.round(fileInput.size / 1024) + ' KB',
+    file_ext: fileInput.name.split('.').pop()
+  }]);
 
-function publishTopic(e) {
-  e.preventDefault();
-  const s = findSubject(state.teacherSelectedSubject);
-  const name = document.getElementById('new-topic-name').value.trim();
-  const desc = document.getElementById('new-topic-desc').value.trim();
-  if (!name || !desc) return;
-
-  topicSeq++;
-  s.topics.push({
-    id: s.id + '-t' + topicSeq,
-    name, desc,
-    documents: state.pendingAttachments.length ? [...state.pendingAttachments] : []
-  });
-  state.pendingAttachments = [];
-  showToast(`Tema "${name}" publicado en ${s.name}`);
+  alert('¡Tema y archivo subidos con éxito a Supabase!');
+  await fetchSubjectsFromDB();
   renderTeacherPanel();
 }
 
-/* ======================= DOC MODAL / TOASTS ======================= */
-function openDocModal(doc) {
-  document.getElementById('doc-modal-body').innerHTML = `
-    <div class="mx-auto w-14 h-14 rounded-lg ${fileIconColor(doc.ext)} bg-paper-100 dark:bg-ink-700 flex items-center justify-center mb-4">
-      ${ICONS.file}
-    </div>
-    <p class="text-sm font-medium mb-1">${doc.name}</p>
-    <p class="text-xs text-ink-500 dark:text-paper-300/60 mb-6">${doc.size || ''} · Vista previa no disponible en este demo</p>
-    <button onclick="simulateDownload('${doc.name.replace(/'/g, "\\'")}'); closeDocModal();" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium">
-      Descargar documento
-    </button>
-  `;
-  document.getElementById('doc-modal').classList.remove('hidden');
-}
-
-function closeDocModal() {
-  document.getElementById('doc-modal').classList.add('hidden');
-}
-
-function simulateDownload(name) {
-  showToast(`Descargando "${name}"…`);
-}
-
-function showToast(msg) {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = 'transition-view bg-ink-900 dark:bg-paper-100 text-paper-50 dark:text-ink-900 text-sm px-4 py-2.5 rounded-md shadow-lg max-w-xs';
-  toast.textContent = msg;
-  container.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; setTimeout(() => toast.remove(), 300); }, 2500);
-}
-
-/* ======================= DARK MODE ======================= */
 function toggleDarkMode() {
   state.darkMode = !state.darkMode;
   document.documentElement.classList.toggle('dark', state.darkMode);
@@ -816,7 +434,6 @@ function toggleDarkMode() {
   document.getElementById('icon-moon').classList.toggle('hidden', state.darkMode);
 }
 
-/* ======================= INIT ======================= */
 setLoginRole('student');
 </script>
 </body>
