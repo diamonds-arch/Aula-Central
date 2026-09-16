@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Supabase Client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
@@ -48,6 +49,7 @@
 </head>
 <body class="font-sans bg-paper-100 text-ink-900 dark:bg-ink-950 dark:text-paper-100 min-h-screen">
 
+<!-- ======================= LOGIN VIEW ======================= -->
 <div id="view-login" class="min-h-screen flex flex-col md:flex-row">
   <div class="relative md:w-1/2 bg-ink-900 text-paper-100 flex flex-col justify-between p-8 md:p-14 overflow-hidden">
     <svg class="absolute inset-0 w-full h-full opacity-[0.07]" preserveAspectRatio="xMidYMid slice">
@@ -117,6 +119,7 @@
   </div>
 </div>
 
+<!-- ======================= APP VIEW ======================= -->
 <div id="view-app" class="hidden min-h-screen md:flex">
   <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="hidden fixed inset-0 bg-black/40 z-30 md:hidden"></div>
 
@@ -179,7 +182,7 @@
 <script>
 /* ======================= SUPABASE CONFIG ======================= */
 const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; // Reemplaza esto con tu clave real
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 /* ======================= ICONS ======================= */
@@ -324,7 +327,7 @@ function navigate(view, params) {
 function setBreadcrumb(html) { document.getElementById('breadcrumb').innerHTML = html; }
 function daysUntil(dateStr) { return Math.round((new Date(dateStr) - new Date()) / 86400000); }
 function formatDate(dateStr) { return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }); }
-function relativeDays(n) { return n < 0 ? 'Ya pasó' : n === 0 ? 'Hoy' : n === 1 ? 'Mañana' : `En ${n} días`; }
+function relativeDays(n) { return n < 0 ? 'Ya pasó' : n === 0 ? 'Hoy' : n === 1 ? 'Mañana' : `En ${n} days`; }
 function fileIconColor(ext) { return ext === 'pdf' ? 'text-brick-500' : ext === 'docx' ? 'text-steel-500' : 'text-gold-600'; }
 function findSubject(id) { return SUBJECTS.find(s => s.id === id); }
 
@@ -343,7 +346,7 @@ function renderStudentDashboard() {
       <div class="grid md:grid-cols-2 gap-6">
         <div>
           <h2 class="text-sm font-medium mb-3">Próximos exámenes</h2>
-          <div class="space-y-2">${upcoming.map(e => `<div class="p-3 bg-white dark:bg-ink-800 rounded border">${e.label} - ${e.subject} (${relativeDays(e.days)})</div>`).join('') || '<p class="text-sm">Sin exámenes</p>'}</div>
+          <div class="space-y-2">${upcoming.map(e => `<div class="p-3 bg-white dark:bg-ink-800 rounded border">${e.label} - ${e.subject} (${e.days} días)</div>`).join('') || '<p class="text-sm">Sin exámenes</p>'}</div>
         </div>
         <div>
           <h2 class="text-sm font-medium mb-3">Tus Materias</h2>
