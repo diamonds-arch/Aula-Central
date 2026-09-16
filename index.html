@@ -240,8 +240,10 @@ async function handleLogin(e) {
 
   state.currentUser = data.user;
   
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
-  if (profile) state.role = profile.role;
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).maybeSingle();
+  if (profile && profile.role) {
+    state.role = profile.role;
+  }
 
   document.getElementById('view-login').classList.add('hidden');
   document.getElementById('view-app').classList.remove('hidden');
