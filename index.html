@@ -83,18 +83,7 @@
   <div class="md:w-1/2 flex items-center justify-center p-8 md:p-14">
     <div class="w-full max-w-sm">
       <h1 class="font-serif text-2xl mb-1">Ingresar a Aula Central</h1>
-      <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-8">Usa tus credenciales del colegio para continuar.</p>
-
-      <div class="grid grid-cols-2 gap-2 mb-6 p-1 bg-paper-200 dark:bg-ink-800 rounded-md">
-        <button id="role-btn-student" type="button" onclick="setLoginRole('student')"
-          class="py-2 text-sm font-medium rounded-[4px] transition-colors bg-white dark:bg-ink-700 text-ink-900 dark:text-paper-100 shadow-sm">
-          Estudiante
-        </button>
-        <button id="role-btn-teacher" type="button" onclick="setLoginRole('teacher')"
-          class="py-2 text-sm font-medium rounded-[4px] transition-colors text-ink-500 dark:text-paper-300/70">
-          Profesor
-        </button>
-      </div>
+      <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-8">Usa tus credenciales para continuar.</p>
 
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
@@ -108,7 +97,7 @@
             class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm placeholder:text-ink-500/50 dark:placeholder:text-paper-300/40 focus:border-gold-500">
         </div>
         <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 dark:hover:bg-gold-400 transition-colors">
-          Iniciar sesión como <span id="login-role-label">estudiante</span>
+          Iniciar sesión
         </button>
       </form>
 
@@ -202,30 +191,14 @@ const ICONS = {
 };
 
 let SUBJECTS = [];
-const COLOR_MAP = {
-  forest: { border: 'border-forest-500', text: 'text-forest-600 dark:text-forest-400', bg: 'bg-forest-500', soft: 'bg-forest-500/10' },
-  steel:  { border: 'border-steel-500',  text: 'text-steel-600 dark:text-steel-400',   bg: 'bg-steel-500',  soft: 'bg-steel-500/10' },
-  gold:   { border: 'border-gold-500',   text: 'text-gold-600 dark:text-gold-400',     bg: 'bg-gold-500',   soft: 'bg-gold-500/10' },
-  brick:  { border: 'border-brick-500',  text: 'text-brick-600 dark:text-brick-400',   bg: 'bg-brick-500',  soft: 'bg-brick-500/10' },
-};
-
 const state = {
   role: 'student',
   view: 'dashboard',
   activeSubjectId: null,
   darkMode: false,
   sidebarOpen: false,
-  teacherSelectedSubject: null,
-  pendingFiles: [],
   currentUser: null
 };
-
-function setLoginRole(role) {
-  state.role = role;
-  document.getElementById('role-btn-student').className = 'py-2 text-sm font-medium rounded-[4px] transition-colors ' + (role==='student' ? 'bg-white dark:bg-ink-700 text-ink-900 dark:text-paper-100 shadow-sm' : 'text-ink-500 dark:text-paper-300/70');
-  document.getElementById('role-btn-teacher').className = 'py-2 text-sm font-medium rounded-[4px] transition-colors ' + (role==='teacher' ? 'bg-white dark:bg-ink-700 text-ink-900 dark:text-paper-100 shadow-sm' : 'text-ink-500 dark:text-paper-300/70');
-  document.getElementById('login-role-label').textContent = role === 'student' ? 'estudiante' : 'profesor';
-}
 
 async function handleLogin(e) {
   e.preventDefault();
@@ -239,18 +212,14 @@ async function handleLogin(e) {
   }
 
   state.currentUser = data.user;
-  
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).maybeSingle();
-  if (profile && profile.role) {
-    state.role = profile.role;
-  }
+  state.role = 'student';
 
   document.getElementById('view-login').classList.add('hidden');
   document.getElementById('view-app').classList.remove('hidden');
   
   await fetchSubjectsFromDB();
   renderSidebar();
-  navigate(state.role === 'student' ? 'dashboard' : 'teacher');
+  navigate('dashboard');
   updateUserBadge();
 }
 
@@ -271,9 +240,6 @@ async function fetchSubjectsFromDB() {
         documents: t.documents.map(d => ({ name: d.name, url: d.file_url, size: d.file_size, ext: d.file_ext }))
       }))
     }));
-    if (SUBJECTS.length > 0 && !state.teacherSelectedSubject) {
-      state.teacherSelectedSubject = SUBJECTS[0].id;
-    }
   }
 }
 
@@ -293,12 +259,10 @@ function toggleSidebar(open) {
 
 function renderSidebar() {
   const nav = document.getElementById('sidebar-nav');
-  let links = state.role === 'student' ? [
+  let links = [
     { id: 'dashboard', label: 'Mi panel', icon: ICONS.home },
     { id: 'subjects', label: 'Materias', icon: ICONS.book },
     { id: 'search', label: 'Buscar material', icon: ICONS.search },
-  ] : [
-    { id: 'teacher', label: 'Gestión de materias', icon: ICONS.manage },
   ];
 
   nav.innerHTML = links.map(l => `
@@ -322,29 +286,24 @@ function navigate(view, params) {
   if (view === 'subjects') { setActiveNav('subjects'); renderSubjectsList(); setBreadcrumb('Materias'); }
   if (view === 'subject-detail') { setActiveNav('subjects'); renderSubjectDetail(params); }
   if (view === 'search') { setActiveNav('search'); renderSearchView(); setBreadcrumb('Buscar material'); }
-  if (view === 'teacher') { setActiveNav('teacher'); renderTeacherPanel(); setBreadcrumb('Gestión de materias'); }
   document.getElementById('main-content').scrollTop = 0;
 }
 
 function setBreadcrumb(html) { document.getElementById('breadcrumb').innerHTML = html; }
 function daysUntil(dateStr) { return Math.round((new Date(dateStr) - new Date()) / 86400000); }
-function formatDate(dateStr) { return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }); }
-function relativeDays(n) { return n < 0 ? 'Ya pasó' : n === 0 ? 'Hoy' : n === 1 ? 'Mañana' : `En ${n} days`; }
-function fileIconColor(ext) { return ext === 'pdf' ? 'text-brick-500' : ext === 'docx' ? 'text-steel-500' : 'text-gold-600'; }
 function findSubject(id) { return SUBJECTS.find(s => s.id === id); }
 
 function updateUserBadge() {
-  const isStudent = state.role === 'student';
-  document.getElementById('user-avatar').textContent = isStudent ? 'ES' : 'PR';
-  document.getElementById('user-name').textContent = isStudent ? 'Estudiante' : 'Profesor';
-  document.getElementById('user-role').textContent = isStudent ? 'Estudiante · Supabase' : 'Docente · Supabase';
+  document.getElementById('user-avatar').textContent = 'ES';
+  document.getElementById('user-name').textContent = 'Estudiante';
+  document.getElementById('user-role').textContent = 'Estudiante · Supabase';
 }
 
 function renderStudentDashboard() {
   const upcoming = SUBJECTS.filter(s => s.nextExam).map(s => ({ ...s.nextExam, subject: s.name, color: s.color, days: daysUntil(s.nextExam.date) }));
   document.getElementById('main-content').innerHTML = `
     <div class="transition-view">
-      <h1 class="font-serif text-3xl mb-6">Panel Principal (Supabase Real)</h1>
+      <h1 class="font-serif text-3xl mb-6">Panel Principal (Estudiante)</h1>
       <div class="grid md:grid-cols-2 gap-6">
         <div>
           <h2 class="text-sm font-medium mb-3">Próximos exámenes</h2>
@@ -381,65 +340,12 @@ function runSearch() {
   document.getElementById('s-res').innerHTML = res.map(r => `<div class="p-3 bg-white dark:bg-ink-800 rounded border flex justify-between items-center"><span>${r.d.name} (${r.s.name})</span><a href="${r.d.url}" target="_blank" class="text-xs text-gold-500 underline">Abrir</a></div>`).join('');
 }
 
-function renderTeacherPanel() {
-  const tabs = SUBJECTS.map(s => `<button onclick="state.teacherSelectedSubject='${s.id}';renderTeacherPanel()" class="px-3 py-2 rounded border ${state.teacherSelectedSubject===s.id?'bg-gold-500 text-ink-900 font-medium':''}">${s.name}</button>`).join('');
-  document.getElementById('main-content').innerHTML = `
-    <div class="transition-view">
-      <h1 class="font-serif text-2xl mb-2">Gestión de Profesores (Supabase)</h1>
-      <div class="flex gap-2 mb-6">${tabs}</div>
-      <form onsubmit="publishTopic(event)" class="p-5 bg-white dark:bg-ink-800 rounded border space-y-3 max-w-xl">
-        <h3 class="font-medium">Publicar Tema y Subir Archivo Real</h3>
-        <input id="tp-name" required placeholder="Nombre del tema" class="w-full p-2 rounded border dark:bg-ink-700 text-sm"/>
-        <textarea id="tp-desc" required placeholder="Descripción" class="w-full p-2 rounded border dark:bg-ink-700 text-sm"></textarea>
-        <input id="tp-file" type="file" required class="w-full text-sm"/>
-        <button type="submit" class="px-4 py-2 bg-gold-500 text-ink-900 font-medium rounded text-sm">Subir a Supabase Storage</button>
-      </form>
-    </div>`;
-}
-
-async function publishTopic(e) {
-  e.preventDefault();
-  const name = document.getElementById('tp-name').value;
-  const description = document.getElementById('tp-desc').value;
-  const fileInput = document.getElementById('tp-file').files[0];
-  const subject_id = state.teacherSelectedSubject;
-
-  if (!fileInput) return alert('Selecciona un archivo');
-
-  const fileName = `${Date.now()}_${fileInput.name}`;
-  const { data: uploadData, error: uploadError } = await supabase.storage.from('course-files').upload(fileName, fileInput);
-  
-  if (uploadError) {
-    alert('Error al subir archivo: ' + uploadError.message);
-    return;
-  }
-
-  const { data: { publicUrl } } = supabase.storage.from('course-files').getPublicUrl(fileName);
-
-  const { data: topicData, error: topicError } = await supabase.from('topics').insert([{ subject_id, name, description }]).select().single();
-  if (topicError) { alert('Error creando tema'); return; }
-
-  await supabase.from('documents').insert([{
-    topic_id: topicData.id,
-    name: fileInput.name,
-    file_url: publicUrl,
-    file_size: Math.round(fileInput.size / 1024) + ' KB',
-    file_ext: fileInput.name.split('.').pop()
-  }]);
-
-  alert('¡Tema y archivo subidos con éxito a Supabase!');
-  await fetchSubjectsFromDB();
-  renderTeacherPanel();
-}
-
 function toggleDarkMode() {
   state.darkMode = !state.darkMode;
   document.documentElement.classList.toggle('dark', state.darkMode);
   document.getElementById('icon-sun').classList.toggle('hidden', !state.darkMode);
   document.getElementById('icon-moon').classList.toggle('hidden', state.darkMode);
 }
-
-setLoginRole('student');
 </script>
 </body>
 </html>
