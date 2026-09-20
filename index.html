@@ -205,18 +205,28 @@ async function handleLogin(e) {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
+  console.log("Intentando iniciar sesión con:", email);
+
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  
   if (error) {
     alert('Error al iniciar sesión: ' + error.message);
     return;
   }
 
+  console.log("¡Login exitoso!", data);
   state.currentUser = data.user;
   state.role = 'student';
 
-  document.getElementById('view-login').classList.add('hidden');
-  document.getElementById('view-app').classList.remove('hidden');
-  
+  // Ocultar login y mostrar la app de forma directa
+  const loginView = document.getElementById('view-login');
+  const appView = document.getElementById('view-app');
+
+  if (loginView && appView) {
+    loginView.classList.add('hidden');
+    appView.classList.remove('hidden');
+  }
+
   await fetchSubjectsFromDB();
   renderSidebar();
   navigate('dashboard');
