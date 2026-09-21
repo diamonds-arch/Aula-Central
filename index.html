@@ -7,8 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Supabase Client Oficial -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
     darkMode: 'class',
@@ -56,13 +54,13 @@
     <div class="relative max-w-md">
       <p class="font-serif text-4xl md:text-5xl leading-[1.15] mb-6">Todo el año escolar, en un solo lugar.</p>
       <p class="text-paper-300/80 text-[15px] leading-relaxed">
-        Plataforma oficial de seguridad institucional del Colegio Pío XII.
+        Materias, evaluaciones y material de estudio conectados para toda la comunidad académica.
       </p>
     </div>
     <div class="relative flex items-center gap-6 text-sm text-paper-300/70">
       <span>Colegio Pío XII</span>
       <span class="w-1 h-1 rounded-full bg-paper-300/40"></span>
-      <span>Seguridad Estricta RLS</span>
+      <span>Año lectivo 2026</span>
     </div>
   </div>
 
@@ -70,14 +68,14 @@
     <div class="w-full max-w-sm">
       
       <!-- FORMULARIO DE INICIO DE SESIÓN -->
-      <div id="form-login-container">
-        <h1 class="font-serif text-2xl mb-1">Acceso Institucional</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Autenticación segura con Supabase.</p>
+      <div id="form-login">
+        <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales institucionales.</p>
 
-        <form class="space-y-4" onsubmit="realizarLoginSupabase(event)">
+        <form class="space-y-4" onsubmit="realizarLogin(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="login-email" type="email" required autocomplete="off" placeholder="nombre@pioxii.edu.co"
+            <input id="login-email" type="email" required autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -86,11 +84,11 @@
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
-            Iniciar sesión segura
+            Iniciar sesión
           </button>
         </form>
 
-        <div class="mt-4 text-center">
+        <div class="mt-5 text-center">
           <button type="button" onclick="cambiarModoAuth('register')" class="text-xs text-gold-500 hover:underline">
             ¿Nuevo usuario? Registrarse en el sistema
           </button>
@@ -98,41 +96,41 @@
       </div>
 
       <!-- FORMULARIO DE REGISTRO -->
-      <div id="form-register-container" style="display: none;">
-        <h1 class="font-serif text-2xl mb-1">Registro Institucional</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Crear cuenta oficial en la base de datos.</p>
+      <div id="form-register" style="display: none;">
+        <h1 class="font-serif text-2xl mb-1">Registro de Cuenta</h1>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Crea tu cuenta institucional en Aula Central.</p>
 
-        <form class="space-y-4" onsubmit="realizarRegistroSupabase(event)">
+        <form class="space-y-4" onsubmit="realizarRegistro(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Nombre completo</label>
             <input id="reg-name" type="text" required placeholder="Tu nombre y apellido"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional (@pioxii.edu.co o autorizado)</label>
-            <input id="reg-email" type="email" required placeholder="nombre@pioxii.edu.co"
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
+            <input id="reg-email" type="email" required placeholder="nombre.apellido@pioxii.edu.co"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña (Mínimo 6 caracteres)</label>
-            <input id="reg-password" type="password" required minlength="6" placeholder="••••••••"
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
+            <input id="reg-password" type="password" required placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Rol Institucional</label>
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Tipo de usuario</label>
             <select id="reg-role" class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
               <option value="student">Estudiante</option>
               <option value="teacher">Profesor</option>
             </select>
           </div>
           <button type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
-            Registrar cuenta oficial
+            Completar Registro
           </button>
         </form>
 
-        <div class="mt-4 text-center">
+        <div class="mt-5 text-center">
           <button type="button" onclick="cambiarModoAuth('login')" class="text-xs text-gold-500 hover:underline">
-            ¿Ya tienes cuenta? Iniciar sesión
+            ¿Ya tienes una cuenta? Iniciar sesión
           </button>
         </div>
       </div>
@@ -166,7 +164,7 @@
           <span id="user-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-gold-500/10 text-gold-500">Rol</span>
         </div>
 
-        <button onclick="logoutSupabase()" class="px-3 py-1.5 rounded bg-brick-500 text-white text-xs font-medium hover:bg-brick-600 transition-colors">Cerrar sesión</button>
+        <button onclick="logout()" class="px-3 py-1.5 rounded bg-brick-500 text-white text-xs font-medium hover:bg-brick-600 transition-colors">Cerrar sesión</button>
       </div>
     </header>
     <main id="main-content" class="flex-1 p-8 max-w-6xl w-full mx-auto"></main>
@@ -174,13 +172,8 @@
 </div>
 
 <script>
-// Conexión oficial estricta con Supabase
-const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
 let currentUserRole = 'student';
-let currentUserName = 'Usuario Pío XII';
+let currentUserName = 'Alejandro Payares';
 
 let SUBJECTS = [
   {
@@ -188,7 +181,8 @@ let SUBJECTS = [
     name: 'Matemáticas',
     teacher: 'Prof. Carlos Mendoza',
     topics: [
-      { name: 'Álgebra Avanzada', desc: 'Ecuaciones cuadráticas y sistemas de 2x2.', documents: [{ name: 'Guía_Algebra.pdf', url: '#' }] }
+      { name: 'Álgebra Avanzada', desc: 'Ecuaciones cuadráticas y sistemas de 2x2.', documents: [{ name: 'Guía_Algebra.pdf', url: '#' }] },
+      { name: 'Trigonometría', desc: 'Razones trigonométricas y teorema de Pitágoras.', documents: [{ name: 'Ejercicios_Trigo.pdf', url: '#' }] }
     ]
   },
   {
@@ -203,16 +197,15 @@ let SUBJECTS = [
 
 function cambiarModoAuth(modo) {
   if (modo === 'register') {
-    document.getElementById('form-login-container').style.display = 'none';
-    document.getElementById('form-register-container').style.display = 'block';
+    document.getElementById('form-login').style.display = 'none';
+    document.getElementById('form-register').style.display = 'block';
   } else {
-    document.getElementById('form-register-container').style.display = 'none';
-    document.getElementById('form-login-container').style.display = 'block';
+    document.getElementById('form-register').style.display = 'none';
+    document.getElementById('form-login').style.display = 'block';
   }
 }
 
-// VALIDACIÓN ESTRICTA DE INICIO DE SESIÓN CON SUPABASE REAL
-async function realizarLoginSupabase(event) {
+function realizarLogin(event) {
   event.preventDefault();
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value.trim();
@@ -222,29 +215,12 @@ async function realizarLoginSupabase(event) {
     return;
   }
 
-  // REGLA INSTITUCIONAL: Exigir dominio oficial del colegio o correo autorizado en base de datos
-  if (!email.includes('@pioxii.edu.co') && email !== "j.a.proyect777@gmail.com") {
-    alert("Acceso denegado: Debe utilizar un correo institucional válido del Colegio Pío XII (@pioxii.edu.co).");
-    return;
-  }
-
-  // Petición real cifrada contra el servidor de Supabase
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    alert("Error de autenticación en Supabase: " + error.message);
-    return;
-  }
-
-  // Asignar rol de forma segura según el correo verificado
-  currentUserRole = (email.includes('profe') || email.includes('docente')) ? 'teacher' : 'student';
-  currentUserName = currentUserRole === 'teacher' ? 'Profesor Pío XII' : 'Estudiante Pío XII';
-
+  currentUserRole = email.includes('profe') || email.includes('docente') ? 'teacher' : 'student';
+  currentUserName = currentUserRole === 'teacher' ? 'Prof. Carlos Mendoza' : 'Alejandro Payares';
   entrarAlSistema();
 }
 
-// VALIDACIÓN ESTRICTA DE REGISTRO EN SUPABASE REAL
-async function realizarRegistroSupabase(event) {
+function realizarRegistro(event) {
   event.preventDefault();
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
@@ -256,30 +232,10 @@ async function realizarRegistroSupabase(event) {
     return;
   }
 
-  // REGLA INSTITUCIONAL DE REGISTRO
-  if (!email.includes('@pioxii.edu.co') && email !== "j.a.proyect777@gmail.com") {
-    alert("Registro rechazado: Solo se permiten cuentas con dominio oficial @pioxii.edu.co");
-    return;
-  }
-
-  // Crear usuario real cifrado en Supabase Auth
-  const { data, error } = await supabase.auth.signUp({
-    email: email,
-    password: password,
-    options: {
-      data: { full_name: name, role: role }
-    }
-  });
-
-  if (error) {
-    alert("Error al registrarse en la base de datos: " + error.message);
-    return;
-  }
-
   currentUserName = name;
   currentUserRole = role;
 
-  alert("¡Cuenta registrada oficialmente en Supabase con éxito!");
+  alert("¡Cuenta registrada con éxito! Entrando a la plataforma...");
   entrarAlSistema();
 }
 
@@ -301,11 +257,11 @@ function entrarAlSistema() {
   navigate('dashboard');
 }
 
-async function logoutSupabase() {
-  await supabase.auth.signOut();
+function logout() {
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
+  document.getElementById('reg-password').value = '';
   cambiarModoAuth('login');
 }
 
@@ -347,7 +303,7 @@ function navigate(view, params) {
           <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
             <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">Avisos del Colegio Pío XII</h2>
             <p class="text-sm text-ink-600 dark:text-paper-300 leading-relaxed">
-              ${currentUserRole === 'teacher' ? 'Estimado docente, sesión verificada por seguridad institucional.' : 'Bienvenido al periodo lectivo 2026. Sistema protegido.'}
+              ${currentUserRole === 'teacher' ? 'Estimado docente, recuerda cargar las guías y notas del periodo.' : 'Bienvenido al periodo lectivo 2026. Revisa el material de estudio disponible.'}
             </p>
           </div>
         </div>
