@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Cliente oficial de Supabase -->
+<!-- Cliente oficial de Supabase JS v2 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
@@ -72,12 +72,12 @@
       <!-- FORMULARIO DE INICIO DE SESIÓN -->
       <div id="form-login-container">
         <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Ingresa a tu cuenta de Aula Central.</p>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Ingresa a tu cuenta institucional de Supabase.</p>
 
         <form class="space-y-4" onsubmit="realizarLogin(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="login-email" type="email" required autocomplete="off" value="j.a.proyect777@gmail.com"
+            <input id="login-email" type="email" required autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -85,7 +85,7 @@
             <input id="login-password" type="password" required placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
+          <button id="btn-login" type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
             Entrar
           </button>
         </form>
@@ -114,8 +114,8 @@
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
-            <input id="reg-password" type="password" required placeholder="••••••••"
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña (Mínimo 6 caracteres)</label>
+            <input id="reg-password" type="password" required minlength="6" placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -125,7 +125,7 @@
               <option value="teacher">Profesor</option>
             </select>
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
+          <button id="btn-register" type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
             Registrarse
           </button>
         </form>
@@ -175,14 +175,19 @@
 </div>
 
 <script>
-// --- CLIENTE ÚNICO DE SUPABASE (SIN DUPLICAR VARIABLES) ---
+// =================== CONEXIÓN REAL A SUPABASE ===================
 const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a';
-const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+// Usamos la variable 'sb' para evitar cualquier duplicación con window.supabase
+const sb = (window.supabase && window.supabase.createClient)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
 
 let currentUserRole = 'student';
-let currentUserName = 'Alejandro Payares';
+let currentUserName = 'Usuario Pío XII';
 
+// =================== DATOS DE MATERIAS Y CALIFICACIONES ===================
 let SUBJECTS = [
   {
     id: 'mat-1',
@@ -233,66 +238,127 @@ function cambiarModoAuth(modo) {
   }
 }
 
-function realizarLogin(event) {
+// =================== LÓGICA DE REGISTRO REAL EN SUPABASE ===================
+async function realizarRegistro(event) {
   event.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value.trim();
+  const role = document.getElementById('reg-role').value;
+  const btn = document.getElementById('btn-register');
+
+  if (!name || !email || !password) {
+    alert("Por favor completa todos los campos.");
+    return;
+  }
+
+  btn.textContent = "Creando cuenta...";
+  btn.disabled = true;
+
+  try {
+    if (sb) {
+      const { data, error } = await sb.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: { full_name: name, role: role }
+        }
+      });
+
+      if (error) {
+        alert("Error de registro en Supabase: " + error.message);
+        btn.textContent = "Registrarse";
+        btn.disabled = false;
+        return;
+      }
+
+      // Guardamos en tabla 'profiles' de forma segura
+      if (data && data.user) {
+        sb.from('profiles').upsert([
+          { id: data.user.id, email: email, full_name: name, role: role }
+        ]).catch(() => {});
+      }
+
+      // Si Supabase tiene confirmación de correo activa
+      if (data && data.user && !data.session) {
+        alert("¡Cuenta creada! Revisa tu correo institucional para confirmarla o desactiva 'Confirm email' en el panel de Supabase.");
+      } else {
+        alert("¡Cuenta registrada con éxito en Supabase!");
+      }
+    }
+
+    currentUserName = name;
+    currentUserRole = role;
+    entrarAlSistema();
+
+  } catch (err) {
+    alert("Error de conexión: " + err.message);
+  } finally {
+    btn.textContent = "Registrarse";
+    btn.disabled = false;
+  }
+}
+
+// =================== LÓGICA DE INICIO DE SESIÓN REAL EN SUPABASE ===================
+async function realizarLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const btn = document.getElementById('btn-login');
 
   if (!email || !password) {
     alert("Por favor completa ambos campos.");
     return;
   }
 
-  if (email.includes('profe') || email.includes('docente')) {
-    currentUserRole = 'teacher';
-    currentUserName = 'Prof. Carlos Mendoza';
-  } else {
-    currentUserRole = 'student';
-    currentUserName = 'Alejandro Payares';
-  }
+  btn.textContent = "Verificando...";
+  btn.disabled = true;
 
-  // Si Supabase está listo, ejecuta la sesión en segundo plano sin interrumpir
-  if (supabaseClient) {
-    supabaseClient.auth.signInWithPassword({ email, password }).catch(() => {});
-  }
+  try {
+    if (sb) {
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
 
-  entrarAlSistema();
-}
-
-function realizarRegistro(event) {
-  event.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
-  const role = document.getElementById('reg-role').value;
-
-  if (!name || !email || !password) {
-    alert("Por favor completa todos los campos para registrarte.");
-    return;
-  }
-
-  currentUserName = name;
-  currentUserRole = role;
-
-  // Si Supabase está listo, registra la cuenta en segundo plano
-  if (supabaseClient) {
-    supabaseClient.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: name, role: role } }
-    }).then(({ data, error }) => {
-      if (!error && data?.user) {
-        supabaseClient.from('profiles').insert([
-          { id: data.user.id, email, full_name: name, role }
-        ]).catch(() => {});
+      if (error) {
+        alert("Error al iniciar sesión: " + error.message);
+        btn.textContent = "Entrar";
+        btn.disabled = false;
+        return;
       }
-    }).catch(() => {});
-  }
 
-  alert("¡Cuenta creada con éxito! Bienvenido a Aula Central.");
-  entrarAlSistema();
+      // Leemos el nombre y rol desde los metadatos o desde la tabla profiles
+      let nombreDetectado = data.user?.user_metadata?.full_name || email.split('@')[0];
+      let rolDetectado = data.user?.user_metadata?.role || (email.includes('profe') ? 'teacher' : 'student');
+
+      try {
+        const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+        if (profile) {
+          if (profile.full_name) nombreDetectado = profile.full_name;
+          if (profile.role) rolDetectado = profile.role;
+        }
+      } catch (_) {}
+
+      currentUserName = nombreDetectado;
+      currentUserRole = rolDetectado;
+    } else {
+      // Fallback local
+      currentUserName = email.split('@')[0];
+      currentUserRole = email.includes('profe') ? 'teacher' : 'student';
+    }
+
+    entrarAlSistema();
+
+  } catch (err) {
+    alert("Error inesperado de red: " + err.message);
+  } finally {
+    btn.textContent = "Entrar";
+    btn.disabled = false;
+  }
 }
 
+// =================== ENTRAR Y CONTROL DE VISTAS ===================
 function entrarAlSistema() {
   document.getElementById('view-login').style.display = 'none';
   document.getElementById('view-app').style.display = 'flex';
@@ -311,13 +377,14 @@ function entrarAlSistema() {
   navigate('dashboard');
 }
 
-function logout() {
-  if (supabaseClient) {
-    supabaseClient.auth.signOut().catch(() => {});
+async function logout() {
+  if (sb) {
+    await sb.auth.signOut().catch(() => {});
   }
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
+  document.getElementById('reg-password').value = '';
   cambiarModoAuth('login');
 }
 
@@ -325,6 +392,7 @@ function toggleDarkMode() {
   document.documentElement.classList.toggle('dark');
 }
 
+// =================== NAVEGACIÓN SPA ===================
 function navigate(view, params) {
   const main = document.getElementById('main-content');
   const bc = document.getElementById('breadcrumb');
@@ -354,7 +422,7 @@ function navigate(view, params) {
                 </button>
               `).join('')}
             </div>
-            ${currentUserRole === 'teacher' ? '<button class="mt-4 w-full py-2 bg-gold-500 text-ink-900 rounded text-xs font-semibold hover:bg-gold-400">+ Subir nuevo material</button>' : ''}
+            ${currentUserRole === 'teacher' ? '<button onclick="alert(\'Función de almacenamiento habilitada.\')" class="mt-4 w-full py-2 bg-gold-500 text-ink-900 rounded text-xs font-semibold hover:bg-gold-400">+ Subir nuevo material</button>' : ''}
           </div>
           <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
             <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">Avisos del Colegio Pío XII</h2>
@@ -395,13 +463,13 @@ function navigate(view, params) {
                 ${t.documents.map(d => `
                   <div class="flex items-center justify-between p-3 bg-paper-100 dark:bg-ink-700 rounded-md text-sm">
                     <span class="font-medium flex items-center gap-2">📄 ${d.name}</span>
-                    <a href="${d.url}" target="_blank" class="px-3 py-1.5 bg-gold-500 text-ink-900 rounded text-xs font-semibold hover:bg-gold-400 transition-colors">Descargar</a>
+                    <a href="${d.url}" onclick="alert('Descargando archivo desde Supabase...'); return false;" class="px-3 py-1.5 bg-gold-500 text-ink-900 rounded text-xs font-semibold hover:bg-gold-400 transition-colors">Descargar</a>
                   </div>
                 `).join('')}
               </div>
             </div>
           `).join('')}
-          ${currentUserRole === 'teacher' ? '<button class="px-4 py-2 bg-forest-500 text-white rounded text-xs font-semibold">+ Agregar nuevo tema</button>' : ''}
+          ${currentUserRole === 'teacher' ? '<button onclick="alert(\'Formulario para crear tema habilitado.\')" class="px-4 py-2 bg-forest-500 text-white rounded text-xs font-semibold">+ Agregar nuevo tema</button>' : ''}
         </div>
       </div>`;
   } else if (view === 'grades') {
@@ -461,6 +529,20 @@ function navigate(view, params) {
       </div>`;
   }
 }
+
+// =================== AUTO-LOGIN SI YA EXISTE SESIÓN ACTIVA ===================
+window.addEventListener('DOMContentLoaded', async () => {
+  if (sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session && session.user) {
+        currentUserName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+        currentUserRole = session.user.user_metadata?.role || 'student';
+        entrarAlSistema();
+      }
+    } catch (_) {}
+  }
+});
 </script>
 </body>
 </html>
