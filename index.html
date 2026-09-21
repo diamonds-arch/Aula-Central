@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Cliente oficial de Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
     darkMode: 'class',
@@ -173,6 +175,11 @@
 </div>
 
 <script>
+// --- CLIENTE ÚNICO DE SUPABASE (SIN DUPLICAR VARIABLES) ---
+const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a';
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
 let currentUserRole = 'student';
 let currentUserName = 'Alejandro Payares';
 
@@ -244,6 +251,11 @@ function realizarLogin(event) {
     currentUserName = 'Alejandro Payares';
   }
 
+  // Si Supabase está listo, ejecuta la sesión en segundo plano sin interrumpir
+  if (supabaseClient) {
+    supabaseClient.auth.signInWithPassword({ email, password }).catch(() => {});
+  }
+
   entrarAlSistema();
 }
 
@@ -261,6 +273,21 @@ function realizarRegistro(event) {
 
   currentUserName = name;
   currentUserRole = role;
+
+  // Si Supabase está listo, registra la cuenta en segundo plano
+  if (supabaseClient) {
+    supabaseClient.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name, role: role } }
+    }).then(({ data, error }) => {
+      if (!error && data?.user) {
+        supabaseClient.from('profiles').insert([
+          { id: data.user.id, email, full_name: name, role }
+        ]).catch(() => {});
+      }
+    }).catch(() => {});
+  }
 
   alert("¡Cuenta creada con éxito! Bienvenido a Aula Central.");
   entrarAlSistema();
@@ -285,6 +312,9 @@ function entrarAlSistema() {
 }
 
 function logout() {
+  if (supabaseClient) {
+    supabaseClient.auth.signOut().catch(() => {});
+  }
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
