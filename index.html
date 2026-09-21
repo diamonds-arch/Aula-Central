@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Cliente oficial de Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
@@ -56,7 +55,7 @@
     <div class="relative max-w-md">
       <p class="font-serif text-4xl md:text-5xl leading-[1.15] mb-6">Todo el año escolar, en un solo lugar.</p>
       <p class="text-paper-300/80 text-[15px] leading-relaxed">
-        Materias, evaluaciones y material de estudio conectados para toda la comunidad académica.
+        Materias, evaluaciones y material de estudio conectados para el Colegio Pío XII.
       </p>
     </div>
     <div class="relative flex items-center gap-6 text-sm text-paper-300/70">
@@ -72,7 +71,7 @@
       <!-- FORMULARIO DE INICIO DE SESIÓN -->
       <div id="form-login">
         <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales de Supabase.</p>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales institucionales.</p>
 
         <form class="space-y-4" onsubmit="realizarLoginSupabase(event)">
           <div>
@@ -100,7 +99,7 @@
       <!-- FORMULARIO DE REGISTRO -->
       <div id="form-register" style="display: none;">
         <h1 class="font-serif text-2xl mb-1">Registro de Cuenta</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Crea tu cuenta institucional en Supabase.</p>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Crea tu cuenta institucional.</p>
 
         <form class="space-y-4" onsubmit="realizarRegistroSupabase(event)">
           <div>
@@ -126,7 +125,7 @@
             </select>
           </div>
           <button type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
-            Registrarse en Supabase
+            Completar Registro
           </button>
         </form>
 
@@ -211,7 +210,6 @@ function cambiarModoAuth(modo) {
   }
 }
 
-// INICIO DE SESIÓN REAL EN SUPABASE
 async function realizarLoginSupabase(event) {
   event.preventDefault();
   const email = document.getElementById('login-email').value.trim();
@@ -229,7 +227,6 @@ async function realizarLoginSupabase(event) {
     return;
   }
 
-  // Obtener perfil real de la base de datos
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
   
   if (profile) {
@@ -243,7 +240,6 @@ async function realizarLoginSupabase(event) {
   entrarAlSistema();
 }
 
-// REGISTRO REAL EN SUPABASE
 async function realizarRegistroSupabase(event) {
   event.preventDefault();
   const name = document.getElementById('reg-name').value.trim();
@@ -256,6 +252,7 @@ async function realizarRegistroSupabase(event) {
     return;
   }
 
+  // Registro en Auth de Supabase
   const { data, error } = await supabase.auth.signUp({
     email: email,
     password: password,
@@ -269,7 +266,7 @@ async function realizarRegistroSupabase(event) {
     return;
   }
 
-  // Guardar también en la tabla profiles
+  // Guardar perfil en la tabla profiles de forma segura
   if (data.user) {
     await supabase.from('profiles').insert([
       { id: data.user.id, email: email, full_name: name, role: role }
@@ -279,7 +276,7 @@ async function realizarRegistroSupabase(event) {
   currentUserName = name;
   currentUserRole = role;
 
-  alert("¡Cuenta registrada con éxito en Supabase!");
+  alert("¡Cuenta registrada con éxito!");
   entrarAlSistema();
 }
 
