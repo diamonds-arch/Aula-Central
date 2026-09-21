@@ -7,8 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Supabase Client -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
     darkMode: 'class',
@@ -118,10 +116,6 @@
 </div>
 
 <script>
-const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
 // Materias y contenidos formales de la plataforma
 let SUBJECTS = [
   {
@@ -162,11 +156,14 @@ function realizarLogin(event) {
     return;
   }
 
-  // Cambio de pantalla inmediato y seguro
-  document.getElementById('view-login').style.display = 'none';
-  document.getElementById('view-app').style.display = 'flex';
-
-  navigate('dashboard');
+  // Validación de acceso directo y fluido sin bloqueos de red externos
+  if (email === "j.a.proyect777@gmail.com") {
+    document.getElementById('view-login').style.display = 'none';
+    document.getElementById('view-app').style.display = 'flex';
+    navigate('dashboard');
+  } else {
+    alert("Correo no autorizado.");
+  }
 }
 
 function logout() {
