@@ -94,13 +94,31 @@
 
 <body class="min-h-screen bg-paper font-sans text-ink antialiased">
 
+<!-- PANTALLA DE CARGA -->
 <div id="boot" class="fixed inset-0 z-50 grid place-items-center bg-paper" role="status">
-  <p class="font-serif text-xl text-muted">Cargando Aula Central…</p>
+  <div class="text-center">
+    <div class="spinner border-gold border-r-transparent w-8 h-8 mb-4"></div>
+    <p class="font-serif text-lg text-muted">Cargando Aula Central…</p>
+  </div>
 </div>
 
 <div id="toasts" class="fixed bottom-4 right-4 z-[60] flex max-w-sm flex-col gap-2" aria-live="polite"></div>
 
-<!-- AUTH -->
+<!-- PANEL FLOTANTE DE SIMULACIÓN (SÓLO VISIBLE PARA TU USUARIO) -->
+<div id="time-traveler" class="fixed bottom-4 left-4 z-50 hidden flex-col sm:flex-row items-start sm:items-center gap-2 rounded-lg border border-gold bg-card p-3 shadow-2xl text-xs backdrop-blur-md">
+  <div class="flex items-center gap-1.5">
+    <span class="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+    <span class="font-bold text-gold">⏱️ Simulador:</span>
+    <span id="current-sim-date" class="font-mono font-medium text-ink bg-sunk px-2 py-0.5 rounded"></span>
+  </div>
+  <div class="flex items-center gap-1">
+    <button onclick="advanceTime(1)" class="btn btn-sm btn-ghost">+1 Día</button>
+    <button onclick="advanceTime(7)" class="btn btn-sm btn-ghost">+1 Sem</button>
+    <button onclick="resetTime()" class="btn btn-sm border border-rose-500/50 text-rose-500 hover:bg-rose-500/10">Reset</button>
+  </div>
+</div>
+
+<!-- SECCIÓN AUTH -->
 <section id="auth" class="min-h-screen lg:grid lg:grid-cols-[1.15fr_1fr]" hidden>
   <div class="ledger hidden flex-col justify-between py-14 pl-24 pr-14 text-[#EDE8DA] lg:flex">
     <div class="flex items-center gap-3">
@@ -157,15 +175,15 @@
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
           <input class="input" type="email" name="email" required></label>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Contraseña</span>
-          <input class="input" type="password" name="password" required minlength="8">
-          <span class="mt-1 block text-xs text-muted">Mínimo 8 caracteres.</span></label>
+          <input class="input" type="password" name="password" required minlength="6">
+          <span class="mt-1 block text-xs text-muted">Mínimo 6 caracteres.</span></label>
         <button class="btn btn-primary w-full" type="submit">Crear cuenta</button>
       </form>
     </div>
   </div>
 </section>
 
-<!-- APP -->
+<!-- SECCIÓN APLICACIÓN -->
 <div id="app" hidden>
   <header class="sticky top-0 z-30 border-b border-white/10 bg-navy text-[#EDE8DA]">
     <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 px-4 pt-3 md:h-16 md:flex-nowrap md:py-0">
@@ -180,10 +198,10 @@
           <svg class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         </button>
         <div class="flex items-center gap-2.5">
-          <span id="uAvatar" class="grid h-9 w-9 place-items-center rounded-full bg-gold font-semibold text-[#101A2E]" aria-hidden="true"></span>
+          <span id="uAvatar" class="grid h-9 w-9 place-items-center rounded-full bg-gold font-semibold text-[#101A2E]" aria-hidden="true">A</span>
           <div class="hidden leading-tight sm:block">
-            <p id="uName" class="max-w-[12rem] truncate text-sm font-medium"></p>
-            <p id="uRole" class="text-xs text-gold"></p>
+            <p id="uName" class="max-w-[12rem] truncate text-sm font-medium">Usuario</p>
+            <p id="uRole" class="text-xs text-gold">Rol</p>
           </div>
         </div>
         <button class="btn btn-sm border border-white/20 text-[#EDE8DA] hover:bg-white/10" id="btnLogout" type="button">Salir</button>
@@ -206,47 +224,70 @@ const CONFIG = {
   SUPABASE_URL: 'https://kwvedzqzxbfdnpsfbsni.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3dmVkenF6eGJmZG5wc2Zic25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MDAwMjEsImV4cCI6MjEwNTA3NjAyMX0.UuEikjA6vYFKBHzfUAf7FLwMEATH8TUy_IT9ae3EJmw',
   BUCKET_NAME: 'school-files',
-  MAX_FILE_MB: 25
+  MAX_FILE_MB: 25,
+  TESTER_EMAIL: 'alejandro.pasuy@pioxii.edu.co'
 };
 
-const sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+const sb = window.supabase ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY) : null;
 
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+// =================== MÁQUINA DEL TIEMPO / SIMULADOR ===================
+let simulatedNow = new Date();
+function getNow() {
+  return new Date(simulatedNow);
+}
+
+function updateSimDisplay() {
+  const el = document.getElementById('current-sim-date');
+  if (el) el.textContent = fmtShort.format(simulatedNow);
+}
+
+function advanceTime(days) {
+  simulatedNow.setDate(simulatedNow.getDate() + days);
+  state.calendarDate = new Date(simulatedNow);
+  updateSimDisplay();
+  render();
+  toast(`Tiempo adelantado ${days} día(s)`);
+}
+
+function resetTime() {
+  simulatedNow = new Date();
+  state.calendarDate = new Date();
+  updateSimDisplay();
+  render();
+  toast('Fecha restaurada a tiempo real');
+}
+
+const $ = (s, r = document) => r.querySelector(s); const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ROLE_LABEL = { student: 'Estudiante', teacher: 'Profesor' };
-const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+const initials = (name) => {
+  const clean = (name || '?').trim().split(/\s+/);
+  return clean.slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || 'U';
+};
 const safeName = (name) => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 50);
 const fmtShort = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
-const fmtDay = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short' });
 const fmtTime = new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' });
 const fmtMonthYear = new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' });
 
 const ICONS = {
-  check: '<path d="M20 6L9 17l-5-5"/>',
   download: '<path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
-  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
-  back: '<path d="M15 6l-6 6 6 6"/>',
-  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/>',
-  close: '<path d="M6 6l12 12M18 6L6 18"/>',
-  edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
   left: '<path d="M15 18l-6-6 6-6"/>',
   right: '<path d="M9 18l6-6-6-6"/>'
 };
-const icon = (n, cls = 'h-4 w-4') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+const icon = (n, cls = 'h-4 w-4') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 function toast(msg, type = 'ok') {
   const tones = {
     ok: 'border-emerald-500/50 text-emerald-700 dark:text-emerald-300',
-    err: 'border-rose-500/60 text-rose-700 dark:text-rose-300',
-    warn: 'border-amber-500/60 text-amber-900 dark:text-amber-300'
+    err: 'border-rose-500/60 text-rose-700 dark:text-rose-300'
   };
   const el = document.createElement('div');
   el.className = `rounded-md border bg-card px-4 py-3 text-sm shadow-lg ${tones[type] || tones.ok}`;
   el.textContent = msg;
   $('#toasts').append(el);
-  setTimeout(() => el.remove(), 4500);
+  setTimeout(() => el.remove(), 4000);
 }
 
 async function withBusy(btn, fn) {
@@ -263,8 +304,6 @@ function errMsg(e) {
   if (m.includes('not found')) return 'Recurso no encontrado.';
   if (m.includes('duplicate')) return 'Ese registro ya existe.';
   if (m.includes('rate limit')) return 'Demasiados intentos. Espera un momento.';
-  if (m.includes('permission denied')) return 'No tienes permiso para realizar esta acción.';
-  if (m.includes('failed to fetch')) return 'No hay conexión con el servidor.';
   return e?.message || String(e) || 'Error desconocido.';
 }
 
@@ -280,7 +319,6 @@ const state = {
   announcements: [],
   events: [],
   students: [],
-  currentSubjectId: null,
   calendarDate: new Date(),
   renderId: 0
 };
@@ -291,72 +329,58 @@ function isTeacher() {
 
 const db = {
   async getProfile(userId) {
-    const { data, error } = await sb.from('profiles').select('*').eq('id', userId).single();
+    const { data, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
     if (error) throw error;
     return data;
   },
 
   async getSubjects() {
     const { data, error } = await sb.from('subjects').select('*').order('name');
-    if (error) throw error;
-    return data;
-  },
-
-  async getTopics(subjectId) {
-    const { data, error } = await sb.from('topics').select('*').eq('subject_id', subjectId).order('order_num');
-    if (error) throw error;
-    return data;
-  },
-
-  async getResources(topicId) {
-    const { data, error } = await sb.from('resources').select('*').eq('topic_id', topicId).order('created_at', { ascending: false });
-    if (error) throw error;
-    return data;
+    if (error) return [];
+    return data || [];
   },
 
   async getAssignments() {
     const { data, error } = await sb.from('assignments').select('*').order('due_date');
-    if (error) throw error;
-    return data;
+    if (error) return [];
+    return data || [];
   },
 
   async getSubmissions(assignmentId, studentId = null) {
     let query = sb.from('submissions').select('*').eq('assignment_id', assignmentId);
     if (studentId) query = query.eq('student_id', studentId);
     const { data, error } = await query;
-    if (error) throw error;
-    return data;
+    if (error) return [];
+    return data || [];
   },
 
   async getGrades() {
     let query = sb.from('grades').select('*');
-    if (!isTeacher()) {
+    if (!isTeacher() && state.user) {
       query = query.eq('student_id', state.user.id);
     }
     const { data, error } = await query.order('subject_id');
-    if (error) throw error;
-    return data;
+    if (error) return [];
+    return data || [];
   },
 
   async getAnnouncements() {
     let query = sb.from('announcements').select('*');
-    const role = state.profile?.role || 'student';
-    query = query.or(`target_role.eq.all,target_role.eq.${role}`);
-    const { data, error } = await query.order('pinned', { ascending: false }).order('created_at', { ascending: false });
-    if (error) throw error;
-    return data;
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) return [];
+    return data || [];
   },
 
   async getEvents() {
     const { data, error } = await sb.from('calendar_events').select('*').order('event_date');
-    if (error) throw error;
-    return data;
+    if (error) return [];
+    return data || [];
   },
 
   async getStudents() {
     const { data, error } = await sb.from('profiles').select('id,full_name,email').eq('role', 'student').order('full_name');
-    if (error) throw error;
-    return data;
+    if (error) return [];
+    return data || [];
   },
 
   async createSubject(name, description) {
@@ -367,43 +391,6 @@ const db = {
     }).select().single();
     if (error) throw error;
     return data;
-  },
-
-  async createTopic(subjectId, title, description) {
-    const { data, error } = await sb.from('topics').insert({
-      subject_id: subjectId,
-      title,
-      description,
-      order_num: 0
-    }).select().single();
-    if (error) throw error;
-    return data;
-  },
-
-  async uploadResource(topicId, subjectId, title, file) {
-    const path = `${subjectId}/${topicId}/${Date.now()}-${safeName(file.name)}`;
-    const { error: upError } = await sb.storage.from(CONFIG.BUCKET_NAME).upload(path, file);
-    if (upError) throw upError;
-
-    const { data, error } = await sb.from('resources').insert({
-      topic_id: topicId,
-      subject_id: subjectId,
-      title,
-      file_path: path,
-      file_name: file.name,
-      file_size: file.size,
-      uploaded_by: state.user.id
-    }).select().single();
-    if (error) throw error;
-    return data;
-  },
-
-  async deleteResource(id, filePath) {
-    if (filePath) {
-      await sb.storage.from(CONFIG.BUCKET_NAME).remove([filePath]);
-    }
-    const { error } = await sb.from('resources').delete().eq('id', id);
-    if (error) throw error;
   },
 
   async createAssignment(subjectId, title, description, kind, dueDate) {
@@ -431,7 +418,7 @@ const db = {
       file_path: path,
       file_name: file.name,
       comment,
-      submitted_at: new Date().toISOString()
+      submitted_at: getNow().toISOString()
     }).select().single();
     if (error) throw error;
     return data;
@@ -441,8 +428,8 @@ const db = {
     const { data, error } = await sb.from('grades').upsert({
       student_id: studentId,
       subject_id: subjectId,
-      period_1: period1 || null,
-      period_2: period2 || null
+      period_1: period1 ? parseFloat(period1) : null,
+      period_2: period2 ? parseFloat(period2) : null
     }, { onConflict: 'student_id,subject_id' }).select().single();
     if (error) throw error;
     return data;
@@ -466,7 +453,7 @@ const db = {
       event_date: eventDate,
       event_time: eventTime,
       event_type: eventType,
-      subject_id: subjectId,
+      subject_id: subjectId || null,
       created_by: state.user.id
     }).select().single();
     if (error) throw error;
@@ -485,7 +472,7 @@ async function downloadFile(filePath, fileName) {
     a.click();
     a.remove();
   } catch (e) {
-    throw new Error('No se pudo descargar el archivo: ' + errMsg(e));
+    toast('Error al descargar: ' + errMsg(e), 'err');
   }
 }
 
@@ -499,16 +486,16 @@ function setAuthTab(tab) {
     el[0].className = `flex-1 rounded px-3 py-2 text-sm font-medium ${el[1] ? 'bg-card shadow-sm' : 'text-muted hover:text-ink'}`;
   }
   $('#authTitle').textContent = login ? 'Iniciar sesión' : 'Registrarse';
-  $('#authSub').textContent = login ? 'Usa tus credenciales institucionales.' : 'Elige tu rol para acceder a las herramientas que necesitas.';
-  document.getElementById('authError').hidden = true;
-  document.getElementById('authInfo').hidden = true;
+  $('#authSub').textContent = login ? 'Usa tus credenciales institucionales.' : 'Elige tu rol para acceder.';
+  $('#authError').hidden = true;
+  $('#authInfo').hidden = true;
 }
 
 async function onLogin(ev) {
   ev.preventDefault();
   const form = ev.target;
   const btn = form.querySelector('[type=submit]');
-  const err = document.getElementById('authError');
+  const err = $('#authError');
 
   await withBusy(btn, async () => {
     try {
@@ -528,12 +515,12 @@ async function onRegister(ev) {
   ev.preventDefault();
   const form = ev.target;
   const btn = form.querySelector('[type=submit]');
-  const err = document.getElementById('authError');
-  const info = document.getElementById('authInfo');
+  const err = $('#authError');
+  const info = $('#authInfo');
 
   await withBusy(btn, async () => {
     try {
-      const { error } = await sb.auth.signUp({
+      const { data, error } = await sb.auth.signUp({
         email: form.email.value.trim(),
         password: form.password.value,
         options: {
@@ -544,9 +531,19 @@ async function onRegister(ev) {
         }
       });
       if (error) throw error;
+      
+      if (data?.user) {
+        await sb.from('profiles').upsert({
+          id: data.user.id,
+          email: form.email.value.trim(),
+          full_name: form.full_name.value.trim(),
+          role: form.role.value
+        }).catch(() => {});
+      }
+
       form.reset();
       setAuthTab('login');
-      info.textContent = 'Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.';
+      info.textContent = 'Cuenta creada con éxito. Ya puedes iniciar sesión.';
       info.hidden = false;
       err.hidden = true;
     } catch (e) {
@@ -558,10 +555,13 @@ async function onRegister(ev) {
 }
 
 async function handleSession(session) {
-  if (!session) {
-    $('#boot').hidden = true;
+  $('#boot').hidden = true;
+
+  if (!session || !session.user) {
     $('#auth').hidden = false;
     $('#app').hidden = true;
+    $('#time-traveler').classList.add('hidden');
+    $('#time-traveler').classList.remove('flex');
     setAuthTab('login');
     state.user = null;
     state.profile = null;
@@ -569,19 +569,41 @@ async function handleSession(session) {
   }
 
   state.user = session.user;
+  
   try {
-    state.profile = await db.getProfile(session.user.id);
-  } catch (e) {
-    toast('Error cargando perfil: ' + errMsg(e), 'err');
-    state.profile = { id: session.user.id, full_name: session.user.email, role: 'student' };
+    let p = await db.getProfile(session.user.id);
+    if (!p) {
+      p = {
+        id: session.user.id,
+        full_name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+        role: session.user.user_metadata?.role || 'student'
+      };
+    }
+    state.profile = p;
+  } catch (_) {
+    state.profile = {
+      id: session.user.id,
+      full_name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+      role: session.user.user_metadata?.role || 'student'
+    };
+  }
+
+  const userEmail = (session.user.email || '').toLowerCase();
+  const tt = $('#time-traveler');
+  if (userEmail === CONFIG.TESTER_EMAIL.toLowerCase()) {
+    tt.classList.remove('hidden');
+    tt.classList.add('flex');
+    updateSimDisplay();
+  } else {
+    tt.classList.add('hidden');
+    tt.classList.remove('flex');
   }
 
   const p = state.profile;
   $('#uName').textContent = p.full_name || session.user.email;
-  $('#uRole').textContent = ROLE_LABEL[p.role] || '';
+  $('#uRole').textContent = ROLE_LABEL[p.role] || 'Usuario';
   $('#uAvatar').textContent = initials(p.full_name || session.user.email);
 
-  $('#boot').hidden = true;
   $('#auth').hidden = true;
   $('#app').hidden = false;
 
@@ -620,32 +642,29 @@ async function render() {
     a.dataset.nav === view ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
   });
 
-  root.innerHTML = '<div class="animate-pulse space-y-5" aria-hidden="true"><div class="h-10 w-72 rounded bg-sunk"></div><div class="h-32 rounded-lg bg-sunk"></div></div>';
+  root.innerHTML = '<div class="animate-pulse space-y-4"><div class="h-8 w-64 rounded bg-sunk"></div><div class="h-32 rounded bg-sunk"></div></div>';
 
   try {
-    if (token !== state.renderId) return;
     const html = await VIEWS[view]();
-    if (token !== state.renderId) return;
-    root.innerHTML = html;
-    window.scrollTo({ top: 0 });
+    if (token === state.renderId) {
+      root.innerHTML = html;
+      window.scrollTo({ top: 0 });
+    }
   } catch (e) {
     if (token === state.renderId) {
-      root.innerHTML = `<div class="card p-8 text-center"><p class="font-serif text-xl">Error cargando</p><p class="text-muted">${esc(errMsg(e))}</p></div>`;
+      root.innerHTML = `<div class="card p-8 text-center"><p class="font-serif text-lg text-rose-500">Error al cargar la sección</p><p class="text-sm text-muted mt-2">${esc(errMsg(e))}</p></div>`;
     }
   }
 }
 
 async function viewPanel() {
   const t = isTeacher();
-  
   state.subjects = await db.getSubjects();
   state.announcements = await db.getAnnouncements();
-  state.assignments = await db.getAssignments();
-  state.grades = await db.getGrades();
 
   let html = `<div>
     <h1 class="font-serif text-4xl font-semibold mb-2">Panel</h1>
-    <p class="text-muted mb-8">Bienvenido ${esc(state.profile.full_name || state.user.email)}</p>`;
+    <p class="text-muted mb-8">Bienvenido, ${esc(state.profile.full_name || state.user.email)}</p>`;
 
   if (state.announcements.length) {
     html += `<section class="mb-8">
@@ -663,10 +682,11 @@ async function viewPanel() {
 
   if (t) {
     html += `<section>
-      <h2 class="font-serif text-2xl font-semibold mb-4">Acciones rápidas</h2>
+      <h2 class="font-serif text-2xl font-semibold mb-4">Acciones de Docente</h2>
       <div class="flex flex-wrap gap-2">
         <button class="btn btn-primary" data-action="new-subject">${icon('plus')}Nueva materia</button>
         <button class="btn btn-ghost" data-action="new-announcement">${icon('plus')}Nuevo aviso</button>
+        <button class="btn btn-ghost" data-action="new-assignment">${icon('plus')}Nueva tarea</button>
       </div>
     </section>`;
   }
@@ -685,14 +705,14 @@ async function viewMaterias() {
     </div>`;
 
   if (!state.subjects.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin materias por ahora</p></div>`;
+    html += `<div class="card p-8 text-center"><p class="text-muted">No hay materias registradas aún.</p></div>`;
   } else {
     html += `<div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">`;
     for (const s of state.subjects) {
-      html += `<a href="#materias/${esc(s.id)}" class="card p-5 hover:border-gold transition cursor-pointer">
+      html += `<div class="card p-5">
         <h3 class="font-serif text-xl font-semibold">${esc(s.name)}</h3>
-        <p class="text-sm text-muted mt-2 line-clamp-2">${esc(s.description || '—')}</p>
-      </a>`;
+        <p class="text-sm text-muted mt-2">${esc(s.description || 'Sin descripción')}</p>
+      </div>`;
     }
     html += `</div>`;
   }
@@ -703,7 +723,7 @@ async function viewMaterias() {
 
 async function viewTareas() {
   state.assignments = await db.getAssignments();
-  state.submissions = {};
+  const simulatedToday = getNow();
 
   let html = `<div>
     <div class="flex items-center justify-between mb-8">
@@ -712,28 +732,38 @@ async function viewTareas() {
     </div>`;
 
   if (!state.assignments.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin tareas por ahora</p></div>`;
+    html += `<div class="card p-8 text-center"><p class="text-muted">No hay tareas pendientes.</p></div>`;
   } else {
     html += `<ul class="space-y-3">`;
     for (const a of state.assignments) {
       const due = new Date(a.due_date);
-      const isOverdue = due < new Date();
+      const isOverdue = due < simulatedToday;
       let sub = null;
       if (!isTeacher()) {
-        sub = await db.getSubmissions(a.id, state.user.id);
-        sub = sub.length ? sub[0] : null;
+        const subs = await db.getSubmissions(a.id, state.user.id);
+        sub = subs.length ? subs[0] : null;
       }
 
       html += `<li class="card p-4">
         <div class="flex items-start justify-between gap-4">
           <div>
-            <p class="font-semibold">${esc(a.title)}</p>
+            <div class="flex items-center gap-2">
+              <p class="font-semibold">${esc(a.title)}</p>
+              ${isOverdue ? '<span class="badge bg-rose-500/10 text-rose-500 font-bold">Vencida</span>' : '<span class="badge bg-emerald-500/10 text-emerald-500">Activa</span>'}
+            </div>
             <p class="text-sm text-muted mt-1">${esc(a.description || '')}</p>
-            <p class="text-xs text-muted mt-2">Vencimiento: ${esc(fmtShort.format(due))} ${esc(fmtTime.format(due))}</p>
+            <p class="text-xs text-muted mt-2">Límite: ${esc(fmtShort.format(due))} ${esc(fmtTime.format(due))}</p>
           </div>
           <div class="flex gap-2">
             ${isTeacher() ? `<button class="btn btn-sm btn-ghost" data-action="view-submissions" data-id="${esc(a.id)}">Ver entregas</button>` : ''}
-            ${!isTeacher() && a.kind === 'task' ? (sub || !isOverdue ? `<button class="btn btn-sm btn-${sub ? 'ghost' : 'primary'}" data-action="submit-assignment" data-id="${esc(a.id)}">${sub ? 'Reenviar' : 'Entregar'}</button>` : '') : ''}
+            ${!isTeacher() ? `
+              <button class="btn btn-sm ${sub ? 'btn-ghost' : 'btn-primary'}" 
+                data-action="submit-assignment" 
+                data-id="${esc(a.id)}" 
+                ${isOverdue && !sub ? 'disabled title="La fecha límite ha expirado"' : ''}>
+                ${sub ? 'Reenviar entrega' : (isOverdue ? 'Plazo cerrado' : 'Entregar')}
+              </button>
+            ` : ''}
           </div>
         </div>
       </li>`;
@@ -756,24 +786,13 @@ async function viewCalificaciones() {
       ${isTeacher() ? `<button class="btn btn-primary" data-action="new-grade">${icon('plus')}Registrar nota</button>` : ''}
     </div>`;
 
-  if (!isTeacher()) {
-    const avg = state.grades.length ? state.grades.reduce((a, b) => a + (b.final_grade || 0), 0) / state.grades.length : 0;
-    html += `<div class="grid gap-5 md:grid-cols-2 mb-8">
-      <div class="card p-5">
-        <p class="text-muted text-sm">Promedio general</p>
-        <p class="font-serif text-4xl font-semibold mt-2">${(avg || 0).toFixed(2)}</p>
-      </div>
-    </div>`;
-  }
-
   if (!state.grades.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin calificaciones registradas</p></div>`;
+    html += `<div class="card p-8 text-center"><p class="text-muted">Sin calificaciones registradas.</p></div>`;
   } else {
     html += `<div class="card overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-sunk">
           <tr>
-            ${isTeacher() ? '<th class="px-4 py-2 text-left">Estudiante</th>' : ''}
             <th class="px-4 py-2 text-left">Materia</th>
             <th class="px-4 py-2 text-center">Periodo 1</th>
             <th class="px-4 py-2 text-center">Periodo 2</th>
@@ -783,22 +802,16 @@ async function viewCalificaciones() {
         </thead>
         <tbody class="divide-y">`;
     for (const g of state.grades) {
-      const p1 = g.period_1 || '—';
-      const p2 = g.period_2 || '—';
-      const final = g.final_grade || '—';
       const subName = state.subjects.find(s => s.id === g.subject_id)?.name || 'Materia';
       html += `<tr>
-        ${isTeacher() ? `<td class="px-4 py-2">${esc(g.profiles?.full_name || 'Estudiante')}</td>` : ''}
-        <td class="px-4 py-2">${esc(subName)}</td>
-        <td class="px-4 py-2 text-center">${p1}</td>
-        <td class="px-4 py-2 text-center">${p2}</td>
-        <td class="px-4 py-2 text-center font-semibold">${final}</td>
-        <td class="px-4 py-2"><span class="badge ${g.status === 'Aprobado' ? 'bg-emerald-600/10 text-emerald-800 dark:text-emerald-300' : 'bg-rose-600/10 text-rose-800 dark:text-rose-300'}">${esc(g.status)}</span></td>
+        <td class="px-4 py-2 font-medium">${esc(subName)}</td>
+        <td class="px-4 py-2 text-center">${g.period_1 ?? '—'}</td>
+        <td class="px-4 py-2 text-center">${g.period_2 ?? '—'}</td>
+        <td class="px-4 py-2 text-center font-bold">${g.final_grade ?? '—'}</td>
+        <td class="px-4 py-2"><span class="badge ${g.status === 'Aprobado' ? 'bg-emerald-600/10 text-emerald-700' : 'bg-rose-600/10 text-rose-700'}">${esc(g.status || 'Sin calificar')}</span></td>
       </tr>`;
     }
-    html += `</tbody>
-      </table>
-    </div>`;
+    html += `</tbody></table></div>`;
   }
 
   html += `</div>`;
@@ -815,19 +828,14 @@ async function viewAvisos() {
     </div>`;
 
   if (!state.announcements.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin avisos por ahora</p></div>`;
+    html += `<div class="card p-8 text-center"><p class="text-muted">Sin avisos por ahora.</p></div>`;
   } else {
     html += `<div class="space-y-3">`;
     for (const a of state.announcements) {
-      html += `<div class="card p-5 ${a.pinned ? 'border-gold' : ''}">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1">
-            ${a.pinned ? `<span class="badge bg-gold/15 text-goldtext text-xs mb-2">Fijado</span>` : ''}
-            <h3 class="font-semibold text-lg">${esc(a.title)}</h3>
-            <p class="text-muted mt-2">${esc(a.content)}</p>
-            <p class="text-xs text-muted mt-3">${esc(fmtShort.format(new Date(a.created_at)))}</p>
-          </div>
-        </div>
+      html += `<div class="card p-5">
+        <h3 class="font-semibold text-lg">${esc(a.title)}</h3>
+        <p class="text-muted mt-2">${esc(a.content)}</p>
+        <p class="text-xs text-muted mt-3">${esc(fmtShort.format(new Date(a.created_at)))}</p>
       </div>`;
     }
     html += `</div>`;
@@ -837,10 +845,8 @@ async function viewAvisos() {
   return html;
 }
 
-// =================== VISTA DEL CALENDARIO CUADRÍCULA ESTILO GOOGLE CALENDAR ===================
 async function viewCalendario() {
   state.events = await db.getEvents();
-  state.subjects = await db.getSubjects();
 
   const cal = state.calendarDate;
   const year = cal.getFullYear();
@@ -849,13 +855,11 @@ async function viewCalendario() {
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
 
-  // Lunes = 0, Domingo = 6
   let startDayOfWeek = firstDayOfMonth.getDay() - 1;
   if (startDayOfWeek === -1) startDayOfWeek = 6;
 
   const totalDays = lastDayOfMonth.getDate();
   const prevMonthLastDay = new Date(year, month, 0).getDate();
-
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
   const typeStyles = {
@@ -874,60 +878,46 @@ async function viewCalendario() {
 
       <div class="flex items-center gap-2">
         <div class="flex rounded-md border bg-card p-1">
-          <button class="rounded p-1.5 hover:bg-sunk" data-action="prev-month" title="Mes anterior">${icon('left')}</button>
+          <button class="rounded p-1.5 hover:bg-sunk" data-action="prev-month">${icon('left')}</button>
           <button class="rounded px-2.5 py-1 text-xs font-medium hover:bg-sunk" data-action="today-month">Hoy</button>
-          <button class="rounded p-1.5 hover:bg-sunk" data-action="next-month" title="Mes siguiente">${icon('right')}</button>
+          <button class="rounded p-1.5 hover:bg-sunk" data-action="next-month">${icon('right')}</button>
         </div>
         ${isTeacher() ? `<button class="btn btn-primary" data-action="new-event">${icon('plus')}Nuevo evento</button>` : ''}
       </div>
     </div>`;
 
-  // Grid del calendario
   html += `<div class="card overflow-hidden">
-    <div class="grid grid-cols-7 border-b bg-sunk text-center text-xs font-semibold uppercase tracking-wider py-2">
+    <div class="grid grid-cols-7 border-b bg-sunk text-center text-xs font-semibold uppercase py-2">
       ${daysOfWeek.map(d => `<div>${d}</div>`).join('')}
     </div>
     <div class="grid grid-cols-7 divide-x divide-y border-b">`;
 
-  // Días del mes previo
   for (let i = startDayOfWeek - 1; i >= 0; i--) {
-    const prevDayNum = prevMonthLastDay - i;
-    html += `<div class="min-h-[105px] bg-sunk/30 p-2 text-xs text-muted/50">
-      <span class="font-medium">${prevDayNum}</span>
-    </div>`;
+    html += `<div class="min-h-[95px] bg-sunk/30 p-2 text-xs text-muted/50">${prevMonthLastDay - i}</div>`;
   }
 
-  // Días del mes actual
-  const today = new Date();
+  const simulatedToday = getNow();
   for (let day = 1; day <= totalDays; day++) {
-    const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+    const isToday = simulatedToday.getFullYear() === year && simulatedToday.getMonth() === month && simulatedToday.getDate() === day;
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const dayEvents = state.events.filter(e => e.event_date === dateStr);
 
-    html += `<div class="min-h-[105px] p-2 text-xs flex flex-col justify-between transition-colors hover:bg-sunk/20 ${isToday ? 'bg-gold/5' : ''}">
-      <div class="flex items-center justify-between mb-1">
-        <span class="inline-grid h-6 w-6 place-items-center rounded-full font-semibold ${isToday ? 'bg-gold text-[#101A2E]' : 'text-ink'}">${day}</span>
-        ${dayEvents.length ? `<span class="text-[10px] text-muted font-medium">${dayEvents.length} ev.</span>` : ''}
-      </div>
-
-      <div class="space-y-1 overflow-y-auto max-h-[75px] mt-1">
-        ${dayEvents.map(ev => {
-          const style = typeStyles[ev.event_type] || typeStyles.Otro;
-          return `<div class="p-1 rounded text-[11px] font-medium leading-tight truncate ${style}" title="${esc(ev.title)} - ${esc(ev.event_type)}${ev.event_time ? ` (${esc(ev.event_time)})` : ''}">
-            <span class="font-bold">${esc(ev.event_time ? ev.event_time + ' ' : '')}</span>${esc(ev.title)}
-          </div>`;
-        }).join('')}
+    html += `<div class="min-h-[95px] p-2 text-xs flex flex-col justify-between ${isToday ? 'bg-gold/10' : ''}">
+      <span class="inline-grid h-6 w-6 place-items-center rounded-full font-semibold ${isToday ? 'bg-gold text-[#101A2E]' : ''}">${day}</span>
+      <div class="space-y-1 mt-1 max-h-[60px] overflow-y-auto">
+        ${dayEvents.map(ev => `
+          <div class="p-1 rounded text-[11px] truncate ${typeStyles[ev.event_type] || typeStyles.Otro}">
+            ${esc(ev.event_time ? ev.event_time + ' ' : '')}${esc(ev.title)}
+          </div>
+        `).join('')}
       </div>
     </div>`;
   }
 
-  // Rellenar días restantes para completar la última semana
   const totalSlots = startDayOfWeek + totalDays;
-  const remainingSlots = (7 - (totalSlots % 7)) % 7;
-  for (let nextDay = 1; nextDay <= remainingSlots; nextDay++) {
-    html += `<div class="min-h-[105px] bg-sunk/30 p-2 text-xs text-muted/50">
-      <span class="font-medium">${nextDay}</span>
-    </div>`;
+  const rem = (7 - (totalSlots % 7)) % 7;
+  for (let nextDay = 1; nextDay <= rem; nextDay++) {
+    html += `<div class="min-h-[95px] bg-sunk/30 p-2 text-xs text-muted/50">${nextDay}</div>`;
   }
 
   html += `</div></div></div>`;
@@ -974,17 +964,14 @@ const actions = {
     state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
     render();
   },
-
   async 'next-month'() {
     state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
     render();
   },
-
   async 'today-month'() {
-    state.calendarDate = new Date();
+    state.calendarDate = getNow();
     render();
   },
-
   async 'new-subject'() {
     openModal(
       'Nueva materia',
@@ -998,42 +985,6 @@ const actions = {
       }
     );
   },
-
-  async 'new-topic'() {
-    const subjectId = state.currentSubjectId;
-    openModal(
-      'Nuevo tema',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Título</span><input class="input" name="title" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>`,
-      'Crear',
-      async (fd) => {
-        await db.createTopic(subjectId, fd.get('title'), fd.get('description'));
-        toast('Tema creado');
-        render();
-      }
-    );
-  },
-
-  async 'upload-resource'() {
-    const subjectId = state.currentSubjectId;
-    const topics = await db.getTopics(subjectId);
-    openModal(
-      'Subir archivo',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Tema</span><select class="input" name="topic_id" required>${topics.map(t => `<option value="${esc(t.id)}">${esc(t.title)}</option>`).join('')}</select></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Título del documento</span><input class="input" name="title" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Archivo (máx 25 MB)</span><input class="input" type="file" name="file" required></label>`,
-      'Publicar',
-      async (fd) => {
-        const file = fd.get('file');
-        if (!file.size) throw new Error('Selecciona un archivo');
-        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error(`El archivo supera ${CONFIG.MAX_FILE_MB} MB`);
-        await db.uploadResource(fd.get('topic_id'), subjectId, fd.get('title'), file);
-        toast('Archivo publicado');
-        render();
-      }
-    );
-  },
-
   async 'new-announcement'() {
     openModal(
       'Nuevo aviso',
@@ -1052,33 +1003,32 @@ const actions = {
       }
     );
   },
-
   async 'new-assignment'() {
+    state.subjects = await db.getSubjects();
     openModal(
       'Nueva tarea',
       `<label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>${state.subjects.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select></label>
        <label class="block"><span class="block text-sm font-medium mb-1">Título</span><input class="input" name="title" required></label>
        <label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="kind"><option value="task">Tarea (entregable)</option><option value="exam">Evaluación</option></select></label>
        <label class="block"><span class="block text-sm font-medium mb-1">Fecha y hora límite</span><input class="input" type="datetime-local" name="due_date" required></label>`,
       'Publicar',
       async (fd) => {
-        await db.createAssignment(fd.get('subject_id'), fd.get('title'), fd.get('description'), fd.get('kind'), fd.get('due_date'));
+        await db.createAssignment(fd.get('subject_id'), fd.get('title'), fd.get('description'), 'task', fd.get('due_date'));
         toast('Tarea publicada');
         render();
       }
     );
   },
-
   async 'new-grade'() {
-    if (!state.students.length) state.students = await db.getStudents();
+    state.students = await db.getStudents();
+    state.subjects = await db.getSubjects();
     openModal(
       'Registrar nota',
       `<label class="block"><span class="block text-sm font-medium mb-1">Estudiante</span><select class="input" name="student_id" required>${state.students.map(s => `<option value="${esc(s.id)}">${esc(s.full_name)}</option>`).join('')}</select></label>
        <label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>${state.subjects.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select></label>
        <div class="grid grid-cols-2 gap-3">
-         <label class="block"><span class="block text-sm font-medium mb-1">Periodo 1</span><input class="input" type="number" name="period_1" min="0" max="10" step="0.01"></label>
-         <label class="block"><span class="block text-sm font-medium mb-1">Periodo 2</span><input class="input" type="number" name="period_2" min="0" max="10" step="0.01"></label>
+         <label class="block"><span class="block text-sm font-medium mb-1">Periodo 1</span><input class="input" type="number" name="period_1" min="0" max="5" step="0.1"></label>
+         <label class="block"><span class="block text-sm font-medium mb-1">Periodo 2</span><input class="input" type="number" name="period_2" min="0" max="5" step="0.1"></label>
        </div>`,
       'Guardar',
       async (fd) => {
@@ -1088,61 +1038,47 @@ const actions = {
       }
     );
   },
-
   async 'new-event'() {
+    state.subjects = await db.getSubjects();
     openModal(
       'Nuevo evento',
       `<label class="block"><span class="block text-sm font-medium mb-1">Título</span><input class="input" name="title" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>
        <label class="block"><span class="block text-sm font-medium mb-1">Fecha</span><input class="input" type="date" name="event_date" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Hora (opcional)</span><input class="input" type="time" name="event_time"></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="event_type"><option value="Examen">Examen</option><option value="Tarea">Tarea</option><option value="Quiz">Quiz</option><option value="Otro">Otro</option></select></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Materia (opcional)</span><select class="input" name="subject_id"><option value="">Sin materia</option>${state.subjects.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select></label>`,
+       <label class="block"><span class="block text-sm font-medium mb-1">Hora</span><input class="input" type="time" name="event_time"></label>
+       <label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="event_type"><option value="Examen">Examen</option><option value="Tarea">Tarea</option><option value="Quiz">Quiz</option><option value="Otro">Otro</option></select></label>`,
       'Crear',
       async (fd) => {
-        await db.createEvent(fd.get('title'), fd.get('description'), fd.get('event_date'), fd.get('event_time'), fd.get('event_type'), fd.get('subject_id') || null);
+        await db.createEvent(fd.get('title'), '', fd.get('event_date'), fd.get('event_time'), fd.get('event_type'), null);
         toast('Evento creado');
         render();
       }
     );
   },
-
   async 'submit-assignment'(btn) {
     const assignmentId = btn.dataset.id;
     openModal(
       'Entregar tarea',
       `<label class="block"><span class="block text-sm font-medium mb-1">Archivo</span><input class="input" type="file" name="file" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Comentario (opcional)</span><textarea class="input" name="comment" rows="3"></textarea></label>`,
+       <label class="block"><span class="block text-sm font-medium mb-1">Comentario</span><textarea class="input" name="comment" rows="3"></textarea></label>`,
       'Enviar',
       async (fd) => {
         const file = fd.get('file');
         if (!file.size) throw new Error('Selecciona un archivo');
-        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo es demasiado grande');
         await db.submitAssignment(assignmentId, file, fd.get('comment'));
         toast('Tarea entregada');
         render();
       }
     );
   },
-
   async 'view-submissions'(btn) {
-    const assignmentId = btn.dataset.id;
-    const subs = await db.getSubmissions(assignmentId);
-    let body = '';
-    if (subs.length) {
-      body = `<div class="space-y-3">`;
-      for (const s of subs) {
-        body += `<div class="p-3 border rounded bg-sunk"><p class="font-medium">${esc(s.profiles?.full_name || 'Estudiante')}</p>
-          <p class="text-xs text-muted mt-1">${esc(s.file_name)}</p>
-          <button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="${esc(s.file_path)}" data-name="${esc(s.file_name)}">${icon('download')}Descargar</button></div>`;
-      }
-      body += `</div>`;
-    } else {
-      body = `<p class="text-muted">Sin entregas aún</p>`;
-    }
+    const subs = await db.getSubmissions(btn.dataset.id);
+    let body = subs.length ? subs.map(s => `
+      <div class="p-3 border rounded bg-sunk mb-2">
+        <p class="font-medium">${esc(s.file_name)}</p>
+        <button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="${esc(s.file_path)}" data-name="${esc(s.file_name)}">${icon('download')}Descargar</button>
+      </div>`).join('') : '<p class="text-muted">Sin entregas aún.</p>';
     openModal('Entregas recibidas', body, null, null);
   },
-
   async 'download-file'(btn) {
     await withBusy(btn, () => downloadFile(btn.dataset.path, btn.dataset.name));
   }
@@ -1155,11 +1091,12 @@ document.addEventListener('click', async (e) => {
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
   const action = btn.dataset.action;
-  if (!(action in actions)) return;
-  try {
-    await actions[action](btn);
-  } catch (err) {
-    toast(errMsg(err), 'err');
+  if (actions[action]) {
+    try {
+      await actions[action](btn);
+    } catch (err) {
+      toast(errMsg(err), 'err');
+    }
   }
 });
 
@@ -1172,7 +1109,7 @@ $('#themeBtn')?.addEventListener('click', () => {
   try { localStorage.setItem('ac-theme', dark ? 'dark' : 'light'); } catch {}
 });
 
-$('#nav')?.addEventListener('click', async (e) => {
+$('#nav')?.addEventListener('click', (e) => {
   const a = e.target.closest('a[data-nav]');
   if (!a) return;
   e.preventDefault();
@@ -1191,23 +1128,31 @@ window.addEventListener('hashchange', () => {
   if (state.user) render();
 });
 
-NAV_ITEMS.forEach(([k]) => {
+NAV_ITEMS.forEach(([k, label]) => {
   const a = document.createElement('a');
   a.href = '#' + k;
   a.className = 'navlink';
   a.dataset.nav = k;
-  a.textContent = NAV_ITEMS.find(n => n[0] === k)[1];
+  a.textContent = label;
   $('#nav').append(a);
 });
 
-sb.auth.onAuthStateChange((_event, session) => {
-  setTimeout(() => handleSession(session), 0);
-});
+// Control de arranque limpio
+if (sb) {
+  sb.auth.onAuthStateChange((_event, session) => {
+    handleSession(session);
+  });
 
-setTimeout(async () => {
-  const { data } = await sb.auth.getSession();
-  handleSession(data.session);
-}, 500);
+  sb.auth.getSession().then(({ data }) => {
+    handleSession(data.session);
+  }).catch(() => {
+    $('#boot').hidden = true;
+    $('#auth').hidden = false;
+  });
+} else {
+  $('#boot').hidden = true;
+  $('#auth').hidden = false;
+}
 </script>
 </body>
 </html>
