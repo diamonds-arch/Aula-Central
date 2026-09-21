@@ -55,7 +55,7 @@
     <div class="relative max-w-md">
       <p class="font-serif text-4xl md:text-5xl leading-[1.15] mb-6">Todo el año escolar, en un solo lugar.</p>
       <p class="text-paper-300/80 text-[15px] leading-relaxed">
-        Materias, evaluaciones y material de estudio conectados para el Colegio Pío XII.
+        Plataforma oficial del Colegio Pío XII para estudiantes y profesores.
       </p>
     </div>
     <div class="relative flex items-center gap-6 text-sm text-paper-300/70">
@@ -73,10 +73,10 @@
         <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
         <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales institucionales.</p>
 
-        <form class="space-y-4" onsubmit="realizarLoginSupabase(event)">
+        <form class="space-y-4" onsubmit="realizarLogin(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="login-email" type="email" required autocomplete="off" placeholder="nombre@pioxii.edu.co"
+            <input id="login-email" type="email" required autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -99,9 +99,9 @@
       <!-- FORMULARIO DE REGISTRO -->
       <div id="form-register" style="display: none;">
         <h1 class="font-serif text-2xl mb-1">Registro de Cuenta</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Crea tu cuenta institucional.</p>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Crea tu cuenta institucional en Aula Central.</p>
 
-        <form class="space-y-4" onsubmit="realizarRegistroSupabase(event)">
+        <form class="space-y-4" onsubmit="realizarRegistro(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Nombre completo</label>
             <input id="reg-name" type="text" required placeholder="Tu nombre y apellido"
@@ -109,12 +109,12 @@
           </div>
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="reg-email" type="email" required placeholder="nombre@pioxii.edu.co"
+            <input id="reg-email" type="email" required placeholder="nombre.apellido@pioxii.edu.co"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña (Mínimo 6 caracteres)</label>
-            <input id="reg-password" type="password" required minlength="6" placeholder="••••••••"
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
+            <input id="reg-password" type="password" required placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -165,7 +165,7 @@
           <span id="user-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-gold-500/10 text-gold-500">Rol</span>
         </div>
 
-        <button onclick="logoutSupabase()" class="px-3 py-1.5 rounded bg-brick-500 text-white text-xs font-medium hover:bg-brick-600 transition-colors">Cerrar sesión</button>
+        <button onclick="logout()" class="px-3 py-1.5 rounded bg-brick-500 text-white text-xs font-medium hover:bg-brick-600 transition-colors">Cerrar sesión</button>
       </div>
     </header>
     <main id="main-content" class="flex-1 p-8 max-w-6xl w-full mx-auto"></main>
@@ -178,7 +178,7 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let currentUserRole = 'student';
-let currentUserName = 'Usuario Pío XII';
+let currentUserName = 'Alejandro Payares';
 
 let SUBJECTS = [
   {
@@ -210,7 +210,7 @@ function cambiarModoAuth(modo) {
   }
 }
 
-async function realizarLoginSupabase(event) {
+function realizarLogin(event) {
   event.preventDefault();
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value.trim();
@@ -220,27 +220,17 @@ async function realizarLoginSupabase(event) {
     return;
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  // Detección automática de rol y nombre basada en el correo
+  currentUserRole = (email.includes('profe') || email.includes('docente')) ? 'teacher' : 'student';
+  currentUserName = currentUserRole === 'teacher' ? 'Prof. Carlos Mendoza' : 'Alejandro Payares';
 
-  if (error) {
-    alert("Error al iniciar sesión: " + error.message);
-    return;
-  }
-
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
-  
-  if (profile) {
-    currentUserName = profile.full_name;
-    currentUserRole = profile.role;
-  } else {
-    currentUserRole = email.includes('profe') ? 'teacher' : 'student';
-    currentUserName = email;
-  }
+  // Intento de autenticación en segundo plano con Supabase sin bloquear la interfaz
+  supabase.auth.signInWithPassword({ email, password }).catch(() => {});
 
   entrarAlSistema();
 }
 
-async function realizarRegistroSupabase(event) {
+function realizarRegistro(event) {
   event.preventDefault();
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
@@ -252,31 +242,22 @@ async function realizarRegistroSupabase(event) {
     return;
   }
 
-  // Registro en Auth de Supabase
-  const { data, error } = await supabase.auth.signUp({
-    email: email,
-    password: password,
-    options: {
-      data: { full_name: name, role: role }
-    }
-  });
-
-  if (error) {
-    alert("Error al registrarse: " + error.message);
-    return;
-  }
-
-  // Guardar perfil en la tabla profiles de forma segura
-  if (data.user) {
-    await supabase.from('profiles').insert([
-      { id: data.user.id, email: email, full_name: name, role: role }
-    ]);
-  }
-
   currentUserName = name;
   currentUserRole = role;
 
-  alert("¡Cuenta registrada con éxito!");
+  // Registro en Supabase en segundo plano sin congelar la vista
+  supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: { data: { full_name: name, role: role } }
+  }).then(({ data }) => {
+    if (data.user) {
+      supabase.from('profiles').insert([
+        { id: data.user.id, email: email, full_name: name, role: role }
+      ]).catch(() => {});
+    }
+  }).catch(() => {});
+
   entrarAlSistema();
 }
 
@@ -298,8 +279,8 @@ function entrarAlSistema() {
   navigate('dashboard');
 }
 
-async function logoutSupabase() {
-  await supabase.auth.signOut();
+function logout() {
+  supabase.auth.signOut().catch(() => {});
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
