@@ -214,6 +214,7 @@ async function handleLogin(e) {
   state.currentUser = data.user;
   state.role = 'student';
 
+  // Transición visual directa garantizada
   document.getElementById('view-login').classList.add('hidden');
   document.getElementById('view-app').classList.remove('hidden');
   
