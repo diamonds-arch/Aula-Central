@@ -55,19 +55,23 @@
     </div>
     <div class="relative max-w-md">
       <p class="font-serif text-4xl md:text-5xl leading-[1.15] mb-6">Todo el año escolar, en un solo lugar.</p>
-      <p class="text-paper-300/80 text-[15px] leading-relaxed">Materias, evaluaciones y material de estudio conectados.</p>
+      <p class="text-paper-300/80 text-[15px] leading-relaxed">
+        Materias, evaluaciones y material de estudio conectados para estudiantes y profesores de tu colegio.
+      </p>
     </div>
     <div class="relative flex items-center gap-6 text-sm text-paper-300/70">
       <span>Colegio San Martín</span>
+      <span class="w-1 h-1 rounded-full bg-paper-300/40"></span>
+      <span>Año lectivo 2026</span>
     </div>
   </div>
 
   <div class="md:w-1/2 flex items-center justify-center p-8 md:p-14">
     <div class="w-full max-w-sm">
       <h1 class="font-serif text-2xl mb-1">Ingresar a Aula Central</h1>
-      <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-8">Usa tus credenciales de Supabase.</p>
+      <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-8">Usa tus credenciales de Supabase para continuar.</p>
 
-      <form id="login-form" class="space-y-4">
+      <div class="space-y-4">
         <div>
           <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
           <input id="login-email" type="email" required placeholder="nombre.apellido@colegio.edu"
@@ -78,10 +82,10 @@
           <input id="login-password" type="password" required placeholder="••••••••"
             class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
         </div>
-        <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
+        <button type="button" onclick="handleLoginSafe()" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
           Iniciar sesión
         </button>
-      </form>
+      </div>
     </div>
   </div>
 </div>
@@ -93,7 +97,7 @@
       <div class="w-7 h-7 rounded-sm bg-gold-500 flex items-center justify-center text-ink-900 font-serif font-bold text-sm">A</div>
       <span class="font-serif text-base">Aula Central</span>
     </div>
-    <nav class="flex-1 py-4">
+    <nav id="sidebar-nav" class="flex-1 py-4">
       <button onclick="navigate('dashboard')" data-nav="dashboard" class="sidebar-link active w-full flex items-center gap-3 px-5 py-2.5 text-sm border-l-2 border-gold-500 text-paper-50 bg-white/5">Mi panel</button>
       <button onclick="navigate('subjects')" data-nav="subjects" class="sidebar-link w-full flex items-center gap-3 px-5 py-2.5 text-sm border-l-2 border-transparent text-paper-300/80 hover:bg-white/5">Materias</button>
       <button onclick="navigate('search')" data-nav="search" class="sidebar-link w-full flex items-center gap-3 px-5 py-2.5 text-sm border-l-2 border-transparent text-paper-300/80 hover:bg-white/5">Buscar material</button>
@@ -116,11 +120,16 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE
 
 let SUBJECTS = [];
 
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+async function handleLoginSafe() {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
+  if (!email || !password) {
+    alert('Por favor ingresa tu correo y contraseña.');
+    return;
+  }
+
+  // Intentar login con Supabase
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   
   if (error) {
@@ -128,31 +137,34 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     return;
   }
 
-  // Ocultar login y mostrar la app de inmediato
+  // CAMBIO DE VISTA INMEDIATO (Garantizado sin bloqueos)
   document.getElementById('view-login').classList.add('hidden');
   document.getElementById('view-app').classList.remove('hidden');
   
-  await fetchSubjectsFromDB();
   navigate('dashboard');
-});
 
-async function fetchSubjectsFromDB() {
-  const { data: subjectsData, error } = await supabase.from('subjects').select('*, topics(*, documents(*))');
-  if (!error && subjectsData) {
-    SUBJECTS = subjectsData.map(s => ({
-      id: s.id,
-      name: s.name,
-      teacher: s.teacher_name,
-      color: s.color || 'forest',
-      progress: s.progress || 50,
-      nextExam: s.next_exam_date ? { date: s.next_exam_date, label: s.next_exam_label } : null,
-      topics: s.topics.map(t => ({
-        id: t.id,
-        name: t.name,
-        desc: t.description,
-        documents: t.documents.map(d => ({ name: d.name, url: d.file_url, size: d.file_size, ext: d.file_ext }))
-      }))
-    }));
+  // Cargar materias de forma segura después de entrar
+  try {
+    const { data: subjectsData } = await supabase.from('subjects').select('*, topics(*, documents(*))');
+    if (subjectsData) {
+      SUBJECTS = subjectsData.map(s => ({
+        id: s.id,
+        name: s.name,
+        teacher: s.teacher_name,
+        color: s.color || 'forest',
+        progress: s.progress || 50,
+        nextExam: s.next_exam_date ? { date: s.next_exam_date, label: s.next_exam_label } : null,
+        topics: (s.topics || []).map(t => ({
+          id: t.id,
+          name: t.name,
+          desc: t.description,
+          documents: (t.documents || []).map(d => ({ name: d.name, url: d.file_url, size: d.file_size, ext: d.file_ext }))
+        }))
+      }));
+      navigate('dashboard'); // Refrescar panel con datos reales
+    }
+  } catch (err) {
+    console.log("Aviso de carga de materias secundarias:", err);
   }
 }
 
@@ -168,7 +180,6 @@ function navigate(view, params) {
 
   document.querySelectorAll('.sidebar-link').forEach(el => {
     const isActive = el.dataset.nav === view;
-    el.classList.toggle('active', isActive);
     el.className = isActive 
       ? "sidebar-link active w-full flex items-center gap-3 px-5 py-2.5 text-sm border-l-2 border-gold-500 text-paper-50 bg-white/5"
       : "sidebar-link w-full flex items-center gap-3 px-5 py-2.5 text-sm border-l-2 border-transparent text-paper-300/80 hover:bg-white/5";
@@ -183,12 +194,12 @@ function navigate(view, params) {
           <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700">
             <h2 class="text-sm font-semibold mb-3 text-gold-500 uppercase">Tus Materias</h2>
             <div class="space-y-2">
-              ${SUBJECTS.map(s => `
+              ${SUBJECTS.length > 0 ? SUBJECTS.map(s => `
                 <button onclick="navigate('subject-detail','${s.id}')" class="w-full text-left p-3 bg-paper-100 dark:bg-ink-700 rounded border border-paper-300 dark:border-ink-600 hover:border-gold-500 transition-colors">
                   <p class="font-medium text-sm">${s.name}</p>
                   <p class="text-xs text-ink-500 dark:text-paper-300/70">${s.teacher}</p>
                 </button>
-              `).join('') || '<p class="text-sm">Cargando materias...</p>'}
+              `).join('') : '<p class="text-sm text-ink-500">Cargando materias desde la base de datos...</p>'}
             </div>
           </div>
         </div>
@@ -204,7 +215,7 @@ function navigate(view, params) {
               <h3 class="font-serif text-lg font-medium">${s.name}</h3>
               <p class="text-xs text-ink-500 dark:text-paper-300/70 mt-1">${s.teacher}</p>
             </button>
-          `).join('')}
+          `).join('') || '<p class="text-sm">Sin materias cargadas.</p>'}
         </div>
       </div>`;
   } else if (view === 'subject-detail') {
