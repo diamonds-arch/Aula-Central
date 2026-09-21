@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
     darkMode: 'class',
@@ -45,7 +44,7 @@
 </head>
 <body class="font-sans bg-paper-100 text-ink-900 dark:bg-ink-950 dark:text-paper-100 min-h-screen">
 
-<!-- ======================= LOGIN / REGISTER VIEW ======================= -->
+<!-- ======================= LOGIN VIEW ======================= -->
 <div id="view-login" style="display: flex;" class="min-h-screen flex-col md:flex-row">
   <div class="relative md:w-1/2 bg-ink-900 text-paper-100 flex flex-col justify-between p-8 md:p-14 overflow-hidden">
     <div class="relative flex items-center gap-2">
@@ -55,7 +54,7 @@
     <div class="relative max-w-md">
       <p class="font-serif text-4xl md:text-5xl leading-[1.15] mb-6">Todo el año escolar, en un solo lugar.</p>
       <p class="text-paper-300/80 text-[15px] leading-relaxed">
-        Plataforma oficial del Colegio Pío XII para estudiantes y profesores.
+        Materias, evaluaciones y material de estudio conectados para estudiantes y profesores.
       </p>
     </div>
     <div class="relative flex items-center gap-6 text-sm text-paper-300/70">
@@ -67,75 +66,24 @@
 
   <div class="md:w-1/2 flex items-center justify-center p-8 md:p-14">
     <div class="w-full max-w-sm">
-      
-      <!-- CONTENEDOR INICIO DE SESIÓN -->
-      <div id="box-login">
-        <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales institucionales.</p>
+      <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
+      <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales institucionales.</p>
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="login-email" type="email" autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
-              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-          </div>
-          <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
-            <input id="login-password" type="password" placeholder="••••••••"
-              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-          </div>
-          <button type="button" onclick="hacerLogin()" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
-            Iniciar sesión
-          </button>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
+          <input id="login-email" type="email" autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
+            class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
         </div>
-
-        <div class="mt-5 text-center">
-          <button type="button" onclick="cambiarVista('register')" class="text-xs text-gold-500 hover:underline">
-            ¿Nuevo usuario? Registrarse en el sistema
-          </button>
+        <div>
+          <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
+          <input id="login-password" type="password" placeholder="••••••••"
+            class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
         </div>
+        <button type="button" onclick="entrarPlataforma()" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
+          Iniciar sesión
+        </button>
       </div>
-
-      <!-- CONTENEDOR REGISTRO -->
-      <div id="box-register" style="display: none;">
-        <h1 class="font-serif text-2xl mb-1">Registro de Cuenta</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Crea tu cuenta institucional en Aula Central.</p>
-
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Nombre completo</label>
-            <input id="reg-name" type="text" placeholder="Tu nombre y apellido"
-              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-          </div>
-          <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="reg-email" type="email" placeholder="nombre.apellido@pioxii.edu.co"
-              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-          </div>
-          <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
-            <input id="reg-password" type="password" placeholder="••••••••"
-              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-          </div>
-          <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Tipo de usuario</label>
-            <select id="reg-role" class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-              <option value="student">Estudiante</option>
-              <option value="teacher">Profesor</option>
-            </select>
-          </div>
-          <button type="button" onclick="hacerRegistro()" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
-            Completar Registro
-          </button>
-        </div>
-
-        <div class="mt-5 text-center">
-          <button type="button" onclick="cambiarVista('login')" class="text-xs text-gold-500 hover:underline">
-            ¿Ya tienes una cuenta? Iniciar sesión
-          </button>
-        </div>
-      </div>
-
     </div>
   </div>
 </div>
@@ -159,12 +107,7 @@
       <div id="breadcrumb" class="text-sm font-medium">Mi panel</div>
       <div class="flex items-center gap-4">
         <button onclick="toggleDarkMode()" class="p-2 rounded hover:bg-paper-200 dark:hover:bg-ink-800" title="Cambiar tema">🌓</button>
-        
-        <div class="text-right">
-          <p id="header-user-name" class="text-xs font-bold text-ink-900 dark:text-paper-100">Usuario</p>
-          <span id="user-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-gold-500/10 text-gold-500">Rol</span>
-        </div>
-
+        <span id="user-display" class="text-xs font-semibold px-2.5 py-1 rounded bg-gold-500/10 text-gold-500">Estudiante (Colegio Pío XII)</span>
         <button onclick="logout()" class="px-3 py-1.5 rounded bg-brick-500 text-white text-xs font-medium hover:bg-brick-600 transition-colors">Cerrar sesión</button>
       </div>
     </header>
@@ -173,13 +116,6 @@
 </div>
 
 <script>
-const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
-let currentUserRole = 'student';
-let currentUserName = 'Alejandro Payares';
-
 let SUBJECTS = [
   {
     id: 'mat-1',
@@ -197,95 +133,38 @@ let SUBJECTS = [
     topics: [
       { name: 'Cinemática', desc: 'Movimiento rectilíneo uniforme y acelerado.', documents: [{ name: 'Formulas_Fisica.pdf', url: '#' }] }
     ]
+  },
+  {
+    id: 'esp-3',
+    name: 'Literatura',
+    teacher: 'Prof. Ana María Gómez',
+    topics: [
+      { name: 'Realismo Mágico', desc: 'Análisis de Doce cuentos peregrinos.', documents: [{ name: 'Resumen_GarciaMarquez.pdf', url: '#' }] }
+    ]
   }
 ];
 
-function cambiarVista(modo) {
-  const loginBox = document.getElementById('box-login');
-  const registerBox = document.getElementById('box-register');
-  
-  if (modo === 'register') {
-    loginBox.style.display = 'none';
-    registerBox.style.display = 'block';
-  } else {
-    registerBox.style.display = 'none';
-    loginBox.style.display = 'block';
-  }
-}
-
-function hacerLogin() {
+function entrarPlataforma() {
   const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-password').value.trim();
+  const password = document.getElementById('login-password').value.trim();
 
-  if (!email || !pass) {
-    alert("Por favor escribe tu correo y contraseña.");
+  if (!email || !password) {
+    alert("Por favor ingresa tu correo y contraseña.");
     return;
   }
 
-  currentUserRole = (email.includes('profe') || email.includes('docente')) ? 'teacher' : 'student';
-  currentUserName = currentUserRole === 'teacher' ? 'Prof. Carlos Mendoza' : 'Alejandro Payares';
-
-  // Autenticación en segundo plano con Supabase (sin bloqueos de red)
-  supabase.auth.signInWithPassword({ email, password: pass }).catch(() => {});
-
-  abrirPanelPrincipal();
-}
-
-function hacerRegistro() {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pass = document.getElementById('reg-password').value.trim();
-  const role = document.getElementById('reg-role').value;
-
-  if (!name || !email || !pass) {
-    alert("Por favor completa todos los campos del registro.");
-    return;
-  }
-
-  currentUserName = name;
-  currentUserRole = role;
-
-  // Registro en Supabase en segundo plano
-  supabase.auth.signUp({
-    email: email,
-    password: pass,
-    options: { data: { full_name: name, role: role } }
-  }).then(({ data }) => {
-    if (data.user) {
-      supabase.from('profiles').insert([
-        { id: data.user.id, email: email, full_name: name, role: role }
-      ]).catch(() => {});
-    }
-  }).catch(() => {});
-
-  abrirPanelPrincipal();
-}
-
-function abrirPanelPrincipal() {
+  // Cambio de pantalla fluido e inmediato
   document.getElementById('view-login').style.display = 'none';
   document.getElementById('view-app').style.display = 'flex';
-  
-  document.getElementById('header-user-name').textContent = currentUserName;
-
-  const badge = document.getElementById('user-badge');
-  if (currentUserRole === 'teacher') {
-    badge.textContent = 'Profesor';
-    badge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-forest-500/10 text-forest-500';
-  } else {
-    badge.textContent = 'Estudiante';
-    badge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-gold-500/10 text-gold-500';
-  }
+  document.getElementById('user-display').textContent = email;
 
   navigate('dashboard');
 }
 
 function logout() {
-  supabase.auth.signOut().catch(() => {});
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
-  document.getElementById('reg-password').value = '';
-  cambiarVista('login');
 }
 
 function toggleDarkMode() {
@@ -310,9 +189,7 @@ function navigate(view, params) {
         <h1 class="font-serif text-3xl mb-6">Panel Principal</h1>
         <div class="grid md:grid-cols-2 gap-6">
           <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
-            <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">
-              ${currentUserRole === 'teacher' ? 'Materias a tu cargo (Profesor)' : 'Tus Materias Activas'}
-            </h2>
+            <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">Tus Materias Activas</h2>
             <div class="space-y-3">
               ${SUBJECTS.map(s => `
                 <button onclick="navigate('subject-detail','${s.id}')" class="w-full text-left p-3.5 bg-paper-100 dark:bg-ink-700 rounded-md border border-paper-300 dark:border-ink-600 hover:border-gold-500 transition-all">
@@ -321,12 +198,11 @@ function navigate(view, params) {
                 </button>
               `).join('')}
             </div>
-            ${currentUserRole === 'teacher' ? '<button class="mt-4 w-full py-2 bg-gold-500 text-ink-900 rounded text-xs font-semibold hover:bg-gold-400">+ Subir nuevo material</button>' : ''}
           </div>
           <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
             <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">Avisos del Colegio Pío XII</h2>
             <p class="text-sm text-ink-600 dark:text-paper-300 leading-relaxed">
-              ${currentUserRole === 'teacher' ? 'Estimado docente, recuerda cargar las guías y notas del periodo.' : 'Bienvenido al periodo lectivo 2026. Revisa el material de estudio disponible.'}
+              Bienvenido al periodo lectivo 2026. Recuerda revisar el material de estudio disponible en cada materia para las próximas evaluaciones.
             </p>
           </div>
         </div>
@@ -352,7 +228,7 @@ function navigate(view, params) {
     main.innerHTML = `
       <div class="transition-view">
         <h1 class="font-serif text-3xl mb-1">${s.name}</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Docente: ${s.teacher}</p>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Docente a cargo: ${s.teacher}</p>
         <div class="space-y-4">
           ${s.topics.map(t => `
             <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
@@ -368,7 +244,6 @@ function navigate(view, params) {
               </div>
             </div>
           `).join('')}
-          ${currentUserRole === 'teacher' ? '<button class="px-4 py-2 bg-forest-500 text-white rounded text-xs font-semibold">+ Agregar nuevo tema</button>' : ''}
         </div>
       </div>`;
   } else if (view === 'search') {
@@ -377,6 +252,7 @@ function navigate(view, params) {
       <div class="transition-view">
         <h1 class="font-serif text-2xl mb-4">Buscador de recursos</h1>
         <input type="text" placeholder="Escribe el nombre de un tema o materia..." class="w-full p-3.5 rounded-lg border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm focus:border-gold-500 mb-6"/>
+        <p class="text-xs text-ink-500 dark:text-paper-300/60">Utiliza las palabras clave para encontrar guías y documentos rápidamente.</p>
       </div>`;
   }
 }
