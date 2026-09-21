@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Cliente oficial de Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
     darkMode: 'class',
@@ -75,7 +77,7 @@
         <form class="space-y-4" onsubmit="realizarLogin(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="login-email" type="email" required autocomplete="off" value="j.a.proyect777@gmail.com"
+            <input id="login-email" type="email" required autocomplete="off" 
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -83,7 +85,7 @@
             <input id="login-password" type="password" required placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
+          <button id="btn-submit-login" type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
             Entrar
           </button>
         </form>
@@ -112,8 +114,8 @@
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
-            <input id="reg-password" type="password" required placeholder="••••••••"
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña (Mínimo 6 caracteres)</label>
+            <input id="reg-password" type="password" required minlength="6" placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -123,7 +125,7 @@
               <option value="teacher">Profesor</option>
             </select>
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
+          <button id="btn-submit-register" type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
             Registrarse
           </button>
         </form>
@@ -173,35 +175,19 @@
 </div>
 
 <script>
-let currentUserRole = 'student';
-let currentUserName = 'Alejandro Payares';
+// --- CONEXIÓN A SUPABASE ---
+const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; 
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+let currentUserRole = 'student';
+let currentUserName = 'Usuario';
+
+// DATOS DE EJEMPLO DEL DASHBOARD
 let SUBJECTS = [
-  {
-    id: 'mat-1',
-    name: 'Matemáticas',
-    teacher: 'Prof. Carlos Mendoza',
-    topics: [
-      { name: 'Álgebra Avanzada', desc: 'Ecuaciones cuadráticas y sistemas de 2x2.', documents: [{ name: 'Guía_Algebra.pdf', url: '#' }] },
-      { name: 'Trigonometría', desc: 'Razones trigonométricas y teorema de Pitágoras.', documents: [{ name: 'Ejercicios_Trigo.pdf', url: '#' }] }
-    ]
-  },
-  {
-    id: 'fis-2',
-    name: 'Física',
-    teacher: 'Prof. Elena Restrepo',
-    topics: [
-      { name: 'Cinemática', desc: 'Movimiento rectilíneo uniforme y acelerado.', documents: [{ name: 'Formulas_Fisica.pdf', url: '#' }] }
-    ]
-  },
-  {
-    id: 'lit-3',
-    name: 'Literatura',
-    teacher: 'Prof. Ana María Gómez',
-    topics: [
-      { name: 'Realismo Mágico', desc: 'Análisis de obras hispanoamericanas.', documents: [{ name: 'Lectura_GarciaMarquez.pdf', url: '#' }] }
-    ]
-  }
+  { id: 'mat-1', name: 'Matemáticas', teacher: 'Prof. Carlos Mendoza', topics: [{ name: 'Álgebra Avanzada', desc: 'Ecuaciones cuadráticas y sistemas de 2x2.', documents: [{ name: 'Guía_Algebra.pdf', url: '#' }] }] },
+  { id: 'fis-2', name: 'Física', teacher: 'Prof. Elena Restrepo', topics: [{ name: 'Cinemática', desc: 'Movimiento rectilíneo uniforme y acelerado.', documents: [{ name: 'Formulas_Fisica.pdf', url: '#' }] }] },
+  { id: 'lit-3', name: 'Literatura', teacher: 'Prof. Ana María Gómez', topics: [{ name: 'Realismo Mágico', desc: 'Análisis de obras hispanoamericanas.', documents: [{ name: 'Lectura_GarciaMarquez.pdf', url: '#' }] }] }
 ];
 
 let GRADES = [
@@ -226,45 +212,103 @@ function cambiarModoAuth(modo) {
   }
 }
 
-function realizarLogin(event) {
-  event.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+// ================= LÓGICA BLINDADA DE SUPABASE =================
 
-  if (!email || !password) {
-    alert("Por favor completa ambos campos.");
-    return;
+// 1. INICIAR SESIÓN
+async function realizarLogin(event) {
+  event.preventDefault(); // Evita que la página se recargue
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const btn = document.getElementById('btn-submit-login');
+
+  if (!email || !password) return;
+
+  btn.textContent = "Conectando...";
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+      alert("Error al iniciar sesión: " + error.message);
+      btn.textContent = "Entrar";
+      btn.disabled = false;
+      return; // Detenemos la ejecución aquí si hay error
+    }
+
+    // Buscamos el perfil sin bloquear. Si falla, usamos el correo como fallback
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+    
+    if (profile) {
+      currentUserName = profile.full_name;
+      currentUserRole = profile.role;
+    } else {
+      currentUserName = email.split('@')[0];
+      currentUserRole = email.includes('profe') ? 'teacher' : 'student';
+    }
+
+    btn.textContent = "Entrar";
+    btn.disabled = false;
+    entrarAlSistema();
+
+  } catch (err) {
+    alert("Hubo un error inesperado de conexión.");
+    btn.textContent = "Entrar";
+    btn.disabled = false;
   }
-
-  if (email.includes('profe') || email.includes('docente')) {
-    currentUserRole = 'teacher';
-    currentUserName = 'Prof. Carlos Mendoza';
-  } else {
-    currentUserRole = 'student';
-    currentUserName = 'Alejandro Payares';
-  }
-
-  entrarAlSistema();
 }
 
-function realizarRegistro(event) {
-  event.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
+// 2. REGISTRO
+async function realizarRegistro(event) {
+  event.preventDefault(); // Evita que la página se recargue
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value.trim();
   const role = document.getElementById('reg-role').value;
+  const btn = document.getElementById('btn-submit-register');
 
-  if (!name || !email || !password) {
-    alert("Por favor completa todos los campos para registrarte.");
-    return;
+  if (!name || !email || !password) return;
+
+  btn.textContent = "Registrando...";
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: { data: { full_name: name, role: role } }
+    });
+
+    if (error) {
+      alert("Error al registrarse: " + error.message);
+      btn.textContent = "Registrarse";
+      btn.disabled = false;
+      return; // Detenemos la ejecución aquí si hay error
+    }
+
+    // Guardamos en 'profiles' en segundo plano, sin esperar (non-blocking)
+    if (data.user) {
+      supabase.from('profiles').insert([
+        { id: data.user.id, email: email, full_name: name, role: role }
+      ]).catch(e => console.log("Profile no guardado:", e));
+    }
+
+    currentUserName = name;
+    currentUserRole = role;
+
+    btn.textContent = "Registrarse";
+    btn.disabled = false;
+    alert("¡Cuenta creada con éxito! Bienvenido a Aula Central.");
+    entrarAlSistema();
+
+  } catch (err) {
+    alert("Hubo un error inesperado al registrarte.");
+    btn.textContent = "Registrarse";
+    btn.disabled = false;
   }
-
-  currentUserName = name;
-  currentUserRole = role;
-
-  alert("¡Cuenta creada con éxito! Bienvenido a Aula Central.");
-  entrarAlSistema();
 }
+
+// ================= NAVEGACIÓN (INTACTA) =================
 
 function entrarAlSistema() {
   document.getElementById('view-login').style.display = 'none';
@@ -284,10 +328,12 @@ function entrarAlSistema() {
   navigate('dashboard');
 }
 
-function logout() {
+async function logout() {
+  await supabase.auth.signOut();
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
+  document.getElementById('reg-password').value = '';
   cambiarModoAuth('login');
 }
 
