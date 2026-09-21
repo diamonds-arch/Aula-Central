@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aula Central — Campus Virtual</title>
+<title>Aula Central — Colegio Pío XII</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -44,7 +44,7 @@
 </head>
 <body class="font-sans bg-paper-100 text-ink-900 dark:bg-ink-950 dark:text-paper-100 min-h-screen">
 
-<!-- ======================= LOGIN VIEW ======================= -->
+<!-- ======================= LOGIN / REGISTER VIEW ======================= -->
 <div id="view-login" style="display: flex;" class="min-h-screen flex-col md:flex-row">
   <div class="relative md:w-1/2 bg-ink-900 text-paper-100 flex flex-col justify-between p-8 md:p-14 overflow-hidden">
     <div class="relative flex items-center gap-2">
@@ -54,7 +54,7 @@
     <div class="relative max-w-md">
       <p class="font-serif text-4xl md:text-5xl leading-[1.15] mb-6">Todo el año escolar, en un solo lugar.</p>
       <p class="text-paper-300/80 text-[15px] leading-relaxed">
-        Materias, evaluaciones y material de estudio conectados para estudiantes y profesores.
+        Plataforma oficial del Colegio Pío XII para estudiantes y profesores.
       </p>
     </div>
     <div class="relative flex items-center gap-6 text-sm text-paper-300/70">
@@ -66,37 +66,75 @@
 
   <div class="md:w-1/2 flex items-center justify-center p-8 md:p-14">
     <div class="w-full max-w-sm">
-      <h1 class="font-serif text-2xl mb-1">Ingresar a Aula Central</h1>
-      <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales para continuar.</p>
+      
+      <!-- FORMULARIO DE INICIO DE SESIÓN -->
+      <div id="form-login-container">
+        <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Ingresa a tu cuenta de Aula Central.</p>
 
-      <form id="login-form" class="space-y-4" onsubmit="realizarLogin(event)">
-        <div>
-          <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-          <input id="login-email" type="email" required autocomplete="off" value="j.a.proyect777@gmail.com"
-            class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-        </div>
-        <div>
-          <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
-          <input id="login-password" type="password" required placeholder="••••••••"
-            class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
-        </div>
-        <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
-          Iniciar sesión
-        </button>
-      </form>
-
-      <!-- Botones de prueba rápida -->
-      <div class="mt-6 pt-6 border-t border-paper-300 dark:border-ink-700">
-        <p class="text-xs text-ink-500 dark:text-paper-300/60 mb-3 text-center">Accesos rápidos de prueba:</p>
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="probarRol('student')" class="py-2 px-3 rounded bg-paper-200 dark:bg-ink-800 text-xs font-medium hover:bg-gold-500 hover:text-ink-900 transition-colors">
-            👨‍🎓 Entrar como Estudiante
+        <form class="space-y-4" onsubmit="realizarLogin(event)">
+          <div>
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
+            <input id="login-email" type="email" required autocomplete="off" value="j.a.proyect777@gmail.com"
+              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
+            <input id="login-password" type="password" required placeholder="••••••••"
+              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
+            Entrar
           </button>
-          <button type="button" onclick="probarRol('teacher')" class="py-2 px-3 rounded bg-paper-200 dark:bg-ink-800 text-xs font-medium hover:bg-gold-500 hover:text-ink-900 transition-colors">
-            👨‍🏫 Entrar como Profesor
+        </form>
+
+        <div class="mt-4 text-center">
+          <button type="button" onclick="cambiarModoAuth('register')" class="text-xs text-gold-500 hover:underline">
+            ¿No tienes cuenta? Regístrate aquí
           </button>
         </div>
       </div>
+
+      <!-- FORMULARIO DE REGISTRO -->
+      <div id="form-register-container" style="display: none;">
+        <h1 class="font-serif text-2xl mb-1">Crear Cuenta</h1>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Regístrate en el sistema de Aula Central.</p>
+
+        <form class="space-y-4" onsubmit="realizarRegistro(event)">
+          <div>
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Nombre completo</label>
+            <input id="reg-name" type="text" required placeholder="Tu nombre y apellido"
+              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
+            <input id="reg-email" type="email" required placeholder="nombre.apellido@pioxii.edu.co"
+              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
+            <input id="reg-password" type="password" required placeholder="••••••••"
+              class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Tipo de usuario</label>
+            <select id="reg-role" class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
+              <option value="student">Estudiante</option>
+              <option value="teacher">Profesor</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
+            Registrarse
+          </button>
+        </form>
+
+        <div class="mt-4 text-center">
+          <button type="button" onclick="cambiarModoAuth('login')" class="text-xs text-gold-500 hover:underline">
+            ¿Ya tienes una cuenta? Inicia sesión
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -120,7 +158,12 @@
       <div id="breadcrumb" class="text-sm font-medium">Mi panel</div>
       <div class="flex items-center gap-4">
         <button onclick="toggleDarkMode()" class="p-2 rounded hover:bg-paper-200 dark:hover:bg-ink-800" title="Cambiar tema">🌓</button>
-        <span id="user-badge" class="text-xs font-semibold px-2.5 py-1 rounded bg-gold-500/10 text-gold-500">Estudiante</span>
+        
+        <div class="text-right">
+          <p id="header-user-name" class="text-xs font-bold text-ink-900 dark:text-paper-100">Usuario</p>
+          <span id="user-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-gold-500/10 text-gold-500">Rol</span>
+        </div>
+
         <button onclick="logout()" class="px-3 py-1.5 rounded bg-brick-500 text-white text-xs font-medium hover:bg-brick-600 transition-colors">Cerrar sesión</button>
       </div>
     </header>
@@ -129,7 +172,8 @@
 </div>
 
 <script>
-let currentUserRole = 'student'; // 'student' o 'teacher'
+let currentUserRole = 'student';
+let currentUserName = 'Alejandro Payares';
 
 let SUBJECTS = [
   {
@@ -137,8 +181,7 @@ let SUBJECTS = [
     name: 'Matemáticas',
     teacher: 'Prof. Carlos Mendoza',
     topics: [
-      { name: 'Álgebra Avanzada', desc: 'Ecuaciones cuadráticas y sistemas de 2x2.', documents: [{ name: 'Guía_Algebra.pdf', url: '#' }] },
-      { name: 'Trigonometría', desc: 'Razones trigonométricas y teorema de Pitágoras.', documents: [{ name: 'Ejercicios_Trigo.pdf', url: '#' }] }
+      { name: 'Álgebra Avanzada', desc: 'Ecuaciones cuadráticas y sistemas de 2x2.', documents: [{ name: 'Guía_Algebra.pdf', url: '#' }] }
     ]
   },
   {
@@ -148,16 +191,18 @@ let SUBJECTS = [
     topics: [
       { name: 'Cinemática', desc: 'Movimiento rectilíneo uniforme y acelerado.', documents: [{ name: 'Formulas_Fisica.pdf', url: '#' }] }
     ]
-  },
-  {
-    id: 'esp-3',
-    name: 'Literatura',
-    teacher: 'Prof. Ana María Gómez',
-    topics: [
-      { name: 'Realismo Mágico', desc: 'Análisis de Doce cuentos peregrinos.', documents: [{ name: 'Resumen_GarciaMarquez.pdf', url: '#' }] }
-    ]
   }
 ];
+
+function cambiarModoAuth(modo) {
+  if (modo === 'register') {
+    document.getElementById('form-login-container').style.display = 'none';
+    document.getElementById('form-register-container').style.display = 'block';
+  } else {
+    document.getElementById('form-register-container').style.display = 'none';
+    document.getElementById('form-login-container').style.display = 'block';
+  }
+}
 
 function realizarLogin(event) {
   event.preventDefault();
@@ -169,19 +214,33 @@ function realizarLogin(event) {
     return;
   }
 
-  // Detectar si el correo contiene 'profe' o 'docente' para asignarle rol de profesor automáticamente, sino estudiante
-  currentUserRole = email.includes('profe') || email.includes('docente') ? 'teacher' : 'student';
+  if (email.includes('profe') || email.includes('docente')) {
+    currentUserRole = 'teacher';
+    currentUserName = 'Prof. Carlos Mendoza';
+  } else {
+    currentUserRole = 'student';
+    currentUserName = 'Alejandro Payares';
+  }
+
   entrarAlSistema();
 }
 
-function probarRol(rol) {
-  currentUserRole = rol;
-  if (rol === 'teacher') {
-    document.getElementById('login-email').value = 'profesor.carlos@pioxii.edu.co';
-  } else {
-    document.getElementById('login-email').value = 'j.a.proyect777@gmail.com';
+function realizarRegistro(event) {
+  event.preventDefault();
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
+  const password = document.getElementById('reg-password').value;
+  const role = document.getElementById('reg-role').value;
+
+  if (!name || !email || !password) {
+    alert("Por favor completa todos los campos para registrarte.");
+    return;
   }
-  document.getElementById('login-password').value = '••••••••';
+
+  currentUserName = name;
+  currentUserRole = role;
+
+  alert("¡Cuenta creada con éxito! Bienvenido a Aula Central.");
   entrarAlSistema();
 }
 
@@ -189,13 +248,15 @@ function entrarAlSistema() {
   document.getElementById('view-login').style.display = 'none';
   document.getElementById('view-app').style.display = 'flex';
   
+  document.getElementById('header-user-name').textContent = currentUserName;
+
   const badge = document.getElementById('user-badge');
   if (currentUserRole === 'teacher') {
-    badge.textContent = 'Profesor (Colegio Pío XII)';
-    badge.className = 'text-xs font-semibold px-2.5 py-1 rounded bg-forest-500/10 text-forest-500';
+    badge.textContent = 'Profesor';
+    badge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-forest-500/10 text-forest-500';
   } else {
-    badge.textContent = 'Estudiante (Colegio Pío XII)';
-    badge.className = 'text-xs font-semibold px-2.5 py-1 rounded bg-gold-500/10 text-gold-500';
+    badge.textContent = 'Estudiante';
+    badge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded bg-gold-500/10 text-gold-500';
   }
 
   navigate('dashboard');
@@ -205,6 +266,7 @@ function logout() {
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
+  cambiarModoAuth('login');
 }
 
 function toggleDarkMode() {
@@ -245,7 +307,7 @@ function navigate(view, params) {
           <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
             <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">Avisos del Colegio Pío XII</h2>
             <p class="text-sm text-ink-600 dark:text-paper-300 leading-relaxed">
-              ${currentUserRole === 'teacher' ? 'Estimado docente, recuerda cargar las calificaciones y guías del periodo antes del viernes.' : 'Bienvenido al periodo lectivo 2026. Recuerda revisar el material de estudio disponible en cada materia.'}
+              ${currentUserRole === 'teacher' ? 'Estimado docente, recuerda cargar las guías y notas del periodo.' : 'Bienvenido al periodo lectivo 2026. Revisa el material de estudio disponible.'}
             </p>
           </div>
         </div>
@@ -271,7 +333,7 @@ function navigate(view, params) {
     main.innerHTML = `
       <div class="transition-view">
         <h1 class="font-serif text-3xl mb-1">${s.name}</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Docente a cargo: ${s.teacher}</p>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Docente: ${s.teacher}</p>
         <div class="space-y-4">
           ${s.topics.map(t => `
             <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
@@ -287,7 +349,7 @@ function navigate(view, params) {
               </div>
             </div>
           `).join('')}
-          ${currentUserRole === 'teacher' ? '<button class="px-4 py-2 bg-forest-500 text-white rounded text-xs font-semibold">+ Agregar nuevo tema o guía</button>' : ''}
+          ${currentUserRole === 'teacher' ? '<button class="px-4 py-2 bg-forest-500 text-white rounded text-xs font-semibold">+ Agregar nuevo tema</button>' : ''}
         </div>
       </div>`;
   } else if (view === 'search') {
@@ -296,7 +358,6 @@ function navigate(view, params) {
       <div class="transition-view">
         <h1 class="font-serif text-2xl mb-4">Buscador de recursos</h1>
         <input type="text" placeholder="Escribe el nombre de un tema o materia..." class="w-full p-3.5 rounded-lg border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm focus:border-gold-500 mb-6"/>
-        <p class="text-xs text-ink-500 dark:text-paper-300/60">Utiliza las palabras clave para encontrar guías y documentos rápidamente.</p>
       </div>`;
   }
 }
