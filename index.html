@@ -54,11 +54,11 @@
     <div class="relative max-w-md">
       <p class="font-serif text-4xl md:text-5xl leading-[1.15] mb-6">Todo el año escolar, en un solo lugar.</p>
       <p class="text-paper-300/80 text-[15px] leading-relaxed">
-        Materias, evaluaciones y material de estudio conectados para estudiantes y profesores de tu colegio.
+        Materias, evaluaciones y material de estudio conectados para estudiantes y profesores.
       </p>
     </div>
     <div class="relative flex items-center gap-6 text-sm text-paper-300/70">
-      <span>Colegio San Martín</span>
+      <span>Colegio Pío XII</span>
       <span class="w-1 h-1 rounded-full bg-paper-300/40"></span>
       <span>Año lectivo 2026</span>
     </div>
@@ -67,7 +67,7 @@
   <div class="md:w-1/2 flex items-center justify-center p-8 md:p-14">
     <div class="w-full max-w-sm">
       <h1 class="font-serif text-2xl mb-1">Ingresar a Aula Central</h1>
-      <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-8">Usa tus credenciales para continuar.</p>
+      <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales para continuar.</p>
 
       <form id="login-form" class="space-y-4" onsubmit="realizarLogin(event)">
         <div>
@@ -84,6 +84,19 @@
           Iniciar sesión
         </button>
       </form>
+
+      <!-- Botones de prueba rápida -->
+      <div class="mt-6 pt-6 border-t border-paper-300 dark:border-ink-700">
+        <p class="text-xs text-ink-500 dark:text-paper-300/60 mb-3 text-center">Accesos rápidos de prueba:</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="probarRol('student')" class="py-2 px-3 rounded bg-paper-200 dark:bg-ink-800 text-xs font-medium hover:bg-gold-500 hover:text-ink-900 transition-colors">
+            👨‍🎓 Entrar como Estudiante
+          </button>
+          <button type="button" onclick="probarRol('teacher')" class="py-2 px-3 rounded bg-paper-200 dark:bg-ink-800 text-xs font-medium hover:bg-gold-500 hover:text-ink-900 transition-colors">
+            👨‍🏫 Entrar como Profesor
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -107,7 +120,7 @@
       <div id="breadcrumb" class="text-sm font-medium">Mi panel</div>
       <div class="flex items-center gap-4">
         <button onclick="toggleDarkMode()" class="p-2 rounded hover:bg-paper-200 dark:hover:bg-ink-800" title="Cambiar tema">🌓</button>
-        <span id="user-badge" class="text-xs text-ink-500 dark:text-paper-300">Estudiante</span>
+        <span id="user-badge" class="text-xs font-semibold px-2.5 py-1 rounded bg-gold-500/10 text-gold-500">Estudiante</span>
         <button onclick="logout()" class="px-3 py-1.5 rounded bg-brick-500 text-white text-xs font-medium hover:bg-brick-600 transition-colors">Cerrar sesión</button>
       </div>
     </header>
@@ -116,7 +129,8 @@
 </div>
 
 <script>
-// Materias y contenidos formales de la plataforma
+let currentUserRole = 'student'; // 'student' o 'teacher'
+
 let SUBJECTS = [
   {
     id: 'mat-1',
@@ -147,7 +161,6 @@ let SUBJECTS = [
 
 function realizarLogin(event) {
   event.preventDefault();
-  
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
@@ -156,14 +169,36 @@ function realizarLogin(event) {
     return;
   }
 
-  // Validación de acceso directo y fluido sin bloqueos de red externos
-  if (email === "j.a.proyect777@gmail.com") {
-    document.getElementById('view-login').style.display = 'none';
-    document.getElementById('view-app').style.display = 'flex';
-    navigate('dashboard');
+  // Detectar si el correo contiene 'profe' o 'docente' para asignarle rol de profesor automáticamente, sino estudiante
+  currentUserRole = email.includes('profe') || email.includes('docente') ? 'teacher' : 'student';
+  entrarAlSistema();
+}
+
+function probarRol(rol) {
+  currentUserRole = rol;
+  if (rol === 'teacher') {
+    document.getElementById('login-email').value = 'profesor.carlos@pioxii.edu.co';
   } else {
-    alert("Correo no autorizado.");
+    document.getElementById('login-email').value = 'j.a.proyect777@gmail.com';
   }
+  document.getElementById('login-password').value = '••••••••';
+  entrarAlSistema();
+}
+
+function entrarAlSistema() {
+  document.getElementById('view-login').style.display = 'none';
+  document.getElementById('view-app').style.display = 'flex';
+  
+  const badge = document.getElementById('user-badge');
+  if (currentUserRole === 'teacher') {
+    badge.textContent = 'Profesor (Colegio Pío XII)';
+    badge.className = 'text-xs font-semibold px-2.5 py-1 rounded bg-forest-500/10 text-forest-500';
+  } else {
+    badge.textContent = 'Estudiante (Colegio Pío XII)';
+    badge.className = 'text-xs font-semibold px-2.5 py-1 rounded bg-gold-500/10 text-gold-500';
+  }
+
+  navigate('dashboard');
 }
 
 function logout() {
@@ -194,7 +229,9 @@ function navigate(view, params) {
         <h1 class="font-serif text-3xl mb-6">Panel Principal</h1>
         <div class="grid md:grid-cols-2 gap-6">
           <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
-            <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">Tus Materias Activas</h2>
+            <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">
+              ${currentUserRole === 'teacher' ? 'Materias a tu cargo (Profesor)' : 'Tus Materias Activas'}
+            </h2>
             <div class="space-y-3">
               ${SUBJECTS.map(s => `
                 <button onclick="navigate('subject-detail','${s.id}')" class="w-full text-left p-3.5 bg-paper-100 dark:bg-ink-700 rounded-md border border-paper-300 dark:border-ink-600 hover:border-gold-500 transition-all">
@@ -203,11 +240,12 @@ function navigate(view, params) {
                 </button>
               `).join('')}
             </div>
+            ${currentUserRole === 'teacher' ? '<button class="mt-4 w-full py-2 bg-gold-500 text-ink-900 rounded text-xs font-semibold hover:bg-gold-400">+ Subir nuevo material</button>' : ''}
           </div>
           <div class="p-5 bg-white dark:bg-ink-800 rounded-lg border border-paper-300 dark:border-ink-700 shadow-sm">
-            <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">Avisos del Colegio</h2>
+            <h2 class="text-sm font-semibold mb-4 text-gold-500 uppercase tracking-wider">Avisos del Colegio Pío XII</h2>
             <p class="text-sm text-ink-600 dark:text-paper-300 leading-relaxed">
-              Bienvenido al periodo lectivo 2026. Recuerda revisar el material de estudio disponible en cada materia para las próximas evaluaciones.
+              ${currentUserRole === 'teacher' ? 'Estimado docente, recuerda cargar las calificaciones y guías del periodo antes del viernes.' : 'Bienvenido al periodo lectivo 2026. Recuerda revisar el material de estudio disponible en cada materia.'}
             </p>
           </div>
         </div>
@@ -249,6 +287,7 @@ function navigate(view, params) {
               </div>
             </div>
           `).join('')}
+          ${currentUserRole === 'teacher' ? '<button class="px-4 py-2 bg-forest-500 text-white rounded text-xs font-semibold">+ Agregar nuevo tema o guía</button>' : ''}
         </div>
       </div>`;
   } else if (view === 'search') {
