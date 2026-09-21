@@ -46,7 +46,7 @@
 <body class="font-sans bg-paper-100 text-ink-900 dark:bg-ink-950 dark:text-paper-100 min-h-screen">
 
 <!-- ======================= LOGIN / REGISTER VIEW ======================= -->
-<div id="view-login" class="min-h-screen flex flex-col md:flex-row">
+<div id="view-login" style="display: flex;" class="min-h-screen flex-col md:flex-row">
   <div class="relative md:w-1/2 bg-ink-900 text-paper-100 flex flex-col justify-between p-8 md:p-14 overflow-hidden">
     <div class="relative flex items-center gap-2">
       <div class="w-8 h-8 rounded-sm bg-gold-500 flex items-center justify-center text-ink-900 font-serif font-bold">A</div>
@@ -68,40 +68,40 @@
   <div class="md:w-1/2 flex items-center justify-center p-8 md:p-14">
     <div class="w-full max-w-sm">
       
-      <!-- FORMULARIO DE INICIO DE SESIÓN -->
-      <div id="form-login">
+      <!-- CONTENEDOR INICIO DE SESIÓN -->
+      <div id="box-login">
         <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
         <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Usa tus credenciales institucionales.</p>
 
-        <form class="space-y-4" onsubmit="ejecutarAccion(event, 'login')">
+        <div class="space-y-4">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="login-email" type="email" required autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
+            <input id="login-email" type="email" autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
-            <input id="login-password" type="password" required placeholder="••••••••"
+            <input id="login-password" type="password" placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
+          <button type="button" onclick="hacerLogin()" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
             Iniciar sesión
           </button>
-        </form>
+        </div>
 
         <div class="mt-5 text-center">
-          <button type="button" onclick="alternarFormulario('register')" class="text-xs text-gold-500 hover:underline">
+          <button type="button" onclick="cambiarVista('register')" class="text-xs text-gold-500 hover:underline">
             ¿Nuevo usuario? Registrarse en el sistema
           </button>
         </div>
       </div>
 
-      <!-- FORMULARIO DE REGISTRO -->
-      <div id="form-register" style="display: none;">
+      <!-- CONTENEDOR REGISTRO -->
+      <div id="box-register" style="display: none;">
         <h1 class="font-serif text-2xl mb-1">Registro de Cuenta</h1>
         <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Crea tu cuenta institucional en Aula Central.</p>
 
-        <form class="space-y-4" onsubmit="ejecutarAccion(event, 'register')">
+        <div class="space-y-4">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Nombre completo</label>
             <input id="reg-name" type="text" placeholder="Tu nombre y apellido"
@@ -124,13 +124,13 @@
               <option value="teacher">Profesor</option>
             </select>
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
+          <button type="button" onclick="hacerRegistro()" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
             Completar Registro
           </button>
-        </form>
+        </div>
 
         <div class="mt-5 text-center">
-          <button type="button" onclick="alternarFormulario('login')" class="text-xs text-gold-500 hover:underline">
+          <button type="button" onclick="cambiarVista('login')" class="text-xs text-gold-500 hover:underline">
             ¿Ya tienes una cuenta? Iniciar sesión
           </button>
         </div>
@@ -200,9 +200,9 @@ let SUBJECTS = [
   }
 ];
 
-function alternarFormulario(modo) {
-  const loginBox = document.getElementById('form-login');
-  const registerBox = document.getElementById('form-register');
+function cambiarVista(modo) {
+  const loginBox = document.getElementById('box-login');
+  const registerBox = document.getElementById('box-register');
   
   if (modo === 'register') {
     loginBox.style.display = 'none';
@@ -213,56 +213,58 @@ function alternarFormulario(modo) {
   }
 }
 
-function ejecutarAccion(event, tipo) {
-  event.preventDefault();
+function hacerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value.trim();
 
-  if (tipo === 'login') {
-    const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-password').value.trim();
-    
-    if (!email || !pass) {
-      alert("Por favor completa los campos.");
-      return;
-    }
-
-    currentUserRole = (email.includes('profe') || email.includes('docente')) ? 'teacher' : 'student';
-    currentUserName = currentUserRole === 'teacher' ? 'Prof. Carlos Mendoza' : 'Alejandro Payares';
-
-    // Autenticación en segundo plano con Supabase
-    supabase.auth.signInWithPassword({ email, password: pass }).catch(() => {});
-
-  } else {
-    const name = document.getElementById('reg-name').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const pass = document.getElementById('reg-password').value.trim();
-    const role = document.getElementById('reg-role').value;
-
-    if (!name || !email || !pass) {
-      alert("Por favor completa todos los campos de registro.");
-      return;
-    }
-
-    currentUserName = name;
-    currentUserRole = role;
-
-    // Registro en Supabase en segundo plano
-    supabase.auth.signUp({
-      email: email,
-      password: pass,
-      options: { data: { full_name: name, role: role } }
-    }).then(({ data }) => {
-      if (data.user) {
-        supabase.from('profiles').insert([
-          { id: data.user.id, email: email, full_name: name, role: role }
-        ]).catch(() => {});
-      }
-    }).catch(() => {});
+  if (!email || !pass) {
+    alert("Por favor escribe tu correo y contraseña.");
+    return;
   }
 
-  // TRANSICIÓN DIRECTA Y SEGURA AL PANEL
+  currentUserRole = (email.includes('profe') || email.includes('docente')) ? 'teacher' : 'student';
+  currentUserName = currentUserRole === 'teacher' ? 'Prof. Carlos Mendoza' : 'Alejandro Payares';
+
+  // Autenticación en segundo plano con Supabase (sin bloqueos de red)
+  supabase.auth.signInWithPassword({ email, password: pass }).catch(() => {});
+
+  abrirPanelPrincipal();
+}
+
+function hacerRegistro() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-password').value.trim();
+  const role = document.getElementById('reg-role').value;
+
+  if (!name || !email || !pass) {
+    alert("Por favor completa todos los campos del registro.");
+    return;
+  }
+
+  currentUserName = name;
+  currentUserRole = role;
+
+  // Registro en Supabase en segundo plano
+  supabase.auth.signUp({
+    email: email,
+    password: pass,
+    options: { data: { full_name: name, role: role } }
+  }).then(({ data }) => {
+    if (data.user) {
+      supabase.from('profiles').insert([
+        { id: data.user.id, email: email, full_name: name, role: role }
+      ]).catch(() => {});
+    }
+  }).catch(() => {});
+
+  abrirPanelPrincipal();
+}
+
+function abrirPanelPrincipal() {
   document.getElementById('view-login').style.display = 'none';
   document.getElementById('view-app').style.display = 'flex';
-
+  
   document.getElementById('header-user-name').textContent = currentUserName;
 
   const badge = document.getElementById('user-badge');
@@ -283,7 +285,7 @@ function logout() {
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
   document.getElementById('reg-password').value = '';
-  alternarFormulario('login');
+  cambiarVista('login');
 }
 
 function toggleDarkMode() {
