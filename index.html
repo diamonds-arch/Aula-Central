@@ -111,12 +111,10 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE
 let SUBJECTS = [];
 
 async function realizarLogin(event) {
-  event.preventDefault(); // Detiene la recarga de la página
+  event.preventDefault();
   
   const emailInput = document.getElementById('login-email').value;
   const passwordInput = document.getElementById('login-password').value;
-
-  console.log("Intentando iniciar sesión con:", emailInput);
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email: emailInput,
@@ -128,11 +126,12 @@ async function realizarLogin(event) {
     return;
   }
 
-  console.log("¡Éxito en Supabase!", data);
+  // FORZAR CAMBIO DE VISTA VISIBLE DE INMEDIATO
+  const loginView = document.getElementById('view-login');
+  const appView = document.getElementById('view-app');
 
-  // Ocultar login y mostrar app inmediatamente
-  document.getElementById('view-login').classList.add('hidden');
-  document.getElementById('view-app').classList.remove('hidden');
+  if (loginView) loginView.style.display = 'none'; // Oculta a la fuerza el login
+  if (appView) appView.classList.remove('hidden');  // Muestra la app
 
   navigate('dashboard');
   cargarMaterias();
@@ -162,7 +161,8 @@ async function cargarMaterias() {
 function logout() {
   supabase.auth.signOut();
   document.getElementById('view-app').classList.add('hidden');
-  document.getElementById('view-login').classList.remove('hidden');
+  document.getElementById('view-login').style.display = 'flex';
+  document.getElementById('login-form').reset();
 }
 
 function navigate(view) {
@@ -170,7 +170,7 @@ function navigate(view) {
   if (view === 'dashboard') {
     main.innerHTML = `
       <h1 class="font-serif text-3xl mb-4">Bienvenido a Aula Central</h1>
-      <p class="text-sm mb-6">¡Has iniciado sesión correctamente!</p>
+      <p class="text-sm mb-6">¡Has iniciado sesión correctamente con Supabase!</p>
       <div class="grid gap-4">
         ${SUBJECTS.map(s => `<div class="p-4 bg-white dark:bg-ink-800 rounded border border-paper-300 dark:border-ink-700"><h3 class="font-medium">${s.name}</h3><p class="text-xs text-ink-500">${s.teacher}</p></div>`).join('') || '<p class="text-sm">Cargando materias...</p>'}
       </div>`;
