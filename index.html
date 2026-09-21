@@ -272,9 +272,11 @@ async function realizarRegistro(event) {
       }
 
       if (data && data.user) {
-        sb.from('profiles').upsert([
-          { id: data.user.id, email: email, full_name: name, role: role }
-        ]).catch(() => {});
+        try {
+          await sb.from('profiles').upsert([
+            { id: data.user.id, email: email, full_name: name, role: role }
+          ]);
+        } catch (_) {}
       }
 
       alert("¡Cuenta registrada con éxito en Supabase!");
@@ -285,7 +287,7 @@ async function realizarRegistro(event) {
     entrarAlSistema();
 
   } catch (err) {
-    alert("Error de conexión: " + err.message);
+    alert("Error general: " + err.message);
   } finally {
     btn.textContent = "Registrarse";
     btn.disabled = false;
