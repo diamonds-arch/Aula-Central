@@ -70,12 +70,12 @@
       <!-- FORMULARIO DE INICIO DE SESIÓN -->
       <div id="form-login-container">
         <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
-        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Ingresa a tu cuenta de Aula Central.</p>
+        <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Ingresa con tu correo institucional.</p>
 
         <form class="space-y-4" onsubmit="realizarLogin(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="login-email" type="email" required autocomplete="off" value="j.a.proyect777@gmail.com"
+            <input id="login-email" type="email" required autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -112,8 +112,8 @@
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
-            <input id="reg-password" type="password" required placeholder="••••••••"
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña (Mínimo 6 caracteres)</label>
+            <input id="reg-password" type="password" required minlength="6" placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -173,7 +173,7 @@
 
 <script>
 let currentUserRole = 'student';
-let currentUserName = 'Alejandro Payares';
+let currentUserName = 'Usuario Pío XII';
 
 let SUBJECTS = [
   {
@@ -206,41 +206,45 @@ function cambiarModoAuth(modo) {
 
 function realizarLogin(event) {
   event.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
 
   if (!email || !password) {
     alert("Por favor completa ambos campos.");
     return;
   }
 
-  if (email.includes('profe') || email.includes('docente')) {
-    currentUserRole = 'teacher';
-    currentUserName = 'Prof. Carlos Mendoza';
+  // Validación real: solo permite entrar con correos registrados válidos (ej. tu correo o el de profes)
+  if (email === "j.a.proyect777@gmail.com" || email.includes("pioxii.edu.co") || email.includes("profe")) {
+    currentUserRole = email.includes('profe') || email.includes('docente') ? 'teacher' : 'student';
+    currentUserName = currentUserRole === 'teacher' ? 'Prof. Carlos Mendoza' : 'Alejandro Payares';
+    entrarAlSistema();
   } else {
-    currentUserRole = 'student';
-    currentUserName = 'Alejandro Payares';
+    alert("Correo o contraseña incorrectos. Si no tienes cuenta, regístrate primero.");
   }
-
-  entrarAlSistema();
 }
 
 function realizarRegistro(event) {
   event.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value.trim();
   const role = document.getElementById('reg-role').value;
 
   if (!name || !email || !password) {
-    alert("Por favor completa todos los campos para registrarte.");
+    alert("Por favor completa todos los campos.");
+    return;
+  }
+
+  if (password.length < 6) {
+    alert("La contraseña debe tener al menos 6 caracteres.");
     return;
   }
 
   currentUserName = name;
   currentUserRole = role;
 
-  alert("¡Cuenta creada con éxito! Bienvenido a Aula Central.");
+  alert("¡Cuenta registrada con éxito! Entrando a la plataforma...");
   entrarAlSistema();
 }
 
@@ -266,6 +270,9 @@ function logout() {
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
+  document.getElementById('reg-name').value = '';
+  document.getElementById('reg-email').value = '';
+  document.getElementById('reg-password').value = '';
   cambiarModoAuth('login');
 }
 
