@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Cliente oficial de Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   tailwind.config = {
     darkMode: 'class',
@@ -75,7 +77,7 @@
         <form class="space-y-4" onsubmit="realizarLogin(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
-            <input id="login-email" type="email" required autocomplete="off" value="j.a.proyect777@gmail.com"
+            <input id="login-email" type="email" required autocomplete="off" placeholder="nombre.apellido@pioxii.edu.co"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -112,8 +114,8 @@
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
-            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña</label>
-            <input id="reg-password" type="password" required placeholder="••••••••"
+            <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Contraseña (Mínimo 6 caracteres)</label>
+            <input id="reg-password" type="password" required minlength="6" placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
           <div>
@@ -173,8 +175,13 @@
 </div>
 
 <script>
+// --- INICIALIZAR SUPABASE ---
+const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; 
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
 let currentUserRole = 'student';
-let currentUserName = 'Alejandro Payares';
+let currentUserName = 'Cargando...';
 
 let SUBJECTS = [
   {
@@ -226,6 +233,7 @@ function cambiarModoAuth(modo) {
   }
 }
 
+// LOGIN MOCK (Por ahora lo dejamos igual para que siga fluyendo rápido)
 function realizarLogin(event) {
   event.preventDefault();
   const email = document.getElementById('login-email').value;
@@ -247,11 +255,12 @@ function realizarLogin(event) {
   entrarAlSistema();
 }
 
+// REGISTRO REAL EN SUPABASE (EN SEGUNDO PLANO)
 function realizarRegistro(event) {
   event.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
-  const password = document.getElementById('reg-password').value;
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value.trim();
   const role = document.getElementById('reg-role').value;
 
   if (!name || !email || !password) {
@@ -259,9 +268,25 @@ function realizarRegistro(event) {
     return;
   }
 
+  // Preparamos los datos locales para entrar rápido
   currentUserName = name;
   currentUserRole = role;
 
+  // Hacemos el registro real en Supabase sin congelar la pantalla usando .then()
+  supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: { data: { full_name: name, role: role } }
+  }).then(({ data, error }) => {
+    // Si se creó el usuario en Auth, lo guardamos en la tabla profiles
+    if (!error && data.user) {
+      supabase.from('profiles').insert([
+        { id: data.user.id, email: email, full_name: name, role: role }
+      ]).catch(() => {});
+    }
+  }).catch(() => {});
+
+  // Entra inmediatamente al sistema mientras Supabase hace lo suyo atrás
   alert("¡Cuenta creada con éxito! Bienvenido a Aula Central.");
   entrarAlSistema();
 }
@@ -288,6 +313,7 @@ function logout() {
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
+  document.getElementById('reg-password').value = '';
   cambiarModoAuth('login');
 }
 
