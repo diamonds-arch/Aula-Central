@@ -74,6 +74,7 @@
         <h1 class="font-serif text-2xl mb-1">Iniciar Sesión</h1>
         <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Ingresa a tu cuenta de Aula Central.</p>
 
+        <!-- Formulario limpio y seguro -->
         <form class="space-y-4" onsubmit="realizarLogin(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Correo institucional</label>
@@ -85,7 +86,8 @@
             <input id="login-password" type="password" required placeholder="••••••••"
               class="w-full px-3 py-2.5 rounded-md border border-paper-300 dark:border-ink-700 bg-white dark:bg-ink-800 text-sm">
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
+          <!-- Botón de submit nativo, sin onclick -->
+          <button type="submit" id="btn-login" class="w-full py-2.5 rounded-md bg-ink-900 dark:bg-gold-500 text-paper-50 dark:text-ink-900 text-sm font-medium hover:bg-ink-800 transition-colors">
             Entrar
           </button>
         </form>
@@ -102,6 +104,7 @@
         <h1 class="font-serif text-2xl mb-1">Crear Cuenta</h1>
         <p class="text-sm text-ink-500 dark:text-paper-300/70 mb-6">Regístrate en el sistema de Aula Central.</p>
 
+        <!-- Formulario limpio y seguro -->
         <form class="space-y-4" onsubmit="realizarRegistro(event)">
           <div>
             <label class="block text-sm mb-1.5 text-ink-700 dark:text-paper-200">Nombre completo</label>
@@ -125,7 +128,8 @@
               <option value="teacher">Profesor</option>
             </select>
           </div>
-          <button type="submit" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
+          <!-- Botón de submit nativo, sin onclick -->
+          <button type="submit" id="btn-register" class="w-full py-2.5 rounded-md bg-gold-500 text-ink-900 text-sm font-medium hover:bg-gold-400 transition-colors">
             Registrarse
           </button>
         </form>
@@ -175,31 +179,26 @@
 </div>
 
 <script>
-// --- INICIALIZAR SUPABASE DE FORMA SEGURA ---
-let supabase;
-try {
-  const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; 
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-} catch (e) {
-  console.log("Supabase cargará en modo de prueba");
-}
+// --- INICIALIZAR SUPABASE ---
+const SUPABASE_URL = 'https://kwvedzqzxkbfdnpsfbsni.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_A-79Dwa7yhLpFiJPGBJpWA_ZH8UuZ9a'; 
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+// Variables de estado
 let currentUserRole = 'student';
 let currentUserName = 'Alejandro Payares';
 
+// Datos de prueba
 let SUBJECTS = [
   { id: 'mat-1', name: 'Matemáticas', teacher: 'Prof. Carlos Mendoza', topics: [{ name: 'Álgebra Avanzada', desc: 'Ecuaciones cuadráticas y sistemas de 2x2.', documents: [{ name: 'Guía_Algebra.pdf', url: '#' }] }, { name: 'Trigonometría', desc: 'Razones trigonométricas y teorema de Pitágoras.', documents: [{ name: 'Ejercicios_Trigo.pdf', url: '#' }] }] },
   { id: 'fis-2', name: 'Física', teacher: 'Prof. Elena Restrepo', topics: [{ name: 'Cinemática', desc: 'Movimiento rectilíneo uniforme y acelerado.', documents: [{ name: 'Formulas_Fisica.pdf', url: '#' }] }] },
   { id: 'lit-3', name: 'Literatura', teacher: 'Prof. Ana María Gómez', topics: [{ name: 'Realismo Mágico', desc: 'Análisis de obras hispanoamericanas.', documents: [{ name: 'Lectura_GarciaMarquez.pdf', url: '#' }] }] }
 ];
-
 let GRADES = [
   { subject: 'Matemáticas', p1: 4.5, p2: 4.2, final: 4.4, status: 'Aprobado' },
   { subject: 'Física', p1: 3.8, p2: 4.0, final: 3.9, status: 'Aprobado' },
   { subject: 'Literatura', p1: 4.8, p2: 4.6, final: 4.7, status: 'Sobresaliente' }
 ];
-
 let EVENTS = [
   { date: '25 Sep', time: '08:00 AM', title: 'Evaluación Parcial de Matemáticas', type: 'Examen' },
   { date: '28 Sep', time: '23:59 PM', title: 'Entrega de Guía de Cinemática', type: 'Tarea' },
@@ -216,78 +215,110 @@ function cambiarModoAuth(modo) {
   }
 }
 
-// INICIO DE SESIÓN INFALIBLE
-function realizarLogin(event) {
-  event.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-
-  if (!email || !password) {
-    alert("Por favor completa ambos campos.");
-    return;
-  }
-
-  // Establecemos rol por defecto para que no se congele
-  if (email.includes('profe') || email.includes('docente')) {
-    currentUserRole = 'teacher';
-    currentUserName = 'Prof. Carlos Mendoza';
-  } else {
-    currentUserRole = 'student';
-    currentUserName = 'Alejandro Payares';
-  }
-
-  // Conexión real a Supabase en segundo plano
-  if (typeof supabase !== 'undefined') {
-    supabase.auth.signInWithPassword({ email, password }).then(response => {
-      if (response.data && response.data.user) {
-        supabase.from('profiles').select('*').eq('id', response.data.user.id).single().then(profileData => {
-          if (profileData.data) {
-            document.getElementById('header-user-name').textContent = profileData.data.full_name;
-          }
-        }).catch(() => {});
-      }
-    }).catch(() => {});
-  }
-
-  entrarAlSistema();
-}
-
-// REGISTRO DE CUENTA INFALIBLE
-function realizarRegistro(event) {
-  event.preventDefault();
+// ====================== LÓGICA DE REGISTRO EN SUPABASE ======================
+async function realizarRegistro(event) {
+  // Prevenir que la página se recargue (esto es vital)
+  event.preventDefault(); 
+  
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value.trim();
   const role = document.getElementById('reg-role').value;
+  const btn = document.getElementById('btn-register');
 
-  if (!name || !email || !password) {
-    alert("Por favor completa todos los campos para registrarte.");
-    return;
-  }
+  // Cambiar estado del botón para indicar que está cargando
+  btn.textContent = "Registrando...";
+  btn.disabled = true;
 
-  // Preparamos usuario para entrada inmediata
-  currentUserName = name;
-  currentUserRole = role;
-
-  // Registro real en Supabase en segundo plano
-  if (typeof supabase !== 'undefined') {
-    supabase.auth.signUp({
+  try {
+    // Intentar crear la cuenta en Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
       options: { data: { full_name: name, role: role } }
-    }).then(response => {
-      if (response.data && response.data.user && !response.error) {
-        supabase.from('profiles').insert([
-          { id: response.data.user.id, email: email, full_name: name, role: role }
-        ]).catch(() => {});
-      }
-    }).catch(() => {});
-  }
+    });
 
-  alert("¡Cuenta creada con éxito! Bienvenido a Aula Central.");
-  entrarAlSistema();
+    // Si Supabase devuelve un error (ej. contraseña muy corta, correo ya existe)
+    if (error) {
+      alert("No se pudo registrar la cuenta: " + error.message);
+      btn.textContent = "Registrarse";
+      btn.disabled = false;
+      return; // Detiene el código aquí, NO entra al sistema
+    }
+
+    // Si el registro fue exitoso, guardamos el perfil
+    if (data.user) {
+      await supabase.from('profiles').insert([
+        { id: data.user.id, email: email, full_name: name, role: role }
+      ]);
+    }
+
+    // Actualizamos las variables locales y entramos
+    currentUserName = name;
+    currentUserRole = role;
+    
+    alert("¡Cuenta creada exitosamente en Supabase!");
+    entrarAlSistema();
+
+  } catch (err) {
+    alert("Ocurrió un error inesperado al conectar con el servidor.");
+  } finally {
+    btn.textContent = "Registrarse";
+    btn.disabled = false;
+  }
 }
 
+// ====================== LÓGICA DE LOGIN EN SUPABASE ======================
+async function realizarLogin(event) {
+  // Prevenir que la página se recargue
+  event.preventDefault(); 
+  
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const btn = document.getElementById('btn-login');
+
+  btn.textContent = "Entrando...";
+  btn.disabled = true;
+
+  try {
+    // Intentar iniciar sesión en Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    // Si la contraseña es incorrecta o el usuario no existe
+    if (error) {
+      alert("Error al iniciar sesión: " + error.message);
+      btn.textContent = "Entrar";
+      btn.disabled = false;
+      return; // Detiene el código aquí, NO entra al sistema
+    }
+
+    // Si el login fue exitoso, buscamos los datos del usuario en la tabla profiles
+    if (data.user) {
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+      if (profile) {
+        currentUserName = profile.full_name;
+        currentUserRole = profile.role;
+      } else {
+        currentUserName = email.split('@')[0];
+        currentUserRole = 'student';
+      }
+    }
+
+    // Entramos al panel
+    entrarAlSistema();
+
+  } catch (err) {
+    alert("Ocurrió un error inesperado al iniciar sesión.");
+  } finally {
+    btn.textContent = "Entrar";
+    btn.disabled = false;
+  }
+}
+
+// ====================== NAVEGACIÓN Y PANEL ======================
 function entrarAlSistema() {
   document.getElementById('view-login').style.display = 'none';
   document.getElementById('view-app').style.display = 'flex';
@@ -306,10 +337,8 @@ function entrarAlSistema() {
   navigate('dashboard');
 }
 
-function logout() {
-  if (typeof supabase !== 'undefined') {
-    supabase.auth.signOut().catch(()=>{});
-  }
+async function logout() {
+  await supabase.auth.signOut();
   document.getElementById('view-app').style.display = 'none';
   document.getElementById('view-login').style.display = 'flex';
   document.getElementById('login-password').value = '';
