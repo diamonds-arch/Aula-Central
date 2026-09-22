@@ -220,6 +220,7 @@ const safeName = (name) => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 const fmtShort = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
 const fmtDay = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short' });
 const fmtTime = new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' });
+const fmtMonth = new Intl.DateTimeFormat('es', { month: 'short' });
 
 const ICONS = {
   check: '<path d="M20 6L9 17l-5-5"/>',
@@ -287,7 +288,7 @@ function isTeacher() {
 
 const db = {
   async getProfile(userId) {
-    const { data, error } = await sb.from('profiles').select('*').eq('id', userId).single();
+    const { data, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
     if (error) throw error;
     return data;
   },
@@ -569,6 +570,9 @@ async function handleSession(session) {
     state.profile = await db.getProfile(session.user.id);
   } catch (e) {
     toast('Error cargando perfil: ' + errMsg(e), 'err');
+  }
+
+  if (!state.profile) {
     state.profile = { id: session.user.id, full_name: session.user.email, role: 'student' };
   }
 
@@ -633,7 +637,6 @@ async function render() {
 
 async function viewPanel() {
   const t = isTeacher();
-  const now = new Date();
   
   state.subjects = await db.getSubjects();
   state.announcements = await db.getAnnouncements();
@@ -867,8 +870,6 @@ async function viewCalendario() {
   html += `</div>`;
   return html;
 }
-
-const fmtMonth = new Intl.DateTimeFormat('es', { month: 'short' });
 
 function openModal(title, body, submitLabel = 'Guardar', onSubmit = null) {
   const dlg = $('#dlg');
