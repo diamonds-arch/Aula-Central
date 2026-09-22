@@ -1126,10 +1126,11 @@ sb.auth.onAuthStateChange((_event, session) => {
   setTimeout(() => handleSession(session), 0);
 });
 
-setTimeout(async () => {
-  const { data } = await sb.auth.getSession();
-  handleSession(data.session);
-}, 500);
+sb.auth.getSession().then(({ data }) => {
+  handleSession(data ? data.session : null);
+}).catch(() => {
+  handleSession(null);
+});
 </script>
 </body>
 </html>
