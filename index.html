@@ -87,6 +87,8 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
   .navlink[aria-current="page"] { @apply border-gold text-white; }
   .spinner { @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent; }
   .acc-head { @apply flex w-full items-center justify-between gap-3 px-5 py-4 text-left; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full bg-gold/15 px-2.5 py-1 text-xs font-medium text-goldtext; }
+  .otp-box { @apply h-12 w-10 rounded-md border bg-card text-center text-lg font-semibold focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/40; }
 }
 </style>
 </head>
@@ -121,8 +123,9 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
         </div>
       </div>
 
-      <div class="mb-6 flex gap-1 rounded-md bg-sunk p-1" role="tablist">
-        <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium">Iniciar sesion</button>
+      <div id="authTabs" class="mb-6 flex gap-1 rounded-md bg-sunk p-1" role="tablist">
+        <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium">Contrasena</button>
+        <button id="tabOtp" role="tab" aria-selected="false" data-tab="otp" class="flex-1 rounded px-3 py-2 text-sm font-medium">Codigo por correo</button>
         <button id="tabRegister" role="tab" aria-selected="false" data-tab="register" class="flex-1 rounded px-3 py-2 text-sm font-medium">Registrarse</button>
       </div>
 
@@ -138,6 +141,27 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Contrasena</span>
           <input class="input" type="password" name="password" required minlength="6"></label>
         <button class="btn btn-primary w-full" type="submit">Iniciar sesion</button>
+        <p class="text-xs text-muted text-center">Si tu cuenta no esta confirmada, <button type="button" id="btnResendConfirm" class="text-goldtext underline">reenviar correo de confirmacion</button></p>
+      </form>
+
+      <form id="otpRequestForm" class="space-y-4" hidden>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo institucional</span>
+          <input class="input" type="email" name="email" required placeholder="ejemplo@colegio.edu"></label>
+        <button class="btn btn-primary w-full" type="submit">Enviar codigo de acceso</button>
+      </form>
+
+      <form id="otpVerifyForm" class="space-y-4" hidden>
+        <p class="text-sm text-muted">Ingresa el codigo de 6 digitos enviado a <span id="otpEmailLabel" class="font-medium text-ink"></span></p>
+        <div class="flex justify-between gap-2" id="otpBoxes">
+          <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="0">
+          <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="1">
+          <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="2">
+          <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="3">
+          <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="4">
+          <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="5">
+        </div>
+        <button class="btn btn-primary w-full" type="submit">Verificar e ingresar</button>
+        <button type="button" id="btnOtpBack" class="btn btn-ghost w-full">Usar otro correo</button>
       </form>
 
       <form id="registerForm" class="space-y-4" hidden>
@@ -238,7 +262,8 @@ const ICONS = {
   file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/>',
   chevLeft: '<path d="M15 18l-6-6 6-6"/>',
   chevRight: '<path d="M9 18l6-6-6-6"/>',
-  chevDown: '<path d="M6 9l6 6 6-6"/>'
+  chevDown: '<path d="M6 9l6 6 6-6"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>'
 };
 const icon = function (n, cls) {
   return '<svg class="' + (cls || 'h-4 w-4') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[n] + '</svg>';
@@ -284,6 +309,8 @@ function errMsg(e) {
   const raw = (e && (e.message || e.error_description)) || String(e);
   const m = raw.toLowerCase();
   if (m.indexOf('invalid login') !== -1) return 'Correo o contrasena incorrectos.';
+  if (m.indexOf('email not confirmed') !== -1) return 'Tu correo aun no ha sido confirmado. Revisa tu bandeja o reenvia el correo.';
+  if (m.indexOf('token has expired') !== -1 || m.indexOf('otp_expired') !== -1) return 'El codigo expiro o es invalido. Solicita uno nuevo.';
   if (m.indexOf('not found') !== -1) return 'Recurso no encontrado.';
   if (m.indexOf('duplicate') !== -1) return 'Ese registro ya existe.';
   if (m.indexOf('rate limit') !== -1) return 'Demasiados intentos. Espera un momento.';
@@ -338,7 +365,8 @@ const state = {
   students: [],
   currentSubjectId: null,
   calView: null,
-  renderId: 0
+  renderId: 0,
+  pendingOtpEmail: null
 };
 
 function isTeacher() { return state.profile && state.profile.role === 'teacher'; }
@@ -442,12 +470,30 @@ const db = {
     if (error) throw error;
     return data;
   },
-  async createAssignment(subjectId, title, description, kind, dueDate, courses) {
+  async createAssignment(subjectId, title, description, kind, dueDateOnly, courses) {
+    const dueIso = new Date(dueDateOnly + 'T23:59:59').toISOString();
     const { data, error } = await sb.from('assignments').insert({
       subject_id: subjectId, title: title, description: description, kind: kind,
-      due_date: dueDate, created_by: state.user.id, courses: courses
+      due_date: dueIso, created_by: state.user.id, courses: courses
     }).select().single();
     if (error) throw error;
+
+    try {
+      const subj = state.subjects.find(function (s) { return s.id === subjectId; });
+      const subjName = subj ? subj.name : 'Materia';
+      const eventType = kind === 'exam' ? 'Examen' : 'Tarea';
+      await sb.from('calendar_events').insert({
+        title: subjName + ': ' + title,
+        description: description || null,
+        event_date: dueDateOnly,
+        event_type: eventType,
+        subject_id: subjectId,
+        created_by: state.user.id
+      });
+    } catch (evErr) {
+      toast('La tarea se creo, pero no se pudo sincronizar con el calendario.', 'warn');
+    }
+
     return data;
   },
   async submitAssignment(assignmentId, file, comment) {
@@ -507,6 +553,89 @@ async function downloadFile(filePath, fileName) {
   }
 }
 
+/* ============== SELECTOR DE CURSOS PERSONALIZADO ============== */
+function courseSelectorHtml(name, preselected) {
+  const sel = preselected || [];
+  let html = '<div class="course-selector relative" data-course-selector data-name="' + esc(name) + '">';
+  html += '<button type="button" class="input flex flex-wrap items-center gap-1.5 text-left min-h-[2.75rem]" data-action="toggle-course-dd">';
+  html += '<span data-course-chips class="flex flex-wrap gap-1.5 flex-1">';
+  html += sel.length ? sel.map(function (c) { return '<span class="chip">' + c + '<span data-action="remove-course-chip" data-course="' + c + '" class="cursor-pointer hover:text-rose-500">' + icon('x', 'h-3 w-3') + '</span></span>'; }).join('') : '<span class="text-muted">Selecciona cursos...</span>';
+  html += '</span>';
+  html += icon('chevDown', 'h-4 w-4 shrink-0 text-muted');
+  html += '</button>';
+  html += '<div class="absolute z-10 mt-1 w-full rounded-md border bg-card p-2 shadow-xl" data-course-dropdown hidden>';
+  html += '<button type="button" class="mb-2 w-full rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-sunk" data-action="course-select-all">Seleccionar todos</button>';
+  html += '<div class="grid grid-cols-3 gap-1.5 max-h-56 overflow-y-auto">';
+  COURSES.forEach(function (c) {
+    const checked = sel.indexOf(c) !== -1;
+    html += '<label class="flex items-center gap-1.5 rounded px-2 py-1.5 text-sm hover:bg-sunk cursor-pointer">';
+    html += '<input type="checkbox" class="h-4 w-4 accent-[#C29A3F]" value="' + c + '" data-course-checkbox ' + (checked ? 'checked' : '') + '>' + c;
+    html += '</label>';
+  });
+  html += '</div></div>';
+  html += '<input type="hidden" data-course-value name="' + esc(name) + '" value="' + esc(JSON.stringify(sel)) + '">';
+  html += '</div>';
+  return html;
+}
+
+function getCourseSelectorValue(container) {
+  const hidden = container.querySelector('[data-course-value]');
+  try { return JSON.parse(hidden.value || '[]'); } catch (e) { return []; }
+}
+
+function setCourseSelectorValue(container, values) {
+  const hidden = container.querySelector('[data-course-value]');
+  hidden.value = JSON.stringify(values);
+  const chipsWrap = container.querySelector('[data-course-chips]');
+  chipsWrap.innerHTML = values.length
+    ? values.map(function (c) { return '<span class="chip">' + c + '<span data-action="remove-course-chip" data-course="' + c + '" class="cursor-pointer hover:text-rose-500">' + icon('x', 'h-3 w-3') + '</span></span>'; }).join('')
+    : '<span class="text-muted">Selecciona cursos...</span>';
+  $$('[data-course-checkbox]', container).forEach(function (cb) {
+    cb.checked = values.indexOf(cb.value) !== -1;
+  });
+}
+
+document.addEventListener('click', function (e) {
+  const openDD = $$('[data-course-dropdown]').filter(function (d) { return !d.hidden; });
+  const insideAny = e.target.closest('[data-course-selector]');
+  if (!insideAny) {
+    openDD.forEach(function (d) { d.hidden = true; });
+    return;
+  }
+  const container = e.target.closest('[data-course-selector]');
+  const dd = container.querySelector('[data-course-dropdown]');
+
+  if (e.target.closest('[data-action="toggle-course-dd"]')) {
+    e.preventDefault();
+    const willOpen = dd.hidden;
+    openDD.forEach(function (d) { if (d !== dd) d.hidden = true; });
+    dd.hidden = !willOpen;
+    return;
+  }
+  if (e.target.closest('[data-action="course-select-all"]')) {
+    setCourseSelectorValue(container, COURSES.slice());
+    return;
+  }
+  if (e.target.closest('[data-action="remove-course-chip"]')) {
+    e.stopPropagation();
+    const c = e.target.closest('[data-action="remove-course-chip"]').dataset.course;
+    const current = getCourseSelectorValue(container).filter(function (v) { return v !== c; });
+    setCourseSelectorValue(container, current);
+    return;
+  }
+});
+
+document.addEventListener('change', function (e) {
+  const cb = e.target.closest('[data-course-checkbox]');
+  if (!cb) return;
+  const container = cb.closest('[data-course-selector]');
+  const current = getCourseSelectorValue(container);
+  const idx = current.indexOf(cb.value);
+  if (cb.checked && idx === -1) current.push(cb.value);
+  if (!cb.checked && idx !== -1) current.splice(idx, 1);
+  setCourseSelectorValue(container, current);
+});
+
 /* ============== AUTENTICACION ============== */
 function fillRegCourse() {
   const sel = $('#regCourse');
@@ -519,16 +648,28 @@ function toggleRegCourse() {
   $('#regCourse').required = isStudent;
 }
 
+const AUTH_FORMS = ['loginForm', 'otpRequestForm', 'otpVerifyForm', 'registerForm'];
+const AUTH_TITLES = {
+  login: { title: 'Iniciar sesion', sub: 'Usa tus credenciales institucionales.' },
+  otp: { title: 'Codigo por correo', sub: 'Te enviaremos un codigo de 6 digitos a tu correo institucional.' },
+  register: { title: 'Registrarse', sub: 'Elige tu rol y curso para continuar.' }
+};
+
 function setAuthTab(tab) {
-  const login = tab === 'login';
-  $('#loginForm').hidden = !login;
-  $('#registerForm').hidden = login;
-  $('#tabLogin').setAttribute('aria-selected', login);
-  $('#tabRegister').setAttribute('aria-selected', !login);
-  $('#tabLogin').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (login ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
-  $('#tabRegister').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (!login ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
-  $('#authTitle').textContent = login ? 'Iniciar sesion' : 'Registrarse';
-  $('#authSub').textContent = login ? 'Usa tus credenciales institucionales.' : 'Elige tu rol y curso para continuar.';
+  AUTH_FORMS.forEach(function (id) { $('#' + id).hidden = true; });
+  if (tab === 'login') $('#loginForm').hidden = false;
+  if (tab === 'otp') $('#otpRequestForm').hidden = false;
+  if (tab === 'register') $('#registerForm').hidden = false;
+
+  ['tabLogin', 'tabOtp', 'tabRegister'].forEach(function (id) {
+    const active = (id === 'tabLogin' && tab === 'login') || (id === 'tabOtp' && tab === 'otp') || (id === 'tabRegister' && tab === 'register');
+    $('#' + id).setAttribute('aria-selected', active);
+    $('#' + id).className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (active ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
+  });
+
+  const info = AUTH_TITLES[tab] || AUTH_TITLES.login;
+  $('#authTitle').textContent = info.title;
+  $('#authSub').textContent = info.sub;
   $('#authError').hidden = true;
   $('#authInfo').hidden = true;
 }
@@ -546,6 +687,90 @@ async function onLogin(ev) {
       err.textContent = errMsg(e);
       err.hidden = false;
     }
+  });
+}
+
+async function onResendConfirm() {
+  const email = $('#loginForm [name=email]').value.trim();
+  if (!email) { toast('Escribe tu correo primero.', 'warn'); return; }
+  try {
+    const res = await sb.auth.resend({ type: 'signup', email: email });
+    if (res.error) throw res.error;
+    const info = $('#authInfo');
+    info.textContent = 'Correo de confirmacion reenviado. Revisa tu bandeja de entrada.';
+    info.hidden = false;
+    $('#authError').hidden = true;
+  } catch (e) {
+    toast(errMsg(e), 'err');
+  }
+}
+
+async function onOtpRequest(ev) {
+  ev.preventDefault();
+  const form = ev.target;
+  const btn = form.querySelector('[type=submit]');
+  const err = $('#authError');
+  const email = form.email.value.trim();
+  await withBusy(btn, async function () {
+    try {
+      const res = await sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: false } });
+      if (res.error) throw res.error;
+      state.pendingOtpEmail = email;
+      $('#otpEmailLabel').textContent = email;
+      $('#otpRequestForm').hidden = true;
+      $('#otpVerifyForm').hidden = false;
+      err.hidden = true;
+      const info = $('#authInfo');
+      info.textContent = 'Codigo enviado. Revisa tu correo.';
+      info.hidden = false;
+      const first = $('[data-otp-idx="0"]');
+      if (first) first.focus();
+    } catch (e) {
+      err.textContent = errMsg(e);
+      err.hidden = false;
+    }
+  });
+}
+
+function getOtpValue() {
+  return $$('[data-otp-idx]').map(function (i) { return i.value.trim(); }).join('');
+}
+
+async function onOtpVerify(ev) {
+  ev.preventDefault();
+  const form = ev.target;
+  const btn = form.querySelector('[type=submit]');
+  const err = $('#authError');
+  const code = getOtpValue();
+  if (code.length !== 6) { err.textContent = 'Ingresa los 6 digitos del codigo.'; err.hidden = false; return; }
+  await withBusy(btn, async function () {
+    try {
+      const res = await sb.auth.verifyOtp({ email: state.pendingOtpEmail, token: code, type: 'email' });
+      if (res.error) throw res.error;
+      err.hidden = true;
+    } catch (e) {
+      err.textContent = errMsg(e);
+      err.hidden = false;
+    }
+  });
+}
+
+function bindOtpBoxes() {
+  const boxes = $$('[data-otp-idx]');
+  boxes.forEach(function (box, idx) {
+    box.addEventListener('input', function () {
+      box.value = box.value.replace(/[^0-9]/g, '').slice(0, 1);
+      if (box.value && idx < boxes.length - 1) boxes[idx + 1].focus();
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !box.value && idx > 0) boxes[idx - 1].focus();
+    });
+    box.addEventListener('paste', function (e) {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+      text.split('').forEach(function (ch, i) { if (boxes[i]) boxes[i].value = ch; });
+      if (boxes[Math.min(text.length, boxes.length - 1)]) boxes[Math.min(text.length, boxes.length - 1)].focus();
+    });
   });
 }
 
@@ -987,8 +1212,14 @@ const EVENT_TONE = {
 };
 
 async function viewCalendarioGrid() {
-  state.events = await db.getEvents();
+  const allEvents = await db.getEvents();
   state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
+  state.events = isTeacher() ? allEvents : allEvents.filter(function (e) {
+    if (!e.subject_id) return true;
+    const subj = state.subjects.find(function (s) { return s.id === e.subject_id; });
+    return subj ? visibleForMe(subj) : true;
+  });
+
   const now = getNow();
   if (!state.calView) state.calView = { year: now.getFullYear(), month: now.getMonth() };
   const year = state.calView.year;
@@ -1082,7 +1313,7 @@ function openModal(title, body, submitLabel, onSubmit) {
       const err = $('#modalError', dlg);
       await withBusy(btn, async function () {
         try {
-          await onSubmit(new FormData(form));
+          await onSubmit(new FormData(form), form);
           dlg.close();
         } catch (ex) {
           err.textContent = errMsg(ex);
@@ -1096,14 +1327,6 @@ function openModal(title, body, submitLabel, onSubmit) {
 
 function subjectOptions() {
   return state.subjects.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.name) + '</option>'; }).join('');
-}
-
-function courseMultiSelect(name) {
-  return '<select class="input" name="' + name + '" multiple size="6" required>' + COURSES.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') + '</select><span class="mt-1 block text-xs text-muted">Manten Ctrl (o Cmd) para elegir varios cursos.</span>';
-}
-
-function getSelectedValues(select) {
-  return Array.prototype.slice.call(select.selectedOptions).map(function (o) { return o.value; });
 }
 
 /* ============== ACCIONES ============== */
@@ -1138,10 +1361,10 @@ const actions = {
       'Nueva materia',
       '<label class="block"><span class="block text-sm font-medium mb-1">Nombre</span><input class="input" name="name" required></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseMultiSelect('courses') + '</label>',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseSelectorHtml('courses', []) + '</label>',
       'Crear',
       async function (fd, form) {
-        const courses = getSelectedValues(form.querySelector('[name=courses]'));
+        const courses = getCourseSelectorValue(form.querySelector('[data-course-selector]'));
         if (!courses.length) throw new Error('Selecciona al menos un curso.');
         await db.createSubject(fd.get('name'), fd.get('description'), courses);
         toast('Materia creada', 'ok');
@@ -1217,15 +1440,13 @@ const actions = {
       '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="kind"><option value="task">Tarea (entregable)</option><option value="exam">Evaluacion</option></select></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Fecha limite</span><input class="input" type="date" name="due_date" required min="' + minVal + '"></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseMultiSelect('courses') + '</label>',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseSelectorHtml('courses', []) + '</label>',
       'Publicar',
       async function (fd, form) {
-        const courses = getSelectedValues(form.querySelector('[name=courses]'));
+        const courses = getCourseSelectorValue(form.querySelector('[data-course-selector]'));
         if (!courses.length) throw new Error('Selecciona al menos un curso.');
-        const dueDateOnly = fd.get('due_date');
-        const dueIso = new Date(dueDateOnly + 'T23:59:59').toISOString();
-        await db.createAssignment(fd.get('subject_id'), fd.get('title'), fd.get('description'), fd.get('kind'), dueIso, courses);
-        toast('Tarea publicada', 'ok');
+        await db.createAssignment(fd.get('subject_id'), fd.get('title'), fd.get('description'), fd.get('kind'), fd.get('due_date'), courses);
+        toast('Tarea publicada y sincronizada con el calendario', 'ok');
         render();
       }
     );
@@ -1268,7 +1489,6 @@ const actions = {
 
   'view-submissions': async function (btn) {
     const assignmentId = btn.dataset.id;
-    const subjectId = btn.dataset.subject;
     const subs = await db.getSubmissions(assignmentId);
     const grades = await db.getGradesByAssignment(assignmentId);
     const gradeMap = {};
@@ -1355,8 +1575,17 @@ $('#nav').addEventListener('click', function (e) {
 });
 
 $('#loginForm').addEventListener('submit', onLogin);
+$('#otpRequestForm').addEventListener('submit', onOtpRequest);
+$('#otpVerifyForm').addEventListener('submit', onOtpVerify);
 $('#registerForm').addEventListener('submit', onRegister);
 $('#regRole').addEventListener('change', toggleRegCourse);
+$('#btnResendConfirm').addEventListener('click', onResendConfirm);
+$('#btnOtpBack').addEventListener('click', function () {
+  $('#otpVerifyForm').hidden = true;
+  $('#otpRequestForm').hidden = false;
+  $('#authInfo').hidden = true;
+  $('#authError').hidden = true;
+});
 
 $('#dlg').addEventListener('click', function (e) {
   const dlg = $('#dlg');
@@ -1371,6 +1600,7 @@ window.addEventListener('hashchange', function () {
 buildNav();
 fillRegCourse();
 toggleRegCourse();
+bindOtpBoxes();
 
 sb.auth.onAuthStateChange(function (_event, session) {
   setTimeout(function () { handleSession(session); }, 0);
