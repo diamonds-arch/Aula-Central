@@ -220,7 +220,6 @@ const safeName = (name) => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 const fmtShort = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
 const fmtDay = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short' });
 const fmtTime = new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' });
-const fmtMonth = new Intl.DateTimeFormat('es', { month: 'short' });
 
 const ICONS = {
   check: '<path d="M20 6L9 17l-5-5"/>',
@@ -288,7 +287,7 @@ function isTeacher() {
 
 const db = {
   async getProfile(userId) {
-    const { data, error } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+    const { data, error } = await sb.from('profiles').select('*').eq('id', userId).single();
     if (error) throw error;
     return data;
   },
@@ -327,7 +326,7 @@ const db = {
 
   async getGrades() {
     let query = sb.from('grades').select('*');
-    if (!isTeacher() && state.user) {
+    if (!isTeacher()) {
       query = query.eq('student_id', state.user.id);
     }
     const { data, error } = await query.order('subject_id');
@@ -555,9 +554,8 @@ async function onRegister(ev) {
 }
 
 async function handleSession(session) {
-  $('#boot').hidden = true;
-
   if (!session) {
+    $('#boot').hidden = true;
     $('#auth').hidden = false;
     $('#app').hidden = true;
     setAuthTab('login');
@@ -570,10 +568,7 @@ async function handleSession(session) {
   try {
     state.profile = await db.getProfile(session.user.id);
   } catch (e) {
-    state.profile = { id: session.user.id, full_name: session.user.email, role: 'student' };
-  }
-
-  if (!state.profile) {
+    toast('Error cargando perfil: ' + errMsg(e), 'err');
     state.profile = { id: session.user.id, full_name: session.user.email, role: 'student' };
   }
 
@@ -582,6 +577,7 @@ async function handleSession(session) {
   $('#uRole').textContent = ROLE_LABEL[p.role] || '';
   $('#uAvatar').textContent = initials(p.full_name || session.user.email);
 
+  $('#boot').hidden = true;
   $('#auth').hidden = true;
   $('#app').hidden = false;
 
@@ -616,7 +612,9 @@ async function render() {
 
   const view = getView();
   const token = ++state.renderId;
-  const root = $('#view');    $$('[data-nav]').forEach(a => {
+  const root = $('#view');
+
+  $$('[data-nav]').forEach(a => {
     a.dataset.nav === view ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
   });
 
@@ -637,6 +635,7 @@ async function render() {
 
 async function viewPanel() {
   const t = isTeacher();
+  const now = new Date();
   
   state.subjects = await db.getSubjects();
   state.announcements = await db.getAnnouncements();
@@ -720,8 +719,8 @@ async function viewTareas() {
       const isOverdue = due < new Date();
       let sub = null;
       if (!isTeacher()) {
-        const subs = await db.getSubmissions(a.id, state.user.id);
-        sub = subs.length ? subs[0] : null;
+        sub = await db.getSubmissions(a.id, state.user.id);
+        sub = sub.length ? sub[0] : null;
       }
 
       html += `<li class="card p-4">
@@ -870,6 +869,8 @@ async function viewCalendario() {
   html += `</div>`;
   return html;
 }
+
+const fmtMonth = new Intl.DateTimeFormat('es', { month: 'short' });
 
 function openModal(title, body, submitLabel = 'Guardar', onSubmit = null) {
   const dlg = $('#dlg');
@@ -1106,7 +1107,7 @@ $('#loginForm')?.addEventListener('submit', onLogin);
 $('#registerForm')?.addEventListener('submit', onRegister);
 
 $('#dlg')?.addEventListener('click', (e) => {
-  if (e.target === $('#dlg') \vert{}\vert{} e.target.closest('[data-close]')) $('#dlg').close();
+  if (e.target === $('#dlg') || e.target.closest('[data-close]')) $('#dlg').close();
 });
 
 window.addEventListener('hashchange', () => {
@@ -1123,14 +1124,13 @@ NAV_ITEMS.forEach(([k]) => {
 });
 
 sb.auth.onAuthStateChange((_event, session) => {
-  handleSession(session);
+  setTimeout(() => handleSession(session), 0);
 });
 
-sb.auth.getSession().then(({ data }) => {
-  handleSession(data ? data.session : null);
-}).catch(() => {
-  handleSession(null);
-});
+setTimeout(async () => {
+  const { data } = await sb.auth.getSession();
+  handleSession(data.session);
+}, 500);
 </script>
 </body>
 </html>
