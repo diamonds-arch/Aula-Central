@@ -86,6 +86,7 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
   .navlink { @apply whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-[#C5CEDF] hover:text-white; }
   .navlink[aria-current="page"] { @apply border-gold text-white; }
   .spinner { @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent; }
+  .acc-head { @apply flex w-full items-center justify-between gap-3 px-5 py-4 text-left; }
 }
 </style>
 </head>
@@ -143,10 +144,12 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Nombre completo</span>
           <input class="input" type="text" name="full_name" required minlength="3" maxlength="80"></label>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Rol</span>
-          <select class="input" name="role" required>
+          <select class="input" name="role" id="regRole" required>
             <option value="student">Estudiante</option>
             <option value="teacher">Profesor</option>
           </select></label>
+        <label class="block" id="regCourseWrap"><span class="mb-1.5 block text-sm font-medium">Curso</span>
+          <select class="input" name="course" id="regCourse"></select></label>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
           <input class="input" type="email" name="email" required></label>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Contrasena</span>
@@ -201,8 +204,12 @@ const CONFIG = {
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3dmVkenF6eGJmZG5wc2Zic25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MDAwMjEsImV4cCI6MjEwNTA3NjAyMX0.UuEikjA6vYFKBHzfUAf7FLwMEATH8TUy_IT9ae3EJmw',
   BUCKET_NAME: 'school-files',
   MAX_FILE_MB: 25,
-  SIM_EMAIL: 'alejandro.pasuy@pioxii.edu.co'
+  SIM_EMAIL: 'alejandro.pasuy@pioxii.edu.co',
+  MAX_SCORE: 5,
+  PASS_SCORE: 3
 };
+
+const COURSES = ['6-1', '6-2', '6-3', '7-1', '7-2', '8-1', '8-2', '9-1', '9-2', '10-1', '10-2', '11-1', '11-2'];
 
 const sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -221,7 +228,6 @@ const safeName = function (name) {
   return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 50);
 };
 const fmtShort = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
-const fmtTime = new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' });
 const WEEKDAYS = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -231,7 +237,8 @@ const ICONS = {
   back: '<path d="M15 6l-6 6 6 6"/>',
   file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/>',
   chevLeft: '<path d="M15 18l-6-6 6-6"/>',
-  chevRight: '<path d="M9 18l6-6-6-6"/>'
+  chevRight: '<path d="M9 18l6-6-6-6"/>',
+  chevDown: '<path d="M6 9l6 6 6-6"/>'
 };
 const icon = function (n, cls) {
   return '<svg class="' + (cls || 'h-4 w-4') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[n] + '</svg>';
@@ -292,13 +299,8 @@ try {
   if (stored) timeOffsetMs = parseInt(stored, 10) || 0;
 } catch (e) {}
 
-function getNow() {
-  return new Date(Date.now() + timeOffsetMs);
-}
-
-function isSimUser() {
-  return !!(state.user && state.user.email && state.user.email.toLowerCase() === CONFIG.SIM_EMAIL.toLowerCase());
-}
+function getNow() { return new Date(Date.now() + timeOffsetMs); }
+function isSimUser() { return !!(state.user && state.user.email && state.user.email.toLowerCase() === CONFIG.SIM_EMAIL.toLowerCase()); }
 
 function renderSimWidget() {
   const box = $('#simWidget');
@@ -308,7 +310,7 @@ function renderSimWidget() {
   box.innerHTML =
     '<div class="card p-3 shadow-xl w-64">' +
       '<p class="text-xs font-semibold text-goldtext mb-1">Simulador Pio XII</p>' +
-      '<p class="text-xs text-muted mb-2">' + esc(fmtShort.format(now)) + ', ' + esc(fmtTime.format(now)) + '</p>' +
+      '<p class="text-xs text-muted mb-2">' + esc(fmtShort.format(now)) + '</p>' +
       '<div class="flex gap-2">' +
         '<button class="btn btn-sm btn-ghost flex-1" data-action="sim-add-day" type="button">+1 Dia</button>' +
         '<button class="btn btn-sm btn-ghost flex-1" data-action="sim-add-week" type="button">+1 Semana</button>' +
@@ -331,7 +333,6 @@ const state = {
   profile: null,
   subjects: [],
   assignments: [],
-  grades: [],
   announcements: [],
   events: [],
   students: [],
@@ -341,6 +342,14 @@ const state = {
 };
 
 function isTeacher() { return state.profile && state.profile.role === 'teacher'; }
+function myCourse() { return state.profile && state.profile.course; }
+function coursesOf(row) { return Array.isArray(row.courses) ? row.courses : []; }
+function visibleForMe(row) {
+  if (isTeacher()) return true;
+  const c = myCourse();
+  if (!c) return false;
+  return coursesOf(row).indexOf(c) !== -1;
+}
 
 /* ============== SUPABASE QUERIES ============== */
 const db = {
@@ -375,16 +384,25 @@ const db = {
     return data;
   },
   async getSubmissions(assignmentId, studentId) {
-    let query = sb.from('submissions').select('*, profiles:student_id(full_name)').eq('assignment_id', assignmentId);
+    let query = sb.from('submissions').select('*, profiles:student_id(full_name,course)').eq('assignment_id', assignmentId);
     if (studentId) query = query.eq('student_id', studentId);
     const { data, error } = await query;
     if (error) throw error;
     return data;
   },
-  async getGrades() {
-    let query = sb.from('grades').select('*, profiles:student_id(full_name)');
-    if (!isTeacher()) query = query.eq('student_id', state.user.id);
-    const { data, error } = await query.order('subject_id');
+  async getStudentsByCourses(courses) {
+    if (!courses || !courses.length) return [];
+    const { data, error } = await sb.from('profiles').select('id,full_name,course').eq('role', 'student').in('course', courses).order('full_name');
+    if (error) throw error;
+    return data;
+  },
+  async getGradesByAssignment(assignmentId) {
+    const { data, error } = await sb.from('activity_grades').select('*').eq('assignment_id', assignmentId);
+    if (error) throw error;
+    return data;
+  },
+  async getMyGrades(studentId) {
+    const { data, error } = await sb.from('activity_grades').select('*, assignments:assignment_id(title,subject_id,due_date)').eq('student_id', studentId);
     if (error) throw error;
     return data;
   },
@@ -403,13 +421,8 @@ const db = {
     if (error) throw error;
     return data;
   },
-  async getStudents() {
-    const { data, error } = await sb.from('profiles').select('id,full_name,email').eq('role', 'student').order('full_name');
-    if (error) throw error;
-    return data;
-  },
-  async createSubject(name, description) {
-    const { data, error } = await sb.from('subjects').insert({ name: name, description: description, teacher_id: state.user.id }).select().single();
+  async createSubject(name, description, courses) {
+    const { data, error } = await sb.from('subjects').insert({ name: name, description: description, teacher_id: state.user.id, courses: courses }).select().single();
     if (error) throw error;
     return data;
   },
@@ -429,10 +442,10 @@ const db = {
     if (error) throw error;
     return data;
   },
-  async createAssignment(subjectId, title, description, kind, dueDate) {
+  async createAssignment(subjectId, title, description, kind, dueDate, courses) {
     const { data, error } = await sb.from('assignments').insert({
       subject_id: subjectId, title: title, description: description, kind: kind,
-      due_date: dueDate, created_by: state.user.id
+      due_date: dueDate, created_by: state.user.id, courses: courses
     }).select().single();
     if (error) throw error;
     return data;
@@ -449,12 +462,15 @@ const db = {
     if (error) throw error;
     return data;
   },
-  async setGrade(studentId, subjectId, period1, period2) {
-    const { data, error } = await sb.from('grades').upsert({
-      student_id: studentId, subject_id: subjectId,
-      period_1: period1 === '' ? null : period1,
-      period_2: period2 === '' ? null : period2
-    }, { onConflict: 'student_id,subject_id' }).select().single();
+  async setActivityGrade(assignmentId, studentId, score, observation) {
+    const { data, error } = await sb.from('activity_grades').upsert({
+      assignment_id: assignmentId,
+      student_id: studentId,
+      score: score === '' || score == null ? null : score,
+      observation: observation || null,
+      graded_by: state.user.id,
+      graded_at: new Date().toISOString()
+    }, { onConflict: 'assignment_id,student_id' }).select().single();
     if (error) throw error;
     return data;
   },
@@ -465,9 +481,9 @@ const db = {
     if (error) throw error;
     return data;
   },
-  async createEvent(title, description, eventDate, eventTime, eventType, subjectId) {
+  async createEvent(title, description, eventDate, eventType, subjectId) {
     const { data, error } = await sb.from('calendar_events').insert({
-      title: title, description: description, event_date: eventDate, event_time: eventTime,
+      title: title, description: description, event_date: eventDate,
       event_type: eventType, subject_id: subjectId, created_by: state.user.id
     }).select().single();
     if (error) throw error;
@@ -492,6 +508,17 @@ async function downloadFile(filePath, fileName) {
 }
 
 /* ============== AUTENTICACION ============== */
+function fillRegCourse() {
+  const sel = $('#regCourse');
+  sel.innerHTML = COURSES.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
+}
+
+function toggleRegCourse() {
+  const isStudent = $('#regRole').value === 'student';
+  $('#regCourseWrap').hidden = !isStudent;
+  $('#regCourse').required = isStudent;
+}
+
 function setAuthTab(tab) {
   const login = tab === 'login';
   $('#loginForm').hidden = !login;
@@ -501,7 +528,7 @@ function setAuthTab(tab) {
   $('#tabLogin').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (login ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
   $('#tabRegister').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (!login ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
   $('#authTitle').textContent = login ? 'Iniciar sesion' : 'Registrarse';
-  $('#authSub').textContent = login ? 'Usa tus credenciales institucionales.' : 'Elige tu rol para acceder a las herramientas que necesitas.';
+  $('#authSub').textContent = login ? 'Usa tus credenciales institucionales.' : 'Elige tu rol y curso para continuar.';
   $('#authError').hidden = true;
   $('#authInfo').hidden = true;
 }
@@ -528,12 +555,14 @@ async function onRegister(ev) {
   const btn = form.querySelector('[type=submit]');
   const err = $('#authError');
   const info = $('#authInfo');
+  const role = form.role.value;
+  const course = role === 'student' ? form.course.value : null;
   await withBusy(btn, async function () {
     try {
       const res = await sb.auth.signUp({
         email: form.email.value.trim(),
         password: form.password.value,
-        options: { data: { full_name: form.full_name.value.trim(), role: form.role.value } }
+        options: { data: { full_name: form.full_name.value.trim(), role: role, course: course } }
       });
       if (res.error) throw res.error;
       form.reset();
@@ -567,7 +596,8 @@ async function handleSession(session) {
     id: session.user.id,
     email: session.user.email,
     full_name: meta.full_name || session.user.email,
-    role: meta.role === 'teacher' ? 'teacher' : 'student'
+    role: meta.role === 'teacher' ? 'teacher' : 'student',
+    course: meta.course || null
   };
 
   state.profile = await withTimeout(
@@ -578,7 +608,7 @@ async function handleSession(session) {
 
   const p = state.profile;
   $('#uName').textContent = p.full_name || session.user.email;
-  $('#uRole').textContent = ROLE_LABEL[p.role] || '';
+  $('#uRole').textContent = ROLE_LABEL[p.role] + (p.course ? ' - ' + p.course : '');
   $('#uAvatar').textContent = initials(p.full_name || session.user.email);
 
   $('#auth').hidden = true;
@@ -652,17 +682,20 @@ async function render() {
   }
 }
 
+function courseBadges(courses) {
+  return (courses || []).map(function (c) { return '<span class="badge bg-sunk text-muted">' + esc(c) + '</span>'; }).join(' ');
+}
+
 /* ============== VISTAS ============== */
 async function viewPanel() {
   const t = isTeacher();
   state.subjects = await db.getSubjects();
   state.announcements = await db.getAnnouncements();
   state.assignments = await db.getAssignments();
-  state.grades = await db.getGrades();
 
   let html = '<div>';
   html += '<h1 class="font-serif text-4xl font-semibold mb-2">Panel</h1>';
-  html += '<p class="text-muted mb-8">Bienvenido ' + esc(state.profile.full_name || state.user.email) + '</p>';
+  html += '<p class="text-muted mb-8">Bienvenido ' + esc(state.profile.full_name || state.user.email) + (t ? '' : ' - Curso ' + esc(myCourse() || 'sin asignar')) + '</p>';
 
   if (state.announcements.length) {
     html += '<section class="mb-8"><h2 class="font-serif text-2xl font-semibold mb-4">Avisos recientes</h2><div class="space-y-3">';
@@ -685,20 +718,24 @@ async function viewPanel() {
 }
 
 async function viewMaterias() {
-  state.subjects = await db.getSubjects();
+  const all = await db.getSubjects();
+  state.subjects = all;
+  const visible = isTeacher() ? all : all.filter(visibleForMe);
+
   let html = '<div><div class="flex items-center justify-between mb-8">';
   html += '<h1 class="font-serif text-4xl font-semibold">Materias</h1>';
   if (isTeacher()) html += '<button class="btn btn-primary" data-action="new-subject" type="button">' + icon('plus') + 'Nueva materia</button>';
   html += '</div>';
 
-  if (!state.subjects.length) {
+  if (!visible.length) {
     html += '<div class="card p-8 text-center"><p class="text-muted">Sin materias por ahora</p></div>';
   } else {
     html += '<div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">';
-    state.subjects.forEach(function (s) {
+    visible.forEach(function (s) {
       html += '<a href="#materias/' + esc(s.id) + '" class="card block p-5 hover:border-gold transition">';
       html += '<h3 class="font-serif text-xl font-semibold">' + esc(s.name) + '</h3>';
       html += '<p class="text-sm text-muted mt-2 line-clamp-2">' + esc(s.description || 'Sin descripcion') + '</p>';
+      html += '<div class="mt-3 flex flex-wrap gap-1.5">' + courseBadges(s.courses) + '</div>';
       html += '</a>';
     });
     html += '</div>';
@@ -718,7 +755,8 @@ async function viewSubjectDetail(id) {
   html += '<a href="#materias" class="mb-6 inline-flex items-center gap-1.5 text-sm text-goldtext hover:underline">' + icon('back') + 'Materias</a>';
   html += '<div class="flex flex-wrap items-start justify-between gap-4 mb-8">';
   html += '<div><h1 class="font-serif text-4xl font-semibold">' + esc(subject.name) + '</h1>';
-  html += '<p class="text-muted mt-1">' + esc(subject.description || '') + '</p></div>';
+  html += '<p class="text-muted mt-1">' + esc(subject.description || '') + '</p>';
+  html += '<div class="mt-2 flex flex-wrap gap-1.5">' + courseBadges(subject.courses) + '</div></div>';
   if (t) {
     html += '<div class="flex flex-wrap gap-2">';
     html += '<button class="btn btn-ghost" data-action="new-topic" type="button">' + icon('plus') + 'Nuevo tema</button>';
@@ -759,8 +797,9 @@ async function viewSubjectDetail(id) {
 }
 
 async function viewTareas() {
-  state.assignments = await db.getAssignments();
-  state.subjects = await db.getSubjects();
+  const all = await db.getAssignments();
+  state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
+  const visible = isTeacher() ? all : all.filter(visibleForMe);
   const now = getNow();
 
   let html = '<div><div class="flex items-center justify-between mb-8">';
@@ -768,11 +807,11 @@ async function viewTareas() {
   if (isTeacher()) html += '<button class="btn btn-primary" data-action="new-assignment" type="button">' + icon('plus') + 'Nueva tarea</button>';
   html += '</div>';
 
-  if (!state.assignments.length) {
+  if (!visible.length) {
     html += '<div class="card p-8 text-center"><p class="text-muted">Sin tareas por ahora</p></div>';
   } else {
     html += '<ul class="space-y-3">';
-    for (const a of state.assignments) {
+    for (const a of visible) {
       const due = new Date(a.due_date);
       const isOverdue = due < now;
       const subjectName = (state.subjects.find(function (s) { return s.id === a.subject_id; }) || {}).name || 'Materia';
@@ -783,9 +822,9 @@ async function viewTareas() {
       }
       html += '<li class="card p-4"><div class="flex items-start justify-between gap-4 flex-wrap">';
       html += '<div><p class="font-semibold">' + esc(a.title) + '</p>';
-      html += '<p class="text-xs text-muted mt-1">' + esc(subjectName) + '</p>';
+      html += '<p class="text-xs text-muted mt-1">' + esc(subjectName) + ' - ' + courseBadges(a.courses) + '</p>';
       if (a.description) html += '<p class="text-sm text-muted mt-1">' + esc(a.description) + '</p>';
-      html += '<p class="text-xs text-muted mt-2">Vence: ' + esc(fmtShort.format(due)) + ' ' + esc(fmtTime.format(due)) + (isOverdue ? ' (vencida)' : '') + '</p></div>';
+      html += '<p class="text-xs text-muted mt-2">Vence: ' + esc(fmtShort.format(due)) + (isOverdue ? ' (vencida)' : '') + '</p></div>';
       html += '<div class="flex items-center gap-2">';
       if (isTeacher()) {
         html += '<button class="btn btn-sm btn-ghost" data-action="view-submissions" data-id="' + esc(a.id) + '" data-subject="' + esc(a.subject_id) + '" type="button">Ver entregas</button>';
@@ -807,45 +846,107 @@ async function viewTareas() {
   return html;
 }
 
+/* ============== CALIFICACIONES (ACORDEON) ============== */
 async function viewCalificaciones() {
-  state.grades = await db.getGrades();
-  state.students = isTeacher() ? await db.getStudents() : [];
-  state.subjects = await db.getSubjects();
+  state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
+  const allAssignments = await db.getAssignments();
   const t = isTeacher();
 
-  let html = '<div><div class="flex items-center justify-between mb-8">';
-  html += '<h1 class="font-serif text-4xl font-semibold">Calificaciones</h1>';
-  if (t) html += '<button class="btn btn-primary" data-action="new-grade" type="button">' + icon('plus') + 'Registrar nota</button>';
-  html += '</div>';
+  let html = '<div>';
+  html += '<h1 class="font-serif text-4xl font-semibold mb-8">Calificaciones</h1>';
 
-  if (!t) {
-    const withFinal = state.grades.filter(function (g) { return g.final_grade != null; });
-    const avg = withFinal.length ? withFinal.reduce(function (a, b) { return a + Number(b.final_grade); }, 0) / withFinal.length : 0;
-    html += '<div class="card p-5 mb-8"><p class="text-muted text-sm">Promedio general</p><p class="font-serif text-4xl font-semibold mt-2">' + avg.toFixed(2) + '</p></div>';
-  }
-
-  if (!state.grades.length) {
-    html += '<div class="card p-8 text-center"><p class="text-muted">Sin calificaciones registradas</p></div>';
-  } else {
-    html += '<div class="card overflow-x-auto"><table class="w-full text-sm min-w-[36rem]"><thead class="bg-sunk"><tr>';
-    if (t) html += '<th class="px-4 py-2 text-left">Estudiante</th>';
-    html += '<th class="px-4 py-2 text-left">Materia</th><th class="px-4 py-2 text-center">Periodo 1</th><th class="px-4 py-2 text-center">Periodo 2</th><th class="px-4 py-2 text-center">Final</th><th class="px-4 py-2 text-left">Estado</th></tr></thead><tbody class="divide-y">';
-    state.grades.forEach(function (g) {
-      const subName = (state.subjects.find(function (s) { return s.id === g.subject_id; }) || {}).name || 'Materia';
-      const okTone = g.status === 'Aprobado' ? 'bg-emerald-600/10 text-emerald-800 dark:text-emerald-300' : (g.status === 'Reprobado' ? 'bg-rose-600/10 text-rose-800 dark:text-rose-300' : 'bg-sunk text-muted');
-      html += '<tr>';
-      if (t) html += '<td class="px-4 py-2">' + esc((g.profiles && g.profiles.full_name) || 'Estudiante') + '</td>';
-      html += '<td class="px-4 py-2">' + esc(subName) + '</td>';
-      html += '<td class="px-4 py-2 text-center">' + (g.period_1 != null ? g.period_1 : '-') + '</td>';
-      html += '<td class="px-4 py-2 text-center">' + (g.period_2 != null ? g.period_2 : '-') + '</td>';
-      html += '<td class="px-4 py-2 text-center font-semibold">' + (g.final_grade != null ? g.final_grade : '-') + '</td>';
-      html += '<td class="px-4 py-2"><span class="badge ' + okTone + '">' + esc(g.status) + '</span></td>';
-      html += '</tr>';
+  if (t) {
+    const grouped = {};
+    allAssignments.forEach(function (a) {
+      if (!grouped[a.subject_id]) grouped[a.subject_id] = [];
+      grouped[a.subject_id].push(a);
     });
-    html += '</tbody></table></div>';
+
+    if (!allAssignments.length) {
+      html += '<div class="card p-8 text-center"><p class="text-muted">Aun no hay actividades creadas</p></div>';
+    } else {
+      html += '<div class="space-y-4">';
+      Object.keys(grouped).forEach(function (subjectId) {
+        const subjectName = (state.subjects.find(function (s) { return s.id === subjectId; }) || {}).name || 'Materia';
+        html += '<div class="card overflow-hidden">';
+        html += '<button class="acc-head" data-action="toggle-acc" data-target="acc-sub-' + esc(subjectId) + '" type="button">';
+        html += '<span class="font-serif text-xl font-semibold">' + esc(subjectName) + '</span>';
+        html += icon('chevDown');
+        html += '</button>';
+        html += '<div id="acc-sub-' + esc(subjectId) + '" class="border-t divide-y" hidden>';
+        grouped[subjectId].forEach(function (a) {
+          html += '<div>';
+          html += '<button class="acc-head" data-action="toggle-acc" data-target="acc-act-' + esc(a.id) + '" type="button">';
+          html += '<span><span class="font-medium">' + esc(a.title) + '</span><span class="ml-2 text-xs text-muted">Vence ' + esc(fmtShort.format(new Date(a.due_date))) + '</span></span>';
+          html += icon('chevDown');
+          html += '</button>';
+          html += '<div id="acc-act-' + esc(a.id) + '" class="px-5 pb-4" hidden data-assignment="' + esc(a.id) + '" data-courses="' + esc(JSON.stringify(a.courses || [])) + '" data-loaded="0">';
+          html += '<p class="text-sm text-muted py-3">Cargando...</p>';
+          html += '</div></div>';
+        });
+        html += '</div></div>';
+      });
+      html += '</div>';
+    }
+  } else {
+    const rows = await db.getMyGrades(state.user.id);
+    const scored = rows.filter(function (r) { return r.score != null; });
+    const avg = scored.length ? scored.reduce(function (sum, r) { return sum + Number(r.score); }, 0) / scored.length : null;
+
+    html += '<div class="card p-5 mb-8"><p class="text-muted text-sm">Promedio general</p>';
+    html += '<p class="font-serif text-4xl font-semibold mt-2 ' + (avg != null && avg >= CONFIG.PASS_SCORE ? 'text-emerald-600 dark:text-emerald-400' : avg != null ? 'text-rose-600 dark:text-rose-400' : '') + '">' + (avg != null ? avg.toFixed(1) : '-') + '</p></div>';
+
+    if (!rows.length) {
+      html += '<div class="card p-8 text-center"><p class="text-muted">Aun no tienes calificaciones registradas</p></div>';
+    } else {
+      html += '<div class="card divide-y">';
+      rows.forEach(function (r) {
+        const assignment = r.assignments || {};
+        const subjectName = (state.subjects.find(function (s) { return s.id === assignment.subject_id; }) || {}).name || 'Materia';
+        const tone = r.score == null ? 'bg-sunk text-muted' : (r.score >= CONFIG.PASS_SCORE ? 'bg-emerald-600/10 text-emerald-800 dark:text-emerald-300' : 'bg-rose-600/10 text-rose-800 dark:text-rose-300');
+        html += '<div class="flex items-center justify-between gap-4 p-4">';
+        html += '<div><p class="font-medium">' + esc(assignment.title || 'Actividad') + '</p>';
+        html += '<p class="text-xs text-muted">' + esc(subjectName) + '</p>';
+        if (r.observation) html += '<p class="text-sm text-muted mt-1">' + esc(r.observation) + '</p>';
+        html += '</div>';
+        html += '<span class="badge ' + tone + ' text-base font-semibold">' + (r.score != null ? Number(r.score).toFixed(1) : 'Sin nota') + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
   }
+
   html += '</div>';
   return html;
+}
+
+async function loadAccordionGrades(container) {
+  const assignmentId = container.dataset.assignment;
+  const courses = JSON.parse(container.dataset.courses || '[]');
+  const students = await db.getStudentsByCourses(courses);
+  const grades = await db.getGradesByAssignment(assignmentId);
+  const gradeMap = {};
+  grades.forEach(function (g) { gradeMap[g.student_id] = g; });
+
+  if (!students.length) {
+    container.innerHTML = '<p class="text-sm text-muted py-3">No hay estudiantes matriculados en los cursos de esta actividad.</p>';
+    container.dataset.loaded = '1';
+    return;
+  }
+
+  let html = '<div class="space-y-2 py-3">';
+  students.forEach(function (s) {
+    const g = gradeMap[s.id] || {};
+    html += '<div class="flex flex-wrap items-end gap-2 border-b pb-2 last:border-0" data-grade-row data-student="' + esc(s.id) + '">';
+    html += '<div class="min-w-[9rem] flex-1"><p class="text-sm font-medium">' + esc(s.full_name) + '</p><p class="text-xs text-muted">' + esc(s.course) + '</p></div>';
+    html += '<label class="text-xs"><span class="block text-muted mb-1">Nota (0.0-5.0)</span><input type="number" class="input w-24" min="0" max="' + CONFIG.MAX_SCORE + '" step="0.1" data-grade-score value="' + (g.score != null ? g.score : '') + '"></label>';
+    html += '<label class="text-xs flex-1 min-w-[10rem]"><span class="block text-muted mb-1">Observacion</span><input type="text" class="input" data-grade-obs value="' + esc(g.observation || '') + '"></label>';
+    html += '<button class="btn btn-sm btn-primary" data-action="save-activity-grade" data-assignment="' + esc(assignmentId) + '" type="button">Guardar</button>';
+    html += '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  container.dataset.loaded = '1';
 }
 
 async function viewAvisos() {
@@ -887,7 +988,7 @@ const EVENT_TONE = {
 
 async function viewCalendarioGrid() {
   state.events = await db.getEvents();
-  state.subjects = await db.getSubjects();
+  state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
   const now = getNow();
   if (!state.calView) state.calView = { year: now.getFullYear(), month: now.getMonth() };
   const year = state.calView.year;
@@ -908,11 +1009,10 @@ async function viewCalendarioGrid() {
   for (let d = 1; d <= totalDays; d++) {
     cells.push({ y: year, m: month, d: d, inMonth: true });
   }
-  while (cells.length % 7 !== 0 || cells.length < 42) {
-    const last = cells[cells.length - 1];
-    const nd = last.inMonth ? (last.m === month ? 1 : last.d + 1) : last.d + 1;
-    cells.push({ y: nextYear, m: nextMonth, d: cells.length - (firstWeekday + totalDays) + 1, inMonth: false });
-    if (cells.length >= 42) break;
+  let nd = 1;
+  while (cells.length < 42) {
+    cells.push({ y: nextYear, m: nextMonth, d: nd, inMonth: false });
+    nd++;
   }
 
   const todayISO = toISODate(now.getFullYear(), now.getMonth(), now.getDate());
@@ -998,18 +1098,52 @@ function subjectOptions() {
   return state.subjects.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.name) + '</option>'; }).join('');
 }
 
+function courseMultiSelect(name) {
+  return '<select class="input" name="' + name + '" multiple size="6" required>' + COURSES.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') + '</select><span class="mt-1 block text-xs text-muted">Manten Ctrl (o Cmd) para elegir varios cursos.</span>';
+}
+
+function getSelectedValues(select) {
+  return Array.prototype.slice.call(select.selectedOptions).map(function (o) { return o.value; });
+}
+
 /* ============== ACCIONES ============== */
 const actions = {
   'retry': function () { return render(); },
+
+  'toggle-acc': async function (btn) {
+    const target = document.getElementById(btn.dataset.target);
+    if (!target) return;
+    target.hidden = !target.hidden;
+    if (!target.hidden && target.dataset.assignment && target.dataset.loaded === '0') {
+      await loadAccordionGrades(target);
+    }
+  },
+
+  'save-activity-grade': async function (btn) {
+    const row = btn.closest('[data-grade-row]');
+    const score = row.querySelector('[data-grade-score]').value;
+    const obs = row.querySelector('[data-grade-obs]').value;
+    if (score !== '' && (Number(score) < 0 || Number(score) > CONFIG.MAX_SCORE)) {
+      toast('La nota debe estar entre 0.0 y ' + CONFIG.MAX_SCORE.toFixed(1), 'warn');
+      return;
+    }
+    await withBusy(btn, async function () {
+      await db.setActivityGrade(btn.dataset.assignment, row.dataset.student, score, obs);
+      toast('Nota guardada', 'ok');
+    });
+  },
 
   'new-subject': function () {
     openModal(
       'Nueva materia',
       '<label class="block"><span class="block text-sm font-medium mb-1">Nombre</span><input class="input" name="name" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseMultiSelect('courses') + '</label>',
       'Crear',
-      async function (fd) {
-        await db.createSubject(fd.get('name'), fd.get('description'));
+      async function (fd, form) {
+        const courses = getSelectedValues(form.querySelector('[name=courses]'));
+        if (!courses.length) throw new Error('Selecciona al menos un curso.');
+        await db.createSubject(fd.get('name'), fd.get('description'), courses);
         toast('Materia creada', 'ok');
         render();
       }
@@ -1075,37 +1209,23 @@ const actions = {
     state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
     if (!state.subjects.length) { toast('Crea primero una materia.', 'warn'); return; }
     const nowLocal = getNow();
-    const minVal = nowLocal.getFullYear() + '-' + pad2(nowLocal.getMonth() + 1) + '-' + pad2(nowLocal.getDate()) + 'T' + pad2(nowLocal.getHours()) + ':' + pad2(nowLocal.getMinutes());
+    const minVal = nowLocal.getFullYear() + '-' + pad2(nowLocal.getMonth() + 1) + '-' + pad2(nowLocal.getDate());
     openModal(
       'Nueva tarea',
       '<label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>' + subjectOptions() + '</select></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="kind"><option value="task">Tarea (entregable)</option><option value="exam">Evaluacion</option></select></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Fecha y hora limite</span><input class="input" type="datetime-local" name="due_date" required min="' + minVal + '"></label>',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Fecha limite</span><input class="input" type="date" name="due_date" required min="' + minVal + '"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseMultiSelect('courses') + '</label>',
       'Publicar',
-      async function (fd) {
-        await db.createAssignment(fd.get('subject_id'), fd.get('title'), fd.get('description'), fd.get('kind'), fd.get('due_date'));
+      async function (fd, form) {
+        const courses = getSelectedValues(form.querySelector('[name=courses]'));
+        if (!courses.length) throw new Error('Selecciona al menos un curso.');
+        const dueDateOnly = fd.get('due_date');
+        const dueIso = new Date(dueDateOnly + 'T23:59:59').toISOString();
+        await db.createAssignment(fd.get('subject_id'), fd.get('title'), fd.get('description'), fd.get('kind'), dueIso, courses);
         toast('Tarea publicada', 'ok');
-        render();
-      }
-    );
-  },
-
-  'new-grade': async function () {
-    if (!state.students.length) state.students = await db.getStudents();
-    if (!state.subjects.length) state.subjects = await db.getSubjects();
-    if (!state.students.length) { toast('Aun no hay estudiantes registrados.', 'warn'); return; }
-    openModal(
-      'Registrar nota',
-      '<label class="block"><span class="block text-sm font-medium mb-1">Estudiante</span><select class="input" name="student_id" required>' + state.students.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.full_name) + '</option>'; }).join('') + '</select></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>' + subjectOptions() + '</select></label>' +
-      '<div class="grid grid-cols-2 gap-3"><label class="block"><span class="block text-sm font-medium mb-1">Periodo 1</span><input class="input" type="number" name="period_1" min="0" max="10" step="0.01"></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Periodo 2</span><input class="input" type="number" name="period_2" min="0" max="10" step="0.01"></label></div>',
-      'Guardar',
-      async function (fd) {
-        await db.setGrade(fd.get('student_id'), fd.get('subject_id'), fd.get('period_1'), fd.get('period_2'));
-        toast('Nota registrada', 'ok');
         render();
       }
     );
@@ -1117,12 +1237,11 @@ const actions = {
       '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Fecha</span><input class="input" type="date" name="event_date" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Hora (opcional)</span><input class="input" type="time" name="event_time"></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="event_type"><option value="Examen">Examen</option><option value="Tarea">Tarea</option><option value="Quiz">Quiz</option><option value="Otro">Otro</option></select></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Materia (opcional)</span><select class="input" name="subject_id"><option value="">Sin materia</option>' + subjectOptions() + '</select></label>',
       'Crear',
       async function (fd) {
-        await db.createEvent(fd.get('title'), fd.get('description'), fd.get('event_date'), fd.get('event_time'), fd.get('event_type'), fd.get('subject_id') || null);
+        await db.createEvent(fd.get('title'), fd.get('description'), fd.get('event_date'), fd.get('event_type'), fd.get('subject_id') || null);
         toast('Evento creado', 'ok');
         render();
       }
@@ -1151,19 +1270,24 @@ const actions = {
     const assignmentId = btn.dataset.id;
     const subjectId = btn.dataset.subject;
     const subs = await db.getSubmissions(assignmentId);
+    const grades = await db.getGradesByAssignment(assignmentId);
+    const gradeMap = {};
+    grades.forEach(function (g) { gradeMap[g.student_id] = g; });
+
     let body = '';
     if (subs.length) {
       body = '<div class="space-y-3">';
       subs.forEach(function (s) {
-        body += '<div class="p-3 border rounded-md bg-sunk" data-sub-row>';
+        const g = gradeMap[s.student_id] || {};
+        body += '<div class="p-3 border rounded-md bg-sunk" data-grade-row data-student="' + esc(s.student_id) + '">';
         body += '<p class="font-medium">' + esc((s.profiles && s.profiles.full_name) || 'Estudiante') + '</p>';
         body += '<p class="text-xs text-muted mt-1">' + esc(s.file_name) + '</p>';
         if (s.comment) body += '<p class="text-sm mt-1">' + esc(s.comment) + '</p>';
         body += '<button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="' + esc(s.file_path) + '" data-name="' + esc(s.file_name) + '" type="button">' + icon('download') + 'Descargar</button>';
         body += '<div class="mt-3 flex flex-wrap items-end gap-2 border-t pt-3">';
-        body += '<label class="text-xs"><span class="block text-muted mb-1">Periodo 1</span><input type="number" class="input w-20" min="0" max="10" step="0.01" data-grade-p1></label>';
-        body += '<label class="text-xs"><span class="block text-muted mb-1">Periodo 2</span><input type="number" class="input w-20" min="0" max="10" step="0.01" data-grade-p2></label>';
-        body += '<button class="btn btn-sm btn-primary" data-action="grade-submission" data-student="' + esc(s.student_id) + '" data-subject="' + esc(subjectId) + '" type="button">Guardar nota</button>';
+        body += '<label class="text-xs"><span class="block text-muted mb-1">Nota (0.0-5.0)</span><input type="number" class="input w-24" min="0" max="' + CONFIG.MAX_SCORE + '" step="0.1" data-grade-score value="' + (g.score != null ? g.score : '') + '"></label>';
+        body += '<label class="text-xs flex-1 min-w-[10rem]"><span class="block text-muted mb-1">Observacion</span><input type="text" class="input" data-grade-obs value="' + esc(g.observation || '') + '"></label>';
+        body += '<button class="btn btn-sm btn-primary" data-action="save-activity-grade" data-assignment="' + esc(assignmentId) + '" type="button">Guardar</button>';
         body += '</div></div>';
       });
       body += '</div>';
@@ -1175,16 +1299,6 @@ const actions = {
 
   'download-file': async function (btn) {
     await withBusy(btn, function () { return downloadFile(btn.dataset.path, btn.dataset.name); });
-  },
-
-  'grade-submission': async function (btn) {
-    const wrap = btn.closest('[data-sub-row]');
-    const p1 = wrap.querySelector('[data-grade-p1]').value;
-    const p2 = wrap.querySelector('[data-grade-p2]').value;
-    await withBusy(btn, async function () {
-      await db.setGrade(btn.dataset.student, btn.dataset.subject, p1, p2);
-      toast('Nota guardada', 'ok');
-    });
   },
 
   'cal-prev': function () {
@@ -1242,6 +1356,7 @@ $('#nav').addEventListener('click', function (e) {
 
 $('#loginForm').addEventListener('submit', onLogin);
 $('#registerForm').addEventListener('submit', onRegister);
+$('#regRole').addEventListener('change', toggleRegCourse);
 
 $('#dlg').addEventListener('click', function (e) {
   const dlg = $('#dlg');
@@ -1254,6 +1369,8 @@ window.addEventListener('hashchange', function () {
 
 /* ============== INIT ============== */
 buildNav();
+fillRegCourse();
+toggleRegCourse();
 
 sb.auth.onAuthStateChange(function (_event, session) {
   setTimeout(function () { handleSession(session); }, 0);
