@@ -1,120 +1,113 @@
 <!DOCTYPE html>
 <html lang="es" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Aula Central: materias, evaluaciones y material de estudio del Colegio Pío XII.">
-  <meta name="theme-color" content="#0F1B33">
-  <title>Aula Central — Colegio Pío XII</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Aula Central: materias, evaluaciones y material de estudio del Colegio Pio XII.">
+<meta name="theme-color" content="#0F1B33">
+<title>Aula Central - Colegio Pio XII</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <script>
-    try {
-      var saved = localStorage.getItem('ac-theme');
-      var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', dark);
-    } catch (e) {}
-  </script>
+<script>
+try {
+  var saved = localStorage.getItem('ac-theme');
+  var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.classList.toggle('dark', dark);
+} catch (e) {}
+</script>
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            paper: 'rgb(var(--c-paper) / <alpha-value>)',
-            card: 'rgb(var(--c-card) / <alpha-value>)',
-            sunk: 'rgb(var(--c-sunk) / <alpha-value>)',
-            line: 'rgb(var(--c-line) / <alpha-value>)',
-            ink: 'rgb(var(--c-ink) / <alpha-value>)',
-            muted: 'rgb(var(--c-muted) / <alpha-value>)',
-            gold: 'rgb(var(--c-gold) / <alpha-value>)',
-            goldtext: 'rgb(var(--c-goldtext) / <alpha-value>)',
-            navy: 'rgb(var(--c-navy) / <alpha-value>)'
-          },
-          borderColor: { DEFAULT: 'rgb(var(--c-line) / <alpha-value>)' },
-          fontFamily: {
-            serif: ['Lora', 'Georgia', 'serif'],
-            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif']
-          }
-        }
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        paper: 'rgb(var(--c-paper) / <alpha-value>)',
+        card: 'rgb(var(--c-card) / <alpha-value>)',
+        sunk: 'rgb(var(--c-sunk) / <alpha-value>)',
+        line: 'rgb(var(--c-line) / <alpha-value>)',
+        ink: 'rgb(var(--c-ink) / <alpha-value>)',
+        muted: 'rgb(var(--c-muted) / <alpha-value>)',
+        gold: 'rgb(var(--c-gold) / <alpha-value>)',
+        goldtext: 'rgb(var(--c-goldtext) / <alpha-value>)',
+        navy: 'rgb(var(--c-navy) / <alpha-value>)'
+      },
+      borderColor: { DEFAULT: 'rgb(var(--c-line) / <alpha-value>)' },
+      fontFamily: {
+        serif: ['Lora', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif']
       }
-    };
-  </script>
+    }
+  }
+};
+</script>
 
-  <style>
-    :root {
-      --c-paper: 242 241 236;  --c-card: 251 250 247;  --c-sunk: 234 232 224;
-      --c-line: 216 212 200;   --c-ink: 20 33 58;      --c-muted: 86 96 116;
-      --c-gold: 194 154 63;    --c-goldtext: 127 92 18; --c-navy: 15 27 51;
-      color-scheme: light;
-    }
-    .dark {
-      --c-paper: 10 17 32;     --c-card: 16 26 46;     --c-sunk: 23 36 64;
-      --c-line: 37 52 79;      --c-ink: 236 232 221;   --c-muted: 154 166 187;
-      --c-gold: 201 164 76;    --c-goldtext: 217 185 104; --c-navy: 11 21 38;
-      color-scheme: dark;
-    }
-    [hidden] { display: none !important; }
-    :focus-visible { outline: 2px solid rgb(var(--c-gold)); outline-offset: 2px; }
-
-    .ledger {
-      background-color: #0F1B33;
-      background-image:
-        linear-gradient(to right, transparent 71px, rgba(201,164,76,.38) 71px, rgba(201,164,76,.38) 72px, transparent 72px),
-        repeating-linear-gradient(to bottom, transparent 0, transparent 35px, rgba(255,255,255,.05) 35px, rgba(255,255,255,.05) 36px);
-    }
-    dialog::backdrop { background: rgba(6, 10, 20, .65); }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; }
-    }
-  </style>
-  <style type="text/tailwindcss">
-    @layer components {
-      .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60; }
-      .btn-primary { @apply bg-gold text-[#101A2E] hover:brightness-110; }
-      .btn-ghost { @apply border bg-card text-ink hover:bg-sunk; }
-      .btn-sm { @apply px-3 py-1.5 text-xs; }
-      .input { @apply w-full rounded-md border bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/40; }
-      .card { @apply rounded-lg border bg-card; }
-      .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
-      .navlink { @apply whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-[#C5CEDF] hover:text-white; }
-      .navlink[aria-current="page"] { @apply border-gold text-white; }
-      .spinner { @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent; }
-    }
-  </style>
+<style>
+:root {
+  --c-paper: 242 241 236;  --c-card: 251 250 247;  --c-sunk: 234 232 224;
+  --c-line: 216 212 200;   --c-ink: 20 33 58;      --c-muted: 86 96 116;
+  --c-gold: 194 154 63;    --c-goldtext: 127 92 18; --c-navy: 15 27 51;
+  color-scheme: light;
+}
+.dark {
+  --c-paper: 10 17 32;     --c-card: 16 26 46;     --c-sunk: 23 36 64;
+  --c-line: 37 52 79;      --c-ink: 236 232 221;   --c-muted: 154 166 187;
+  --c-gold: 201 164 76;    --c-goldtext: 217 185 104; --c-navy: 11 21 38;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid rgb(var(--c-gold)); outline-offset: 2px; }
+.ledger {
+  background-color: #0F1B33;
+  background-image:
+    linear-gradient(to right, transparent 71px, rgba(201,164,76,.38) 71px, rgba(201,164,76,.38) 72px, transparent 72px),
+    repeating-linear-gradient(to bottom, transparent 0, transparent 35px, rgba(255,255,255,.05) 35px, rgba(255,255,255,.05) 36px);
+}
+dialog::backdrop { background: rgba(6, 10, 20, .65); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+<style type="text/tailwindcss">
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60; }
+  .btn-primary { @apply bg-gold text-[#101A2E] hover:brightness-110; }
+  .btn-ghost { @apply border bg-card text-ink hover:bg-sunk; }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+  .input { @apply w-full rounded-md border bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/40; }
+  .card { @apply rounded-lg border bg-card; }
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
+  .navlink { @apply whitespace-nowrap border-b-2 border-transparent px-3 py-2 text-sm text-[#C5CEDF] hover:text-white; }
+  .navlink[aria-current="page"] { @apply border-gold text-white; }
+  .spinner { @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent; }
+}
+</style>
 </head>
 
 <body class="min-h-screen bg-paper font-sans text-ink antialiased">
 
-<div id="boot" class="fixed inset-0 z-50 grid place-items-center bg-paper" role="status">
-  <p class="font-serif text-xl text-muted">Cargando Aula Central…</p>
-</div>
-
 <div id="toasts" class="fixed bottom-4 right-4 z-[60] flex max-w-sm flex-col gap-2" aria-live="polite"></div>
 
-<!-- AUTH -->
-<section id="auth" class="min-h-screen lg:grid lg:grid-cols-[1.15fr_1fr]" hidden>
+<section id="auth" class="min-h-screen lg:grid lg:grid-cols-[1.15fr_1fr]">
   <div class="ledger hidden flex-col justify-between py-14 pl-24 pr-14 text-[#EDE8DA] lg:flex">
     <div class="flex items-center gap-3">
       <span class="grid h-11 w-11 place-items-center rounded-full border border-gold font-serif text-2xl text-gold">A</span>
       <div>
         <p class="font-serif text-xl leading-tight">Aula Central</p>
-        <p class="text-sm text-[#AEB8CC]">Colegio Pío XII</p>
+        <p class="text-sm text-[#AEB8CC]">Colegio Pio XII</p>
       </div>
     </div>
     <div>
-      <h1 class="max-w-xl font-serif text-5xl font-semibold leading-[1.1] tracking-tight">Todo el año escolar, en un solo lugar.</h1>
+      <h1 class="max-w-xl font-serif text-5xl font-semibold leading-[1.1] tracking-tight">Todo el ano escolar, en un solo lugar.</h1>
       <p class="mt-6 max-w-md text-lg leading-relaxed text-[#C5CEDF]">Materias, evaluaciones y material de estudio conectados para estudiantes y profesores.</p>
     </div>
-    <p class="text-sm text-[#AEB8CC]">Año lectivo 2026</p>
+    <p class="text-sm text-[#AEB8CC]">Ano lectivo 2026</p>
   </div>
 
   <div class="flex min-h-screen items-center justify-center px-5 py-10 sm:px-10 lg:min-h-0">
@@ -123,16 +116,16 @@
         <span class="grid h-10 w-10 place-items-center rounded-full border border-gold font-serif text-xl text-goldtext">A</span>
         <div>
           <p class="font-serif text-lg leading-tight">Aula Central</p>
-          <p class="text-xs text-muted">Colegio Pío XII</p>
+          <p class="text-xs text-muted">Colegio Pio XII</p>
         </div>
       </div>
 
       <div class="mb-6 flex gap-1 rounded-md bg-sunk p-1" role="tablist">
-        <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium">Iniciar sesión</button>
+        <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium">Iniciar sesion</button>
         <button id="tabRegister" role="tab" aria-selected="false" data-tab="register" class="flex-1 rounded px-3 py-2 text-sm font-medium">Registrarse</button>
       </div>
 
-      <h2 id="authTitle" class="font-serif text-3xl font-semibold">Iniciar sesión</h2>
+      <h2 id="authTitle" class="font-serif text-3xl font-semibold">Iniciar sesion</h2>
       <p id="authSub" class="mt-1 mb-6 text-muted">Usa tus credenciales institucionales.</p>
 
       <p id="authError" class="mb-4 rounded-md border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-800 dark:text-rose-300" role="alert" hidden></p>
@@ -141,9 +134,9 @@
       <form id="loginForm" class="space-y-4">
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
           <input class="input" type="email" name="email" required placeholder="ejemplo@colegio.edu"></label>
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Contraseña</span>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Contrasena</span>
           <input class="input" type="password" name="password" required minlength="6"></label>
-        <button class="btn btn-primary w-full" type="submit">Iniciar sesión</button>
+        <button class="btn btn-primary w-full" type="submit">Iniciar sesion</button>
       </form>
 
       <form id="registerForm" class="space-y-4" hidden>
@@ -156,16 +149,15 @@
           </select></label>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
           <input class="input" type="email" name="email" required></label>
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Contraseña</span>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Contrasena</span>
           <input class="input" type="password" name="password" required minlength="8">
-          <span class="mt-1 block text-xs text-muted">Mínimo 8 caracteres.</span></label>
+          <span class="mt-1 block text-xs text-muted">Minimo 8 caracteres.</span></label>
         <button class="btn btn-primary w-full" type="submit">Crear cuenta</button>
       </form>
     </div>
   </div>
 </section>
 
-<!-- APP -->
 <div id="app" hidden>
   <header class="sticky top-0 z-30 border-b border-white/10 bg-navy text-[#EDE8DA]">
     <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 px-4 pt-3 md:h-16 md:flex-nowrap md:py-0">
@@ -194,10 +186,12 @@
   </header>
 
   <main id="view" tabindex="-1" class="mx-auto max-w-7xl px-4 py-8 outline-none sm:py-10"></main>
-  <footer class="mx-auto max-w-7xl px-4 pb-10 text-xs text-muted">Aula Central, Colegio Pío XII. Año lectivo 2026.</footer>
+  <footer class="mx-auto max-w-7xl px-4 pb-10 text-xs text-muted">Aula Central, Colegio Pio XII. Ano lectivo 2026.</footer>
 </div>
 
-<dialog id="dlg" class="m-auto max-h-[90vh] w-[min(92vw,40rem)] overflow-y-auto rounded-xl border bg-card p-0 text-ink shadow-2xl"></dialog>
+<div id="simWidget" class="fixed bottom-4 left-4 z-50" hidden></div>
+
+<dialog id="dlg" class="m-auto max-h-[90vh] w-[min(92vw,42rem)] overflow-y-auto rounded-xl border bg-card p-0 text-ink shadow-2xl"></dialog>
 
 <script id="app-js">
 'use strict';
@@ -206,264 +200,275 @@ const CONFIG = {
   SUPABASE_URL: 'https://kwvedzqzxbfdnpsfbsni.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3dmVkenF6eGJmZG5wc2Zic25pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MDAwMjEsImV4cCI6MjEwNTA3NjAyMX0.UuEikjA6vYFKBHzfUAf7FLwMEATH8TUy_IT9ae3EJmw',
   BUCKET_NAME: 'school-files',
-  MAX_FILE_MB: 25
+  MAX_FILE_MB: 25,
+  SIM_EMAIL: 'alejandro.pasuy@pioxii.edu.co'
 };
 
 const sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+const esc = function (v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+};
 const ROLE_LABEL = { student: 'Estudiante', teacher: 'Profesor' };
-const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-const safeName = (name) => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 50);
+const initials = function (name) {
+  return (name || '?').trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase();
+};
+const safeName = function (name) {
+  return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 50);
+};
 const fmtShort = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
-const fmtDay = new Intl.DateTimeFormat('es', { weekday: 'short', day: 'numeric', month: 'short' });
 const fmtTime = new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' });
+const WEEKDAYS = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 const ICONS = {
-  check: '<path d="M20 6L9 17l-5-5"/>',
   download: '<path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
-  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
   back: '<path d="M15 6l-6 6 6 6"/>',
   file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/>',
-  close: '<path d="M6 6l12 12M18 6L6 18"/>',
-  edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'
+  chevLeft: '<path d="M15 18l-6-6 6-6"/>',
+  chevRight: '<path d="M9 18l6-6-6-6"/>'
 };
-const icon = (n, cls = 'h-4 w-4') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
+const icon = function (n, cls) {
+  return '<svg class="' + (cls || 'h-4 w-4') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[n] + '</svg>';
+};
 
-function toast(msg, type = 'ok') {
+function toast(msg, type) {
   const tones = {
     ok: 'border-emerald-500/50 text-emerald-700 dark:text-emerald-300',
     err: 'border-rose-500/60 text-rose-700 dark:text-rose-300',
     warn: 'border-amber-500/60 text-amber-900 dark:text-amber-300'
   };
   const el = document.createElement('div');
-  el.className = `rounded-md border bg-card px-4 py-3 text-sm shadow-lg ${tones[type] || tones.ok}`;
+  el.className = 'rounded-md border bg-card px-4 py-3 text-sm shadow-lg ' + (tones[type] || tones.ok);
   el.textContent = msg;
-  $('#toasts').append(el);
-  setTimeout(() => el.remove(), 4500);
+  $('#toasts').appendChild(el);
+  setTimeout(function () { el.remove(); }, 4500);
 }
 
 async function withBusy(btn, fn) {
   if (!btn) return fn();
   const html = btn.innerHTML;
-  btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>`;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
   try { return await fn(); }
   finally { if (btn.isConnected) { btn.disabled = false; btn.innerHTML = html; } }
 }
 
-function errMsg(e) {
-  const m = (e?.message || e?.error_description || String(e)).toLowerCase();
-  if (m.includes('invalid login')) return 'Correo o contraseña incorrectos.';
-  if (m.includes('not found')) return 'Recurso no encontrado.';
-  if (m.includes('duplicate')) return 'Ese registro ya existe.';
-  if (m.includes('rate limit')) return 'Demasiados intentos. Espera un momento.';
-  if (m.includes('permission denied')) return 'No tienes permiso para realizar esta acción.';
-  if (m.includes('failed to fetch')) return 'No hay conexión con el servidor.';
-  return e?.message || String(e) || 'Error desconocido.';
+function withTimeout(promise, ms, fallback) {
+  return new Promise(function (resolve) {
+    let done = false;
+    const timer = setTimeout(function () {
+      if (!done) { done = true; resolve(fallback); }
+    }, ms);
+    promise.then(function (v) {
+      if (!done) { done = true; clearTimeout(timer); resolve(v); }
+    }).catch(function () {
+      if (!done) { done = true; clearTimeout(timer); resolve(fallback); }
+    });
+  });
 }
 
+function errMsg(e) {
+  const raw = (e && (e.message || e.error_description)) || String(e);
+  const m = raw.toLowerCase();
+  if (m.indexOf('invalid login') !== -1) return 'Correo o contrasena incorrectos.';
+  if (m.indexOf('not found') !== -1) return 'Recurso no encontrado.';
+  if (m.indexOf('duplicate') !== -1) return 'Ese registro ya existe.';
+  if (m.indexOf('rate limit') !== -1) return 'Demasiados intentos. Espera un momento.';
+  if (m.indexOf('permission denied') !== -1) return 'No tienes permiso para realizar esta accion.';
+  if (m.indexOf('failed to fetch') !== -1) return 'No hay conexion con el servidor.';
+  return raw || 'Error desconocido.';
+}
+
+/* ============== MAQUINA DEL TIEMPO ============== */
+let timeOffsetMs = 0;
+try {
+  const stored = localStorage.getItem('ac-time-offset');
+  if (stored) timeOffsetMs = parseInt(stored, 10) || 0;
+} catch (e) {}
+
+function getNow() {
+  return new Date(Date.now() + timeOffsetMs);
+}
+
+function isSimUser() {
+  return !!(state.user && state.user.email && state.user.email.toLowerCase() === CONFIG.SIM_EMAIL.toLowerCase());
+}
+
+function renderSimWidget() {
+  const box = $('#simWidget');
+  if (!isSimUser()) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  const now = getNow();
+  box.innerHTML =
+    '<div class="card p-3 shadow-xl w-64">' +
+      '<p class="text-xs font-semibold text-goldtext mb-1">Simulador Pio XII</p>' +
+      '<p class="text-xs text-muted mb-2">' + esc(fmtShort.format(now)) + ', ' + esc(fmtTime.format(now)) + '</p>' +
+      '<div class="flex gap-2">' +
+        '<button class="btn btn-sm btn-ghost flex-1" data-action="sim-add-day" type="button">+1 Dia</button>' +
+        '<button class="btn btn-sm btn-ghost flex-1" data-action="sim-add-week" type="button">+1 Semana</button>' +
+        '<button class="btn btn-sm btn-ghost" data-action="sim-reset" type="button">Reset</button>' +
+      '</div>' +
+    '</div>';
+}
+
+function syncSimTime() {
+  try { localStorage.setItem('ac-time-offset', String(timeOffsetMs)); } catch (e) {}
+  const now = getNow();
+  state.calView = { year: now.getFullYear(), month: now.getMonth() };
+  renderSimWidget();
+  render();
+}
+
+/* ============== ESTADO ============== */
 const state = {
   user: null,
   profile: null,
   subjects: [],
-  topics: {},
-  resources: {},
   assignments: [],
-  submissions: {},
   grades: [],
   announcements: [],
   events: [],
   students: [],
   currentSubjectId: null,
+  calView: null,
   renderId: 0
 };
 
-function isTeacher() {
-  return state.profile?.role === 'teacher';
-}
+function isTeacher() { return state.profile && state.profile.role === 'teacher'; }
 
+/* ============== SUPABASE QUERIES ============== */
 const db = {
   async getProfile(userId) {
     const { data, error } = await sb.from('profiles').select('*').eq('id', userId).single();
     if (error) throw error;
     return data;
   },
-
   async getSubjects() {
     const { data, error } = await sb.from('subjects').select('*').order('name');
     if (error) throw error;
     return data;
   },
-
+  async getSubjectById(id) {
+    const { data, error } = await sb.from('subjects').select('*').eq('id', id).single();
+    if (error) throw error;
+    return data;
+  },
   async getTopics(subjectId) {
     const { data, error } = await sb.from('topics').select('*').eq('subject_id', subjectId).order('order_num');
     if (error) throw error;
     return data;
   },
-
-  async getResources(topicId) {
-    const { data, error } = await sb.from('resources').select('*').eq('topic_id', topicId).order('created_at', { ascending: false });
+  async getResourcesBySubject(subjectId) {
+    const { data, error } = await sb.from('resources').select('*').eq('subject_id', subjectId).order('created_at', { ascending: false });
     if (error) throw error;
     return data;
   },
-
   async getAssignments() {
     const { data, error } = await sb.from('assignments').select('*').order('due_date');
     if (error) throw error;
     return data;
   },
-
-  async getSubmissions(assignmentId, studentId = null) {
-    let query = sb.from('submissions').select('*').eq('assignment_id', assignmentId);
+  async getSubmissions(assignmentId, studentId) {
+    let query = sb.from('submissions').select('*, profiles:student_id(full_name)').eq('assignment_id', assignmentId);
     if (studentId) query = query.eq('student_id', studentId);
     const { data, error } = await query;
     if (error) throw error;
     return data;
   },
-
   async getGrades() {
-    let query = sb.from('grades').select('*');
-    if (!isTeacher()) {
-      query = query.eq('student_id', state.user.id);
-    }
+    let query = sb.from('grades').select('*, profiles:student_id(full_name)');
+    if (!isTeacher()) query = query.eq('student_id', state.user.id);
     const { data, error } = await query.order('subject_id');
     if (error) throw error;
     return data;
   },
-
   async getAnnouncements() {
-    let query = sb.from('announcements').select('*');
-    const role = state.profile?.role || 'student';
-    query = query.or(`target_role.eq.all,target_role.eq.${role}`);
-    const { data, error } = await query.order('pinned', { ascending: false }).order('created_at', { ascending: false });
+    const role = (state.profile && state.profile.role) || 'student';
+    const { data, error } = await sb.from('announcements')
+      .select('*')
+      .or('target_role.eq.all,target_role.eq.' + role)
+      .order('pinned', { ascending: false })
+      .order('created_at', { ascending: false });
     if (error) throw error;
     return data;
   },
-
   async getEvents() {
     const { data, error } = await sb.from('calendar_events').select('*').order('event_date');
     if (error) throw error;
     return data;
   },
-
   async getStudents() {
     const { data, error } = await sb.from('profiles').select('id,full_name,email').eq('role', 'student').order('full_name');
     if (error) throw error;
     return data;
   },
-
   async createSubject(name, description) {
-    const { data, error } = await sb.from('subjects').insert({
-      name,
-      description,
-      teacher_id: state.user.id
-    }).select().single();
+    const { data, error } = await sb.from('subjects').insert({ name: name, description: description, teacher_id: state.user.id }).select().single();
     if (error) throw error;
     return data;
   },
-
   async createTopic(subjectId, title, description) {
-    const { data, error } = await sb.from('topics').insert({
-      subject_id: subjectId,
-      title,
-      description,
-      order_num: 0
-    }).select().single();
+    const { data, error } = await sb.from('topics').insert({ subject_id: subjectId, title: title, description: description, order_num: 0 }).select().single();
     if (error) throw error;
     return data;
   },
-
   async uploadResource(topicId, subjectId, title, file) {
-    const path = `${subjectId}/${topicId}/${Date.now()}-${safeName(file.name)}`;
-    const { error: upError } = await sb.storage.from(CONFIG.BUCKET_NAME).upload(path, file);
-    if (upError) throw upError;
-
+    const path = subjectId + '/' + topicId + '/' + Date.now() + '-' + safeName(file.name);
+    const up = await sb.storage.from(CONFIG.BUCKET_NAME).upload(path, file);
+    if (up.error) throw up.error;
     const { data, error } = await sb.from('resources').insert({
-      topic_id: topicId,
-      subject_id: subjectId,
-      title,
-      file_path: path,
-      file_name: file.name,
-      file_size: file.size,
-      uploaded_by: state.user.id
+      topic_id: topicId, subject_id: subjectId, title: title, file_path: path,
+      file_name: file.name, file_size: file.size, uploaded_by: state.user.id
     }).select().single();
     if (error) throw error;
     return data;
   },
-
-  async deleteResource(id, filePath) {
-    if (filePath) {
-      await sb.storage.from(CONFIG.BUCKET_NAME).remove([filePath]);
-    }
-    const { error } = await sb.from('resources').delete().eq('id', id);
-    if (error) throw error;
-  },
-
   async createAssignment(subjectId, title, description, kind, dueDate) {
     const { data, error } = await sb.from('assignments').insert({
-      subject_id: subjectId,
-      title,
-      description,
-      kind,
-      due_date: dueDate,
-      created_by: state.user.id
+      subject_id: subjectId, title: title, description: description, kind: kind,
+      due_date: dueDate, created_by: state.user.id
     }).select().single();
     if (error) throw error;
     return data;
   },
-
   async submitAssignment(assignmentId, file, comment) {
     const studentId = state.user.id;
-    const path = `submissions/${studentId}/${assignmentId}/${Date.now()}-${safeName(file.name)}`;
-    const { error: upError } = await sb.storage.from(CONFIG.BUCKET_NAME).upload(path, file);
-    if (upError) throw upError;
-
+    const path = 'submissions/' + studentId + '/' + assignmentId + '/' + Date.now() + '-' + safeName(file.name);
+    const up = await sb.storage.from(CONFIG.BUCKET_NAME).upload(path, file);
+    if (up.error) throw up.error;
     const { data, error } = await sb.from('submissions').upsert({
-      assignment_id: assignmentId,
-      student_id: studentId,
-      file_path: path,
-      file_name: file.name,
-      comment,
-      submitted_at: new Date().toISOString()
-    }).select().single();
+      assignment_id: assignmentId, student_id: studentId, file_path: path,
+      file_name: file.name, comment: comment, submitted_at: new Date().toISOString()
+    }, { onConflict: 'assignment_id,student_id' }).select().single();
     if (error) throw error;
     return data;
   },
-
   async setGrade(studentId, subjectId, period1, period2) {
     const { data, error } = await sb.from('grades').upsert({
-      student_id: studentId,
-      subject_id: subjectId,
-      period_1: period1 || null,
-      period_2: period2 || null
+      student_id: studentId, subject_id: subjectId,
+      period_1: period1 === '' ? null : period1,
+      period_2: period2 === '' ? null : period2
     }, { onConflict: 'student_id,subject_id' }).select().single();
     if (error) throw error;
     return data;
   },
-
   async createAnnouncement(title, content, targetRole) {
     const { data, error } = await sb.from('announcements').insert({
-      title,
-      content,
-      target_role: targetRole,
-      author_id: state.user.id
+      title: title, content: content, target_role: targetRole, author_id: state.user.id
     }).select().single();
     if (error) throw error;
     return data;
   },
-
   async createEvent(title, description, eventDate, eventTime, eventType, subjectId) {
     const { data, error } = await sb.from('calendar_events').insert({
-      title,
-      description,
-      event_date: eventDate,
-      event_time: eventTime,
-      event_type: eventType,
-      subject_id: subjectId,
-      created_by: state.user.id
+      title: title, description: description, event_date: eventDate, event_time: eventTime,
+      event_type: eventType, subject_id: subjectId, created_by: state.user.id
     }).select().single();
     if (error) throw error;
     return data;
@@ -477,7 +482,8 @@ async function downloadFile(filePath, fileName) {
     const a = document.createElement('a');
     a.href = data.signedUrl;
     a.download = fileName || 'archivo';
-    document.body.append(a);
+    a.rel = 'noopener';
+    document.body.appendChild(a);
     a.click();
     a.remove();
   } catch (e) {
@@ -485,34 +491,30 @@ async function downloadFile(filePath, fileName) {
   }
 }
 
+/* ============== AUTENTICACION ============== */
 function setAuthTab(tab) {
   const login = tab === 'login';
   $('#loginForm').hidden = !login;
   $('#registerForm').hidden = login;
   $('#tabLogin').setAttribute('aria-selected', login);
   $('#tabRegister').setAttribute('aria-selected', !login);
-  for (const el of [[$('#tabLogin'), login], [$('#tabRegister'), !login]]) {
-    el[0].className = `flex-1 rounded px-3 py-2 text-sm font-medium ${el[1] ? 'bg-card shadow-sm' : 'text-muted hover:text-ink'}`;
-  }
-  $('#authTitle').textContent = login ? 'Iniciar sesión' : 'Registrarse';
+  $('#tabLogin').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (login ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
+  $('#tabRegister').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (!login ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
+  $('#authTitle').textContent = login ? 'Iniciar sesion' : 'Registrarse';
   $('#authSub').textContent = login ? 'Usa tus credenciales institucionales.' : 'Elige tu rol para acceder a las herramientas que necesitas.';
-  document.getElementById('authError').hidden = true;
-  document.getElementById('authInfo').hidden = true;
+  $('#authError').hidden = true;
+  $('#authInfo').hidden = true;
 }
 
 async function onLogin(ev) {
   ev.preventDefault();
   const form = ev.target;
   const btn = form.querySelector('[type=submit]');
-  const err = document.getElementById('authError');
-
-  await withBusy(btn, async () => {
+  const err = $('#authError');
+  await withBusy(btn, async function () {
     try {
-      const { error } = await sb.auth.signInWithPassword({
-        email: form.email.value.trim(),
-        password: form.password.value
-      });
-      if (error) throw error;
+      const res = await sb.auth.signInWithPassword({ email: form.email.value.trim(), password: form.password.value });
+      if (res.error) throw res.error;
     } catch (e) {
       err.textContent = errMsg(e);
       err.hidden = false;
@@ -524,25 +526,19 @@ async function onRegister(ev) {
   ev.preventDefault();
   const form = ev.target;
   const btn = form.querySelector('[type=submit]');
-  const err = document.getElementById('authError');
-  const info = document.getElementById('authInfo');
-
-  await withBusy(btn, async () => {
+  const err = $('#authError');
+  const info = $('#authInfo');
+  await withBusy(btn, async function () {
     try {
-      const { error } = await sb.auth.signUp({
+      const res = await sb.auth.signUp({
         email: form.email.value.trim(),
         password: form.password.value,
-        options: {
-          data: {
-            full_name: form.full_name.value.trim(),
-            role: form.role.value
-          }
-        }
+        options: { data: { full_name: form.full_name.value.trim(), role: form.role.value } }
       });
-      if (error) throw error;
+      if (res.error) throw res.error;
       form.reset();
       setAuthTab('login');
-      info.textContent = 'Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.';
+      info.textContent = 'Cuenta creada. Revisa tu correo para confirmar y luego inicia sesion.';
       info.hidden = false;
       err.hidden = true;
     } catch (e) {
@@ -555,35 +551,45 @@ async function onRegister(ev) {
 
 async function handleSession(session) {
   if (!session) {
-    $('#boot').hidden = true;
     $('#auth').hidden = false;
     $('#app').hidden = true;
     setAuthTab('login');
     state.user = null;
     state.profile = null;
+    renderSimWidget();
     return;
   }
 
   state.user = session.user;
-  try {
-    state.profile = await db.getProfile(session.user.id);
-  } catch (e) {
-    toast('Error cargando perfil: ' + errMsg(e), 'err');
-    state.profile = { id: session.user.id, full_name: session.user.email, role: 'student' };
-  }
+
+  const meta = session.user.user_metadata || {};
+  const fallbackProfile = {
+    id: session.user.id,
+    email: session.user.email,
+    full_name: meta.full_name || session.user.email,
+    role: meta.role === 'teacher' ? 'teacher' : 'student'
+  };
+
+  state.profile = await withTimeout(
+    db.getProfile(session.user.id).catch(function () { return fallbackProfile; }),
+    5000,
+    fallbackProfile
+  );
 
   const p = state.profile;
   $('#uName').textContent = p.full_name || session.user.email;
   $('#uRole').textContent = ROLE_LABEL[p.role] || '';
   $('#uAvatar').textContent = initials(p.full_name || session.user.email);
 
-  $('#boot').hidden = true;
   $('#auth').hidden = true;
   $('#app').hidden = false;
 
+  renderSimWidget();
+  if (!location.hash) location.hash = '#panel';
   render();
 }
 
+/* ============== ROUTING ============== */
 const NAV_ITEMS = [
   ['panel', 'Panel'],
   ['materias', 'Materias'],
@@ -593,154 +599,211 @@ const NAV_ITEMS = [
   ['calendario', 'Calendario']
 ];
 
-const VIEWS = {
-  panel: viewPanel,
-  materias: viewMaterias,
-  tareas: viewTareas,
-  calificaciones: viewCalificaciones,
-  avisos: viewAvisos,
-  calendario: viewCalendario
-};
+function buildNav() {
+  $('#nav').innerHTML = NAV_ITEMS.map(function (item) {
+    return '<a href="#' + item[0] + '" data-nav="' + item[0] + '" class="navlink">' + item[1] + '</a>';
+  }).join('');
+}
 
-function getView() {
-  const hash = location.hash.slice(1) || 'panel';
-  return hash.split('/')[0] in VIEWS ? hash.split('/')[0] : 'panel';
+function parseHash() {
+  const raw = location.hash.slice(1) || 'panel';
+  const parts = raw.split('/');
+  const known = NAV_ITEMS.map(function (i) { return i[0]; });
+  const view = known.indexOf(parts[0]) !== -1 ? parts[0] : 'panel';
+  const id = parts[1] || null;
+  return { view: view, id: id };
 }
 
 async function render() {
   if (!state.user) return;
-
-  const view = getView();
+  const parsed = parseHash();
   const token = ++state.renderId;
   const root = $('#view');
 
-  $$('[data-nav]').forEach(a => {
-    a.dataset.nav === view ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+  $$('[data-nav]').forEach(function (a) {
+    if (a.dataset.nav === parsed.view) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
   });
 
-  root.innerHTML = '<div class="animate-pulse space-y-5" aria-hidden="true"><div class="h-10 w-72 rounded bg-sunk"></div><div class="h-32 rounded-lg bg-sunk"></div></div>';
+  root.innerHTML = '<div class="animate-pulse space-y-5" aria-hidden="true"><div class="h-10 w-72 rounded bg-sunk"></div><div class="h-40 rounded-lg bg-sunk"></div></div>';
 
   try {
-    if (token !== state.renderId) return;
-    const html = await VIEWS[view]();
+    let html;
+    if (parsed.view === 'materias' && parsed.id) {
+      html = await viewSubjectDetail(parsed.id);
+    } else {
+      const fn = {
+        panel: viewPanel,
+        materias: viewMaterias,
+        tareas: viewTareas,
+        calificaciones: viewCalificaciones,
+        avisos: viewAvisos,
+        calendario: viewCalendarioGrid
+      }[parsed.view];
+      html = await fn();
+    }
     if (token !== state.renderId) return;
     root.innerHTML = html;
     window.scrollTo({ top: 0 });
   } catch (e) {
     if (token === state.renderId) {
-      root.innerHTML = `<div class="card p-8 text-center"><p class="font-serif text-xl">Error cargando</p><p class="text-muted">${esc(errMsg(e))}</p></div>`;
+      root.innerHTML = '<div class="card p-8 text-center"><p class="font-serif text-xl">Error cargando</p><p class="text-muted mt-1">' + esc(errMsg(e)) + '</p><button class="btn btn-primary mt-4" data-action="retry" type="button">Reintentar</button></div>';
     }
   }
 }
 
+/* ============== VISTAS ============== */
 async function viewPanel() {
   const t = isTeacher();
-  const now = new Date();
-  
   state.subjects = await db.getSubjects();
   state.announcements = await db.getAnnouncements();
   state.assignments = await db.getAssignments();
   state.grades = await db.getGrades();
 
-  let html = `<div>
-    <h1 class="font-serif text-4xl font-semibold mb-2">Panel</h1>
-    <p class="text-muted mb-8">Bienvenido ${esc(state.profile.full_name || state.user.email)}</p>`;
+  let html = '<div>';
+  html += '<h1 class="font-serif text-4xl font-semibold mb-2">Panel</h1>';
+  html += '<p class="text-muted mb-8">Bienvenido ' + esc(state.profile.full_name || state.user.email) + '</p>';
 
   if (state.announcements.length) {
-    html += `<section class="mb-8">
-      <h2 class="font-serif text-2xl font-semibold mb-4">Avisos recientes</h2>
-      <div class="space-y-3">`;
-    for (const a of state.announcements.slice(0, 3)) {
-      html += `<div class="card p-4">
-        <p class="font-semibold">${esc(a.title)}</p>
-        <p class="text-sm text-muted mt-1 line-clamp-2">${esc(a.content)}</p>
-        <p class="text-xs text-muted mt-2">${esc(fmtShort.format(new Date(a.created_at)))}</p>
-      </div>`;
-    }
-    html += `</div></section>`;
+    html += '<section class="mb-8"><h2 class="font-serif text-2xl font-semibold mb-4">Avisos recientes</h2><div class="space-y-3">';
+    state.announcements.slice(0, 3).forEach(function (a) {
+      html += '<div class="card p-4"><p class="font-semibold">' + esc(a.title) + '</p><p class="text-sm text-muted mt-1">' + esc(a.content) + '</p><p class="text-xs text-muted mt-2">' + esc(fmtShort.format(new Date(a.created_at))) + '</p></div>';
+    });
+    html += '</div></section>';
   }
 
   if (t) {
-    html += `<section>
-      <h2 class="font-serif text-2xl font-semibold mb-4">Acciones rápidas</h2>
-      <div class="flex flex-wrap gap-2">
-        <button class="btn btn-primary" data-action="new-subject">${icon('plus')}Nueva materia</button>
-        <button class="btn btn-ghost" data-action="new-announcement">${icon('plus')}Nuevo aviso</button>
-      </div>
-    </section>`;
+    html += '<section><h2 class="font-serif text-2xl font-semibold mb-4">Acciones rapidas</h2><div class="flex flex-wrap gap-2">';
+    html += '<button class="btn btn-primary" data-action="new-subject" type="button">' + icon('plus') + 'Nueva materia</button>';
+    html += '<button class="btn btn-ghost" data-action="new-announcement" type="button">' + icon('plus') + 'Nuevo aviso</button>';
+    html += '<button class="btn btn-ghost" data-action="new-event" type="button">' + icon('plus') + 'Nuevo evento</button>';
+    html += '</div></section>';
   }
 
-  html += `</div>`;
+  html += '</div>';
   return html;
 }
 
 async function viewMaterias() {
   state.subjects = await db.getSubjects();
-
-  let html = `<div>
-    <div class="flex items-center justify-between mb-8">
-      <h1 class="font-serif text-4xl font-semibold">Materias</h1>
-      ${isTeacher() ? `<button class="btn btn-primary" data-action="new-subject">${icon('plus')}Nueva materia</button>` : ''}
-    </div>`;
+  let html = '<div><div class="flex items-center justify-between mb-8">';
+  html += '<h1 class="font-serif text-4xl font-semibold">Materias</h1>';
+  if (isTeacher()) html += '<button class="btn btn-primary" data-action="new-subject" type="button">' + icon('plus') + 'Nueva materia</button>';
+  html += '</div>';
 
   if (!state.subjects.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin materias por ahora</p></div>`;
+    html += '<div class="card p-8 text-center"><p class="text-muted">Sin materias por ahora</p></div>';
   } else {
-    html += `<div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">`;
-    for (const s of state.subjects) {
-      html += `<a href="#materias/${esc(s.id)}" class="card p-5 hover:border-gold transition cursor-pointer">
-        <h3 class="font-serif text-xl font-semibold">${esc(s.name)}</h3>
-        <p class="text-sm text-muted mt-2 line-clamp-2">${esc(s.description || '—')}</p>
-      </a>`;
-    }
-    html += `</div>`;
+    html += '<div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">';
+    state.subjects.forEach(function (s) {
+      html += '<a href="#materias/' + esc(s.id) + '" class="card block p-5 hover:border-gold transition">';
+      html += '<h3 class="font-serif text-xl font-semibold">' + esc(s.name) + '</h3>';
+      html += '<p class="text-sm text-muted mt-2 line-clamp-2">' + esc(s.description || 'Sin descripcion') + '</p>';
+      html += '</a>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+async function viewSubjectDetail(id) {
+  state.currentSubjectId = id;
+  const subject = await db.getSubjectById(id);
+  const topics = await db.getTopics(id);
+  const resources = await db.getResourcesBySubject(id);
+  const t = isTeacher();
+
+  let html = '<div>';
+  html += '<a href="#materias" class="mb-6 inline-flex items-center gap-1.5 text-sm text-goldtext hover:underline">' + icon('back') + 'Materias</a>';
+  html += '<div class="flex flex-wrap items-start justify-between gap-4 mb-8">';
+  html += '<div><h1 class="font-serif text-4xl font-semibold">' + esc(subject.name) + '</h1>';
+  html += '<p class="text-muted mt-1">' + esc(subject.description || '') + '</p></div>';
+  if (t) {
+    html += '<div class="flex flex-wrap gap-2">';
+    html += '<button class="btn btn-ghost" data-action="new-topic" type="button">' + icon('plus') + 'Nuevo tema</button>';
+    html += '<button class="btn btn-primary" data-action="upload-resource" type="button">' + icon('plus') + 'Subir archivo</button>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  if (!topics.length) {
+    html += '<div class="card border-dashed p-8 text-center"><p class="font-serif text-xl">Sin temas todavia</p><p class="text-muted mt-1">' + (t ? 'Crea el primer tema para organizar el material.' : 'El profesor aun no ha publicado temas.') + '</p></div>';
+  } else {
+    html += '<div class="space-y-5">';
+    topics.forEach(function (topic) {
+      const res = resources.filter(function (r) { return r.topic_id === topic.id; });
+      html += '<article class="card p-5">';
+      html += '<h3 class="font-serif text-xl font-semibold">' + esc(topic.title) + '</h3>';
+      if (topic.description) html += '<p class="text-sm text-muted mt-1">' + esc(topic.description) + '</p>';
+      html += '<ul class="mt-3 divide-y border-t">';
+      if (res.length) {
+        res.forEach(function (r) {
+          html += '<li class="flex flex-wrap items-center gap-3 py-3">';
+          html += '<span class="text-goldtext">' + icon('file', 'h-5 w-5') + '</span>';
+          html += '<div class="min-w-0 flex-1"><p class="truncate font-medium">' + esc(r.title) + '</p>';
+          html += '<p class="truncate text-xs text-muted">' + esc(r.file_name) + '</p></div>';
+          html += '<button class="btn btn-ghost btn-sm" data-action="download-resource" data-path="' + esc(r.file_path) + '" data-name="' + esc(r.file_name) + '" type="button">' + icon('download') + 'Descargar</button>';
+          html += '</li>';
+        });
+      } else {
+        html += '<li class="py-3 text-sm text-muted">Sin documentos en este tema.</li>';
+      }
+      html += '</ul></article>';
+    });
+    html += '</div>';
   }
 
-  html += `</div>`;
+  html += '</div>';
   return html;
 }
 
 async function viewTareas() {
   state.assignments = await db.getAssignments();
-  state.submissions = {};
+  state.subjects = await db.getSubjects();
+  const now = getNow();
 
-  let html = `<div>
-    <div class="flex items-center justify-between mb-8">
-      <h1 class="font-serif text-4xl font-semibold">Tareas</h1>
-      ${isTeacher() ? `<button class="btn btn-primary" data-action="new-assignment">${icon('plus')}Nueva tarea</button>` : ''}
-    </div>`;
+  let html = '<div><div class="flex items-center justify-between mb-8">';
+  html += '<h1 class="font-serif text-4xl font-semibold">Tareas</h1>';
+  if (isTeacher()) html += '<button class="btn btn-primary" data-action="new-assignment" type="button">' + icon('plus') + 'Nueva tarea</button>';
+  html += '</div>';
 
   if (!state.assignments.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin tareas por ahora</p></div>`;
+    html += '<div class="card p-8 text-center"><p class="text-muted">Sin tareas por ahora</p></div>';
   } else {
-    html += `<ul class="space-y-3">`;
+    html += '<ul class="space-y-3">';
     for (const a of state.assignments) {
       const due = new Date(a.due_date);
-      const isOverdue = due < new Date();
+      const isOverdue = due < now;
+      const subjectName = (state.subjects.find(function (s) { return s.id === a.subject_id; }) || {}).name || 'Materia';
       let sub = null;
       if (!isTeacher()) {
-        sub = await db.getSubmissions(a.id, state.user.id);
-        sub = sub.length ? sub[0] : null;
+        const subs = await db.getSubmissions(a.id, state.user.id);
+        sub = subs.length ? subs[0] : null;
       }
-
-      html += `<li class="card p-4">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="font-semibold">${esc(a.title)}</p>
-            <p class="text-sm text-muted mt-1">${esc(a.description || '')}</p>
-            <p class="text-xs text-muted mt-2">Vencimiento: ${esc(fmtShort.format(due))} ${esc(fmtTime.format(due))}</p>
-          </div>
-          <div class="flex gap-2">
-            ${isTeacher() ? `<button class="btn btn-sm btn-ghost" data-action="view-submissions" data-id="${esc(a.id)}">Ver entregas</button>` : ''}
-            ${!isTeacher() && a.kind === 'task' ? (sub || !isOverdue ? `<button class="btn btn-sm btn-${sub ? 'ghost' : 'primary'}" data-action="submit-assignment" data-id="${esc(a.id)}">${sub ? 'Reenviar' : 'Entregar'}</button>` : '') : ''}
-          </div>
-        </div>
-      </li>`;
+      html += '<li class="card p-4"><div class="flex items-start justify-between gap-4 flex-wrap">';
+      html += '<div><p class="font-semibold">' + esc(a.title) + '</p>';
+      html += '<p class="text-xs text-muted mt-1">' + esc(subjectName) + '</p>';
+      if (a.description) html += '<p class="text-sm text-muted mt-1">' + esc(a.description) + '</p>';
+      html += '<p class="text-xs text-muted mt-2">Vence: ' + esc(fmtShort.format(due)) + ' ' + esc(fmtTime.format(due)) + (isOverdue ? ' (vencida)' : '') + '</p></div>';
+      html += '<div class="flex items-center gap-2">';
+      if (isTeacher()) {
+        html += '<button class="btn btn-sm btn-ghost" data-action="view-submissions" data-id="' + esc(a.id) + '" data-subject="' + esc(a.subject_id) + '" type="button">Ver entregas</button>';
+      } else if (a.kind === 'task') {
+        if (sub) {
+          html += '<span class="badge bg-emerald-600/10 text-emerald-800 dark:text-emerald-300">Entregada</span>';
+          if (!isOverdue) html += '<button class="btn btn-sm btn-ghost" data-action="submit-assignment" data-id="' + esc(a.id) + '" type="button">Reenviar</button>';
+        } else if (isOverdue) {
+          html += '<span class="badge bg-rose-600/10 text-rose-800 dark:text-rose-300">Vencida</span>';
+        } else {
+          html += '<button class="btn btn-sm btn-primary" data-action="submit-assignment" data-id="' + esc(a.id) + '" type="button">Entregar</button>';
+        }
+      }
+      html += '</div></div></li>';
     }
-    html += `</ul>`;
+    html += '</ul>';
   }
-
-  html += `</div>`;
+  html += '</div>';
   return html;
 }
 
@@ -748,151 +811,176 @@ async function viewCalificaciones() {
   state.grades = await db.getGrades();
   state.students = isTeacher() ? await db.getStudents() : [];
   state.subjects = await db.getSubjects();
+  const t = isTeacher();
 
-  let html = `<div>
-    <div class="flex items-center justify-between mb-8">
-      <h1 class="font-serif text-4xl font-semibold">Calificaciones</h1>
-      ${isTeacher() ? `<button class="btn btn-primary" data-action="new-grade">${icon('plus')}Registrar nota</button>` : ''}
-    </div>`;
+  let html = '<div><div class="flex items-center justify-between mb-8">';
+  html += '<h1 class="font-serif text-4xl font-semibold">Calificaciones</h1>';
+  if (t) html += '<button class="btn btn-primary" data-action="new-grade" type="button">' + icon('plus') + 'Registrar nota</button>';
+  html += '</div>';
 
-  if (!isTeacher()) {
-    const avg = state.grades.length ? state.grades.reduce((a, b) => a + (b.final_grade || 0), 0) / state.grades.length : 0;
-    html += `<div class="grid gap-5 md:grid-cols-2 mb-8">
-      <div class="card p-5">
-        <p class="text-muted text-sm">Promedio general</p>
-        <p class="font-serif text-4xl font-semibold mt-2">${(avg || 0).toFixed(2)}</p>
-      </div>
-    </div>`;
+  if (!t) {
+    const withFinal = state.grades.filter(function (g) { return g.final_grade != null; });
+    const avg = withFinal.length ? withFinal.reduce(function (a, b) { return a + Number(b.final_grade); }, 0) / withFinal.length : 0;
+    html += '<div class="card p-5 mb-8"><p class="text-muted text-sm">Promedio general</p><p class="font-serif text-4xl font-semibold mt-2">' + avg.toFixed(2) + '</p></div>';
   }
 
   if (!state.grades.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin calificaciones registradas</p></div>`;
+    html += '<div class="card p-8 text-center"><p class="text-muted">Sin calificaciones registradas</p></div>';
   } else {
-    html += `<div class="card overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-sunk">
-          <tr>
-            ${isTeacher() ? '<th class="px-4 py-2 text-left">Estudiante</th>' : ''}
-            <th class="px-4 py-2 text-left">Materia</th>
-            <th class="px-4 py-2 text-center">Periodo 1</th>
-            <th class="px-4 py-2 text-center">Periodo 2</th>
-            <th class="px-4 py-2 text-center">Final</th>
-            <th class="px-4 py-2 text-left">Estado</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y">`;
-    for (const g of state.grades) {
-      const p1 = g.period_1 || '—';
-      const p2 = g.period_2 || '—';
-      const final = g.final_grade || '—';
-      const subName = state.subjects.find(s => s.id === g.subject_id)?.name || 'Materia';
-      html += `<tr>
-        ${isTeacher() ? `<td class="px-4 py-2">${esc(g.profiles?.full_name || 'Estudiante')}</td>` : ''}
-        <td class="px-4 py-2">${esc(subName)}</td>
-        <td class="px-4 py-2 text-center">${p1}</td>
-        <td class="px-4 py-2 text-center">${p2}</td>
-        <td class="px-4 py-2 text-center font-semibold">${final}</td>
-        <td class="px-4 py-2"><span class="badge ${g.status === 'Aprobado' ? 'bg-emerald-600/10 text-emerald-800 dark:text-emerald-300' : 'bg-rose-600/10 text-rose-800 dark:text-rose-300'}">${esc(g.status)}</span></td>
-      </tr>`;
-    }
-    html += `</tbody>
-      </table>
-    </div>`;
+    html += '<div class="card overflow-x-auto"><table class="w-full text-sm min-w-[36rem]"><thead class="bg-sunk"><tr>';
+    if (t) html += '<th class="px-4 py-2 text-left">Estudiante</th>';
+    html += '<th class="px-4 py-2 text-left">Materia</th><th class="px-4 py-2 text-center">Periodo 1</th><th class="px-4 py-2 text-center">Periodo 2</th><th class="px-4 py-2 text-center">Final</th><th class="px-4 py-2 text-left">Estado</th></tr></thead><tbody class="divide-y">';
+    state.grades.forEach(function (g) {
+      const subName = (state.subjects.find(function (s) { return s.id === g.subject_id; }) || {}).name || 'Materia';
+      const okTone = g.status === 'Aprobado' ? 'bg-emerald-600/10 text-emerald-800 dark:text-emerald-300' : (g.status === 'Reprobado' ? 'bg-rose-600/10 text-rose-800 dark:text-rose-300' : 'bg-sunk text-muted');
+      html += '<tr>';
+      if (t) html += '<td class="px-4 py-2">' + esc((g.profiles && g.profiles.full_name) || 'Estudiante') + '</td>';
+      html += '<td class="px-4 py-2">' + esc(subName) + '</td>';
+      html += '<td class="px-4 py-2 text-center">' + (g.period_1 != null ? g.period_1 : '-') + '</td>';
+      html += '<td class="px-4 py-2 text-center">' + (g.period_2 != null ? g.period_2 : '-') + '</td>';
+      html += '<td class="px-4 py-2 text-center font-semibold">' + (g.final_grade != null ? g.final_grade : '-') + '</td>';
+      html += '<td class="px-4 py-2"><span class="badge ' + okTone + '">' + esc(g.status) + '</span></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
   }
-
-  html += `</div>`;
+  html += '</div>';
   return html;
 }
 
 async function viewAvisos() {
   state.announcements = await db.getAnnouncements();
-
-  let html = `<div>
-    <div class="flex items-center justify-between mb-8">
-      <h1 class="font-serif text-4xl font-semibold">Avisos</h1>
-      ${isTeacher() ? `<button class="btn btn-primary" data-action="new-announcement">${icon('plus')}Publicar aviso</button>` : ''}
-    </div>`;
+  let html = '<div><div class="flex items-center justify-between mb-8">';
+  html += '<h1 class="font-serif text-4xl font-semibold">Avisos</h1>';
+  if (isTeacher()) html += '<button class="btn btn-primary" data-action="new-announcement" type="button">' + icon('plus') + 'Publicar aviso</button>';
+  html += '</div>';
 
   if (!state.announcements.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin avisos por ahora</p></div>`;
+    html += '<div class="card p-8 text-center"><p class="text-muted">Sin avisos por ahora</p></div>';
   } else {
-    html += `<div class="space-y-3">`;
-    for (const a of state.announcements) {
-      html += `<div class="card p-5 ${a.pinned ? 'border-gold' : ''}">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1">
-            ${a.pinned ? `<span class="badge bg-gold/15 text-goldtext text-xs mb-2">Fijado</span>` : ''}
-            <h3 class="font-semibold text-lg">${esc(a.title)}</h3>
-            <p class="text-muted mt-2">${esc(a.content)}</p>
-            <p class="text-xs text-muted mt-3">${esc(fmtShort.format(new Date(a.created_at)))}</p>
-          </div>
-        </div>
-      </div>`;
-    }
-    html += `</div>`;
+    html += '<div class="space-y-3">';
+    state.announcements.forEach(function (a) {
+      html += '<div class="card p-5 ' + (a.pinned ? 'border-gold' : '') + '">';
+      if (a.pinned) html += '<span class="badge bg-gold/15 text-goldtext text-xs mb-2">Fijado</span>';
+      html += '<h3 class="font-semibold text-lg">' + esc(a.title) + '</h3>';
+      html += '<p class="text-muted mt-2">' + esc(a.content) + '</p>';
+      html += '<p class="text-xs text-muted mt-3">' + esc(fmtShort.format(new Date(a.created_at))) + '</p>';
+      html += '</div>';
+    });
+    html += '</div>';
   }
-
-  html += `</div>`;
+  html += '</div>';
   return html;
 }
 
-async function viewCalendario() {
+/* ============== CALENDARIO MENSUAL ============== */
+function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function pad2(n) { return String(n).padStart(2, '0'); }
+function toISODate(y, m, d) { return y + '-' + pad2(m + 1) + '-' + pad2(d); }
+
+const EVENT_TONE = {
+  Examen: 'bg-rose-600/15 text-rose-800 dark:text-rose-300',
+  Tarea: 'bg-sky-600/15 text-sky-900 dark:text-sky-300',
+  Quiz: 'bg-amber-500/20 text-amber-900 dark:text-amber-300',
+  Otro: 'bg-sunk text-muted'
+};
+
+async function viewCalendarioGrid() {
   state.events = await db.getEvents();
+  state.subjects = await db.getSubjects();
+  const now = getNow();
+  if (!state.calView) state.calView = { year: now.getFullYear(), month: now.getMonth() };
+  const year = state.calView.year;
+  const month = state.calView.month;
 
-  let html = `<div>
-    <div class="flex items-center justify-between mb-8">
-      <h1 class="font-serif text-4xl font-semibold">Calendario</h1>
-      ${isTeacher() ? `<button class="btn btn-primary" data-action="new-event">${icon('plus')}Nuevo evento</button>` : ''}
-    </div>`;
+  const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+  const totalDays = daysInMonth(year, month);
+  const prevMonthDays = daysInMonth(year, month - 1 < 0 ? 11 : month - 1);
+  const prevYear = month - 1 < 0 ? year - 1 : year;
+  const prevMonth = month - 1 < 0 ? 11 : month - 1;
+  const nextYear = month + 1 > 11 ? year + 1 : year;
+  const nextMonth = month + 1 > 11 ? 0 : month + 1;
 
-  if (!state.events.length) {
-    html += `<div class="card p-8 text-center"><p class="text-muted">Sin eventos por ahora</p></div>`;
-  } else {
-    html += `<div class="space-y-4">`;
-    for (const e of state.events) {
-      const d = new Date(e.event_date);
-      html += `<div class="card p-4 flex items-start gap-4">
-        <div class="text-center min-w-[4rem]">
-          <p class="font-serif text-2xl font-semibold">${d.getDate()}</p>
-          <p class="text-xs text-muted">${esc(fmtMonth.format(d))}</p>
-        </div>
-        <div class="flex-1">
-          <p class="font-semibold">${esc(e.title)}</p>
-          <p class="text-sm text-muted">${esc(e.event_type)}${e.event_time ? ` a las ${e.event_time}` : ''}</p>
-          ${e.description ? `<p class="text-sm mt-2">${esc(e.description)}</p>` : ''}
-        </div>
-      </div>`;
-    }
-    html += `</div>`;
+  const cells = [];
+  for (let i = firstWeekday - 1; i >= 0; i--) {
+    cells.push({ y: prevYear, m: prevMonth, d: prevMonthDays - i, inMonth: false });
+  }
+  for (let d = 1; d <= totalDays; d++) {
+    cells.push({ y: year, m: month, d: d, inMonth: true });
+  }
+  while (cells.length % 7 !== 0 || cells.length < 42) {
+    const last = cells[cells.length - 1];
+    const nd = last.inMonth ? (last.m === month ? 1 : last.d + 1) : last.d + 1;
+    cells.push({ y: nextYear, m: nextMonth, d: cells.length - (firstWeekday + totalDays) + 1, inMonth: false });
+    if (cells.length >= 42) break;
   }
 
-  html += `</div>`;
+  const todayISO = toISODate(now.getFullYear(), now.getMonth(), now.getDate());
+  const eventsByDate = {};
+  state.events.forEach(function (e) {
+    const key = e.event_date;
+    if (!eventsByDate[key]) eventsByDate[key] = [];
+    eventsByDate[key].push(e);
+  });
+
+  let html = '<div>';
+  html += '<div class="flex items-center justify-between mb-6 flex-wrap gap-3">';
+  html += '<h1 class="font-serif text-4xl font-semibold">Calendario</h1>';
+  if (isTeacher()) html += '<button class="btn btn-primary" data-action="new-event" type="button">' + icon('plus') + 'Nuevo evento</button>';
+  html += '</div>';
+
+  html += '<div class="flex items-center justify-between mb-4">';
+  html += '<div class="flex items-center gap-2">';
+  html += '<button class="btn btn-ghost btn-sm" data-action="cal-prev" type="button">' + icon('chevLeft') + '</button>';
+  html += '<button class="btn btn-ghost btn-sm" data-action="cal-next" type="button">' + icon('chevRight') + '</button>';
+  html += '<button class="btn btn-ghost btn-sm" data-action="cal-today" type="button">Hoy</button>';
+  html += '</div>';
+  html += '<p class="font-serif text-xl">' + MONTHS[month] + ' ' + year + '</p>';
+  html += '</div>';
+
+  html += '<div class="grid grid-cols-7 gap-px overflow-hidden rounded-lg border bg-line text-center text-xs font-medium text-muted">';
+  WEEKDAYS.forEach(function (w) { html += '<div class="bg-sunk py-2">' + w + '</div>'; });
+  html += '</div>';
+
+  html += '<div class="grid grid-cols-7 gap-px overflow-hidden rounded-b-lg border border-t-0 bg-line">';
+  cells.slice(0, 42).forEach(function (c) {
+    const iso = toISODate(c.y, c.m, c.d);
+    const isToday = iso === todayISO;
+    const dayEvents = eventsByDate[iso] || [];
+    html += '<div class="min-h-[6rem] bg-card p-1.5 ' + (c.inMonth ? '' : 'opacity-40') + '">';
+    html += '<p class="text-xs ' + (isToday ? 'inline-flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[#101A2E] font-semibold' : 'text-muted') + '">' + c.d + '</p>';
+    html += '<div class="mt-1 space-y-1">';
+    dayEvents.slice(0, 3).forEach(function (e) {
+      const tone = EVENT_TONE[e.event_type] || EVENT_TONE.Otro;
+      html += '<div class="truncate rounded px-1.5 py-0.5 text-[10px] font-medium ' + tone + '" title="' + esc(e.title) + '">' + esc(e.title) + '</div>';
+    });
+    if (dayEvents.length > 3) html += '<p class="text-[10px] text-muted">+' + (dayEvents.length - 3) + ' mas</p>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  html += '</div>';
   return html;
 }
 
-const fmtMonth = new Intl.DateTimeFormat('es', { month: 'short' });
-
-function openModal(title, body, submitLabel = 'Guardar', onSubmit = null) {
+/* ============== MODALES ============== */
+function openModal(title, body, submitLabel, onSubmit) {
   const dlg = $('#dlg');
-  dlg.innerHTML = `<div class="p-6">
-    <h2 class="font-serif text-2xl font-semibold mb-4">${esc(title)}</h2>
-    <form id="modalForm" class="space-y-4">
-      ${body}
-      <p id="modalError" class="text-sm text-rose-600 dark:text-rose-400" hidden></p>
-      <div class="flex justify-end gap-2 pt-4">
-        <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
-        ${submitLabel ? `<button type="submit" class="btn btn-primary">${esc(submitLabel)}</button>` : ''}
-      </div>
-    </form>
-  </div>`;
+  let inner = '<div class="p-6"><h2 class="font-serif text-2xl font-semibold mb-4">' + esc(title) + '</h2>';
+  inner += '<form id="modalForm" class="space-y-4">' + body;
+  inner += '<p id="modalError" class="text-sm text-rose-600 dark:text-rose-400" hidden></p>';
+  inner += '<div class="flex justify-end gap-2 pt-2"><button type="button" class="btn btn-ghost" data-close>Cerrar</button>';
+  if (submitLabel) inner += '<button type="submit" class="btn btn-primary">' + esc(submitLabel) + '</button>';
+  inner += '</div></form></div>';
+  dlg.innerHTML = inner;
 
   const form = $('#modalForm', dlg);
   if (submitLabel && onSubmit) {
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
       const btn = form.querySelector('[type=submit]');
       const err = $('#modalError', dlg);
-      await withBusy(btn, async () => {
+      await withBusy(btn, async function () {
         try {
           await onSubmit(new FormData(form));
           dlg.close();
@@ -903,234 +991,277 @@ function openModal(title, body, submitLabel = 'Guardar', onSubmit = null) {
       });
     });
   }
-
   dlg.showModal();
 }
 
+function subjectOptions() {
+  return state.subjects.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.name) + '</option>'; }).join('');
+}
+
+/* ============== ACCIONES ============== */
 const actions = {
-  async 'new-subject'() {
+  'retry': function () { return render(); },
+
+  'new-subject': function () {
     openModal(
       'Nueva materia',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Nombre</span><input class="input" name="name" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>`,
+      '<label class="block"><span class="block text-sm font-medium mb-1">Nombre</span><input class="input" name="name" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>',
       'Crear',
-      async (fd) => {
+      async function (fd) {
         await db.createSubject(fd.get('name'), fd.get('description'));
-        toast('Materia creada');
+        toast('Materia creada', 'ok');
         render();
       }
     );
   },
 
-  async 'new-topic'() {
+  'new-topic': function () {
     const subjectId = state.currentSubjectId;
     openModal(
       'Nuevo tema',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Título</span><input class="input" name="title" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>`,
+      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>',
       'Crear',
-      async (fd) => {
+      async function (fd) {
         await db.createTopic(subjectId, fd.get('title'), fd.get('description'));
-        toast('Tema creado');
+        toast('Tema creado', 'ok');
         render();
       }
     );
   },
 
-  async 'upload-resource'() {
+  'upload-resource': async function () {
     const subjectId = state.currentSubjectId;
     const topics = await db.getTopics(subjectId);
+    if (!topics.length) { toast('Crea primero un tema en esta materia.', 'warn'); return; }
     openModal(
       'Subir archivo',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Tema</span><select class="input" name="topic_id" required>${topics.map(t => `<option value="${esc(t.id)}">${esc(t.title)}</option>`).join('')}</select></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Título del documento</span><input class="input" name="title" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Archivo (máx 25 MB)</span><input class="input" type="file" name="file" required></label>`,
+      '<label class="block"><span class="block text-sm font-medium mb-1">Tema</span><select class="input" name="topic_id" required>' + topics.map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(t.title) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo del documento</span><input class="input" name="title" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Archivo (PDF, Word, imagenes; maximo 25 MB)</span><input class="input" type="file" name="file" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg"></label>',
       'Publicar',
-      async (fd) => {
+      async function (fd) {
         const file = fd.get('file');
-        if (!file.size) throw new Error('Selecciona un archivo');
-        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error(`El archivo supera ${CONFIG.MAX_FILE_MB} MB`);
+        if (!file || !file.size) throw new Error('Selecciona un archivo');
+        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo supera ' + CONFIG.MAX_FILE_MB + ' MB');
         await db.uploadResource(fd.get('topic_id'), subjectId, fd.get('title'), file);
-        toast('Archivo publicado');
+        toast('Archivo publicado', 'ok');
         render();
       }
     );
   },
 
-  async 'new-announcement'() {
+  'download-resource': async function (btn) {
+    await withBusy(btn, function () { return downloadFile(btn.dataset.path, btn.dataset.name); });
+  },
+
+  'new-announcement': function () {
     openModal(
       'Nuevo aviso',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Título</span><input class="input" name="title" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Contenido</span><textarea class="input" name="content" rows="4" required></textarea></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Dirigido a</span><select class="input" name="target_role">
-         <option value="all">Todos</option>
-         <option value="student">Estudiantes</option>
-         <option value="teacher">Profesores</option>
-       </select></label>`,
+      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Contenido</span><textarea class="input" name="content" rows="4" required></textarea></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Dirigido a</span><select class="input" name="target_role"><option value="all">Todos</option><option value="student">Estudiantes</option><option value="teacher">Profesores</option></select></label>',
       'Publicar',
-      async (fd) => {
+      async function (fd) {
         await db.createAnnouncement(fd.get('title'), fd.get('content'), fd.get('target_role'));
-        toast('Aviso publicado');
+        toast('Aviso publicado', 'ok');
         render();
       }
     );
   },
 
-  async 'new-assignment'() {
+  'new-assignment': async function () {
+    state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
+    if (!state.subjects.length) { toast('Crea primero una materia.', 'warn'); return; }
+    const nowLocal = getNow();
+    const minVal = nowLocal.getFullYear() + '-' + pad2(nowLocal.getMonth() + 1) + '-' + pad2(nowLocal.getDate()) + 'T' + pad2(nowLocal.getHours()) + ':' + pad2(nowLocal.getMinutes());
     openModal(
       'Nueva tarea',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>${state.subjects.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Título</span><input class="input" name="title" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="kind"><option value="task">Tarea (entregable)</option><option value="exam">Evaluación</option></select></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Fecha y hora límite</span><input class="input" type="datetime-local" name="due_date" required></label>`,
+      '<label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>' + subjectOptions() + '</select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="kind"><option value="task">Tarea (entregable)</option><option value="exam">Evaluacion</option></select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Fecha y hora limite</span><input class="input" type="datetime-local" name="due_date" required min="' + minVal + '"></label>',
       'Publicar',
-      async (fd) => {
+      async function (fd) {
         await db.createAssignment(fd.get('subject_id'), fd.get('title'), fd.get('description'), fd.get('kind'), fd.get('due_date'));
-        toast('Tarea publicada');
+        toast('Tarea publicada', 'ok');
         render();
       }
     );
   },
 
-  async 'new-grade'() {
+  'new-grade': async function () {
     if (!state.students.length) state.students = await db.getStudents();
+    if (!state.subjects.length) state.subjects = await db.getSubjects();
+    if (!state.students.length) { toast('Aun no hay estudiantes registrados.', 'warn'); return; }
     openModal(
       'Registrar nota',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Estudiante</span><select class="input" name="student_id" required>${state.students.map(s => `<option value="${esc(s.id)}">${esc(s.full_name)}</option>`).join('')}</select></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>${state.subjects.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select></label>
-       <div class="grid grid-cols-2 gap-3">
-         <label class="block"><span class="block text-sm font-medium mb-1">Periodo 1</span><input class="input" type="number" name="period_1" min="0" max="10" step="0.01"></label>
-         <label class="block"><span class="block text-sm font-medium mb-1">Periodo 2</span><input class="input" type="number" name="period_2" min="0" max="10" step="0.01"></label>
-       </div>`,
+      '<label class="block"><span class="block text-sm font-medium mb-1">Estudiante</span><select class="input" name="student_id" required>' + state.students.map(function (s) { return '<option value="' + esc(s.id) + '">' + esc(s.full_name) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>' + subjectOptions() + '</select></label>' +
+      '<div class="grid grid-cols-2 gap-3"><label class="block"><span class="block text-sm font-medium mb-1">Periodo 1</span><input class="input" type="number" name="period_1" min="0" max="10" step="0.01"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Periodo 2</span><input class="input" type="number" name="period_2" min="0" max="10" step="0.01"></label></div>',
       'Guardar',
-      async (fd) => {
+      async function (fd) {
         await db.setGrade(fd.get('student_id'), fd.get('subject_id'), fd.get('period_1'), fd.get('period_2'));
-        toast('Nota registrada');
+        toast('Nota registrada', 'ok');
         render();
       }
     );
   },
 
-  async 'new-event'() {
+  'new-event': function () {
     openModal(
       'Nuevo evento',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Título</span><input class="input" name="title" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Fecha</span><input class="input" type="date" name="event_date" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Hora (opcional)</span><input class="input" type="time" name="event_time"></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="event_type"><option value="Examen">Examen</option><option value="Tarea">Tarea</option><option value="Quiz">Quiz</option><option value="Otro">Otro</option></select></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Materia (opcional)</span><select class="input" name="subject_id"><option value="">Sin materia</option>${state.subjects.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</select></label>`,
+      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Fecha</span><input class="input" type="date" name="event_date" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Hora (opcional)</span><input class="input" type="time" name="event_time"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="event_type"><option value="Examen">Examen</option><option value="Tarea">Tarea</option><option value="Quiz">Quiz</option><option value="Otro">Otro</option></select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Materia (opcional)</span><select class="input" name="subject_id"><option value="">Sin materia</option>' + subjectOptions() + '</select></label>',
       'Crear',
-      async (fd) => {
+      async function (fd) {
         await db.createEvent(fd.get('title'), fd.get('description'), fd.get('event_date'), fd.get('event_time'), fd.get('event_type'), fd.get('subject_id') || null);
-        toast('Evento creado');
+        toast('Evento creado', 'ok');
         render();
       }
     );
   },
 
-  async 'submit-assignment'(btn) {
+  'submit-assignment': function (btn) {
     const assignmentId = btn.dataset.id;
     openModal(
       'Entregar tarea',
-      `<label class="block"><span class="block text-sm font-medium mb-1">Archivo</span><input class="input" type="file" name="file" required></label>
-       <label class="block"><span class="block text-sm font-medium mb-1">Comentario (opcional)</span><textarea class="input" name="comment" rows="3"></textarea></label>`,
+      '<label class="block"><span class="block text-sm font-medium mb-1">Archivo</span><input class="input" type="file" name="file" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Comentario (opcional)</span><textarea class="input" name="comment" rows="3"></textarea></label>',
       'Enviar',
-      async (fd) => {
+      async function (fd) {
         const file = fd.get('file');
-        if (!file.size) throw new Error('Selecciona un archivo');
+        if (!file || !file.size) throw new Error('Selecciona un archivo');
         if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo es demasiado grande');
         await db.submitAssignment(assignmentId, file, fd.get('comment'));
-        toast('Tarea entregada');
+        toast('Tarea entregada', 'ok');
         render();
       }
     );
   },
 
-  async 'view-submissions'(btn) {
+  'view-submissions': async function (btn) {
     const assignmentId = btn.dataset.id;
+    const subjectId = btn.dataset.subject;
     const subs = await db.getSubmissions(assignmentId);
     let body = '';
     if (subs.length) {
-      body = `<div class="space-y-3">`;
-      for (const s of subs) {
-        body += `<div class="p-3 border rounded bg-sunk"><p class="font-medium">${esc(s.profiles?.full_name || 'Estudiante')}</p>
-          <p class="text-xs text-muted mt-1">${esc(s.file_name)}</p>
-          <button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="${esc(s.file_path)}" data-name="${esc(s.file_name)}">${icon('download')}Descargar</button></div>`;
-      }
-      body += `</div>`;
+      body = '<div class="space-y-3">';
+      subs.forEach(function (s) {
+        body += '<div class="p-3 border rounded-md bg-sunk" data-sub-row>';
+        body += '<p class="font-medium">' + esc((s.profiles && s.profiles.full_name) || 'Estudiante') + '</p>';
+        body += '<p class="text-xs text-muted mt-1">' + esc(s.file_name) + '</p>';
+        if (s.comment) body += '<p class="text-sm mt-1">' + esc(s.comment) + '</p>';
+        body += '<button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="' + esc(s.file_path) + '" data-name="' + esc(s.file_name) + '" type="button">' + icon('download') + 'Descargar</button>';
+        body += '<div class="mt-3 flex flex-wrap items-end gap-2 border-t pt-3">';
+        body += '<label class="text-xs"><span class="block text-muted mb-1">Periodo 1</span><input type="number" class="input w-20" min="0" max="10" step="0.01" data-grade-p1></label>';
+        body += '<label class="text-xs"><span class="block text-muted mb-1">Periodo 2</span><input type="number" class="input w-20" min="0" max="10" step="0.01" data-grade-p2></label>';
+        body += '<button class="btn btn-sm btn-primary" data-action="grade-submission" data-student="' + esc(s.student_id) + '" data-subject="' + esc(subjectId) + '" type="button">Guardar nota</button>';
+        body += '</div></div>';
+      });
+      body += '</div>';
     } else {
-      body = `<p class="text-muted">Sin entregas aún</p>`;
+      body = '<p class="text-muted">Sin entregas aun</p>';
     }
     openModal('Entregas recibidas', body, null, null);
   },
 
-  async 'download-file'(btn) {
-    await withBusy(btn, () => downloadFile(btn.dataset.path, btn.dataset.name));
-  }
+  'download-file': async function (btn) {
+    await withBusy(btn, function () { return downloadFile(btn.dataset.path, btn.dataset.name); });
+  },
+
+  'grade-submission': async function (btn) {
+    const wrap = btn.closest('[data-sub-row]');
+    const p1 = wrap.querySelector('[data-grade-p1]').value;
+    const p2 = wrap.querySelector('[data-grade-p2]').value;
+    await withBusy(btn, async function () {
+      await db.setGrade(btn.dataset.student, btn.dataset.subject, p1, p2);
+      toast('Nota guardada', 'ok');
+    });
+  },
+
+  'cal-prev': function () {
+    let y = state.calView.year, m = state.calView.month - 1;
+    if (m < 0) { m = 11; y -= 1; }
+    state.calView = { year: y, month: m };
+    return render();
+  },
+  'cal-next': function () {
+    let y = state.calView.year, m = state.calView.month + 1;
+    if (m > 11) { m = 0; y += 1; }
+    state.calView = { year: y, month: m };
+    return render();
+  },
+  'cal-today': function () {
+    const now = getNow();
+    state.calView = { year: now.getFullYear(), month: now.getMonth() };
+    return render();
+  },
+
+  'sim-add-day': function () { timeOffsetMs += 86400000; syncSimTime(); },
+  'sim-add-week': function () { timeOffsetMs += 7 * 86400000; syncSimTime(); },
+  'sim-reset': function () { timeOffsetMs = 0; syncSimTime(); }
 };
 
-document.addEventListener('click', async (e) => {
+/* ============== EVENTOS GLOBALES ============== */
+document.addEventListener('click', async function (e) {
   const tab = e.target.closest('[data-tab]');
-  if (tab) return setAuthTab(tab.dataset.tab);
+  if (tab) { setAuthTab(tab.dataset.tab); return; }
 
   const btn = e.target.closest('[data-action]');
-  if (!btn) return;
-  const action = btn.dataset.action;
-  if (!(action in actions)) return;
+  if (!btn || !(btn.dataset.action in actions)) return;
   try {
-    await actions[action](btn);
+    await actions[btn.dataset.action](btn);
   } catch (err) {
     toast(errMsg(err), 'err');
   }
 });
 
-$('#btnLogout')?.addEventListener('click', async () => {
+$('#btnLogout').addEventListener('click', async function () {
   await sb.auth.signOut();
 });
 
-$('#themeBtn')?.addEventListener('click', () => {
-  const dark = document.documentElement.classList.toggle('dark');
-  try { localStorage.setItem('ac-theme', dark ? 'dark' : 'light'); } catch {}
+$('#themeBtn').addEventListener('click', function () {
+  const isDark = document.documentElement.classList.toggle('dark');
+  try { localStorage.setItem('ac-theme', isDark ? 'dark' : 'light'); } catch (e) {}
 });
 
-$('#nav')?.addEventListener('click', async (e) => {
+$('#nav').addEventListener('click', function (e) {
   const a = e.target.closest('a[data-nav]');
   if (!a) return;
   e.preventDefault();
-  location.hash = a.dataset.nav;
-  render();
+  location.hash = '#' + a.dataset.nav;
 });
 
-$('#loginForm')?.addEventListener('submit', onLogin);
-$('#registerForm')?.addEventListener('submit', onRegister);
+$('#loginForm').addEventListener('submit', onLogin);
+$('#registerForm').addEventListener('submit', onRegister);
 
-$('#dlg')?.addEventListener('click', (e) => {
-  if (e.target === $('#dlg') || e.target.closest('[data-close]')) $('#dlg').close();
+$('#dlg').addEventListener('click', function (e) {
+  const dlg = $('#dlg');
+  if (e.target === dlg || e.target.closest('[data-close]')) dlg.close();
 });
 
-window.addEventListener('hashchange', () => {
+window.addEventListener('hashchange', function () {
   if (state.user) render();
 });
 
-NAV_ITEMS.forEach(([k]) => {
-  const a = document.createElement('a');
-  a.href = '#' + k;
-  a.className = 'navlink';
-  a.dataset.nav = k;
-  a.textContent = NAV_ITEMS.find(n => n[0] === k)[1];
-  $('#nav').append(a);
+/* ============== INIT ============== */
+buildNav();
+
+sb.auth.onAuthStateChange(function (_event, session) {
+  setTimeout(function () { handleSession(session); }, 0);
 });
 
-sb.auth.onAuthStateChange((_event, session) => {
-  setTimeout(() => handleSession(session), 0);
+sb.auth.getSession().then(function (res) {
+  handleSession(res.data.session);
 });
-
-setTimeout(async () => {
-  const { data } = await sb.auth.getSession();
-  handleSession(data.session);
-}, 500);
 </script>
 </body>
 </html>
