@@ -123,7 +123,6 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
         </div>
       </div>
 
-      <!-- SOLO 2 PESTANAS: INICIAR SESION O REGISTRARSE -->
       <div id="authTabs" class="mb-6 flex gap-1 rounded-md bg-sunk p-1" role="tablist">
         <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium bg-card shadow-sm">Iniciar sesion</button>
         <button id="tabRegister" role="tab" aria-selected="false" data-tab="register" class="flex-1 rounded px-3 py-2 text-sm font-medium text-muted hover:text-ink">Registrarse</button>
@@ -135,7 +134,6 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
       <p id="authError" class="mb-4 rounded-md border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-800 dark:text-rose-300" role="alert" hidden></p>
       <p id="authInfo" class="mb-4 rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-900 dark:text-emerald-300" role="status" hidden></p>
 
-      <!-- FORMULARIO DE LOGIN NORMAL -->
       <form id="loginForm" class="space-y-4">
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
           <input class="input" type="email" name="email" required placeholder="ejemplo@colegio.edu"></label>
@@ -144,7 +142,6 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
         <button class="btn btn-primary w-full" type="submit">Iniciar sesion</button>
       </form>
 
-      <!-- VERIFICACION DE CODIGO (SOLO APARECE DESPUES DE REGISTRARSE) -->
       <form id="otpVerifyForm" class="space-y-4" hidden>
         <div class="rounded-md border border-gold/30 bg-gold/5 p-4 text-sm text-ink mb-2">
           Te enviamos un codigo de 6 digitos a <strong id="otpEmailLabel" class="text-goldtext"></strong>. Ingrésalo abajo para confirmar tu cuenta y entrar de una vez.
@@ -161,7 +158,6 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
         <button type="button" id="btnCancelOtp" class="btn btn-ghost w-full">Volver al inicio</button>
       </form>
 
-      <!-- FORMULARIO DE REGISTRO -->
       <form id="registerForm" class="space-y-4" hidden>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Nombre completo</span>
           <input class="input" type="text" name="full_name" required minlength="3" maxlength="80"></label>
@@ -374,7 +370,9 @@ function visibleForMe(row) {
   if (isTeacher()) return true;
   const c = myCourse();
   if (!c) return false;
-  return coursesOf(row).indexOf(c) !== -1;
+  const arr = coursesOf(row);
+  if (!arr.length) return true; // Si no tiene restricción, es general
+  return arr.indexOf(c) !== -1;
 }
 
 /* ============== SUPABASE QUERIES ============== */
@@ -486,6 +484,7 @@ const db = {
         event_date: dueDateOnly,
         event_type: eventType,
         subject_id: subjectId,
+        courses: courses,
         created_by: state.user.id
       });
     } catch (evErr) {}
@@ -516,17 +515,17 @@ const db = {
     if (error) throw error;
     return data;
   },
-  async createAnnouncement(title, content, targetRole) {
+  async createAnnouncement(title, content, targetRole, courses) {
     const { data, error } = await sb.from('announcements').insert({
-      title: title, content: content, target_role: targetRole, author_id: state.user.id
+      title: title, content: content, target_role: targetRole, courses: courses, author_id: state.user.id
     }).select().single();
     if (error) throw error;
     return data;
   },
-  async createEvent(title, description, eventDate, eventType, subjectId) {
+  async createEvent(title, description, eventDate, eventType, subjectId, courses) {
     const { data, error } = await sb.from('calendar_events').insert({
       title: title, description: description, event_date: eventDate,
-      event_type: eventType, subject_id: subjectId, created_by: state.user.id
+      event_type: eventType, subject_id: subjectId, courses: courses, created_by: state.user.id
     }).select().single();
     if (error) throw error;
     return data;
@@ -549,7 +548,7 @@ async function downloadFile(filePath, fileName) {
   }
 }
 
-/* ============== SELECTOR DE CURSOS PERSONALIZADO ============== */
+/* ============== SELECTOR DE CURSOS PERSONALIZADO (MULTI-SELECT) ============== */
 function courseSelectorHtml(name, preselected) {
   const sel = preselected || [];
   let html = '<div class="course-selector relative" data-course-selector data-name="' + esc(name) + '">';
@@ -559,12 +558,15 @@ function courseSelectorHtml(name, preselected) {
   html += '</span>';
   html += icon('chevDown', 'h-4 w-4 shrink-0 text-muted');
   html += '</button>';
-  html += '<div class="absolute z-10 mt-1 w-full rounded-md border bg-card p-2 shadow-xl" data-course-dropdown hidden>';
-  html += '<button type="button" class="mb-2 w-full rounded-md border px-3 py-1.5 text-xs font-medium hover:bg-sunk" data-action="course-select-all">Seleccionar todos</button>';
-  html += '<div class="grid grid-cols-3 gap-1.5 max-h-56 overflow-y-auto">';
+  html += '<div class="absolute z-20 mt-1 w-full rounded-md border bg-card p-2 shadow-2xl" data-course-dropdown hidden>';
+  html += '<div class="flex gap-2 mb-2">';
+  html += '<button type="button" class="flex-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-sunk" data-action="course-select-all">Todos</button>';
+  html += '<button type="button" class="flex-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-sunk" data-action="course-clear-all">Limpiar</button>';
+  html += '</div>';
+  html += '<div class="grid grid-cols-3 gap-1.5 max-h-52 overflow-y-auto">';
   COURSES.forEach(function (c) {
     const checked = sel.indexOf(c) !== -1;
-    html += '<label class="flex items-center gap-1.5 rounded px-2 py-1.5 text-sm hover:bg-sunk cursor-pointer">';
+    html += '<label class="flex items-center gap-1.5 rounded px-2 py-1 text-xs hover:bg-sunk cursor-pointer">';
     html += '<input type="checkbox" class="h-4 w-4 accent-[#C29A3F]" value="' + c + '" data-course-checkbox ' + (checked ? 'checked' : '') + '>' + c;
     html += '</label>';
   });
@@ -610,6 +612,10 @@ document.addEventListener('click', function (e) {
   }
   if (e.target.closest('[data-action="course-select-all"]')) {
     setCourseSelectorValue(container, COURSES.slice());
+    return;
+  }
+  if (e.target.closest('[data-action="course-clear-all"]')) {
+    setCourseSelectorValue(container, []);
     return;
   }
   if (e.target.closest('[data-action="remove-course-chip"]')) {
@@ -696,7 +702,6 @@ async function onRegister(ev) {
       });
       if (res.error) throw res.error;
 
-      // Pasa a la pantalla del código OTP
       state.pendingOtpEmail = email;
       $('#otpEmailLabel').textContent = email;
       $('#registerForm').hidden = true;
@@ -862,14 +867,17 @@ async function render() {
 }
 
 function courseBadges(courses) {
-  return (courses || []).map(function (c) { return '<span class="badge bg-sunk text-muted">' + esc(c) + '</span>'; }).join(' ');
+  const list = courses || [];
+  if (!list.length) return '<span class="badge bg-sunk text-muted">Todos los cursos</span>';
+  return list.map(function (c) { return '<span class="badge bg-gold/15 text-goldtext font-medium">' + esc(c) + '</span>'; }).join(' ');
 }
 
 /* ============== VISTAS ============== */
 async function viewPanel() {
   const t = isTeacher();
   state.subjects = await db.getSubjects();
-  state.announcements = await db.getAnnouncements();
+  const allAnnouncements = await db.getAnnouncements();
+  state.announcements = t ? allAnnouncements : allAnnouncements.filter(visibleForMe);
   state.assignments = await db.getAssignments();
 
   let html = '<div>';
@@ -879,7 +887,7 @@ async function viewPanel() {
   if (state.announcements.length) {
     html += '<section class="mb-8"><h2 class="font-serif text-2xl font-semibold mb-4">Avisos recientes</h2><div class="space-y-3">';
     state.announcements.slice(0, 3).forEach(function (a) {
-      html += '<div class="card p-4"><p class="font-semibold">' + esc(a.title) + '</p><p class="text-sm text-muted mt-1">' + esc(a.content) + '</p><p class="text-xs text-muted mt-2">' + esc(fmtShort.format(new Date(a.created_at))) + '</p></div>';
+      html += '<div class="card p-4"><p class="font-semibold">' + esc(a.title) + '</p><p class="text-sm text-muted mt-1">' + esc(a.content) + '</p><div class="mt-2 flex flex-wrap items-center justify-between gap-2"><p class="text-xs text-muted">' + esc(fmtShort.format(new Date(a.created_at))) + '</p><div class="flex gap-1">' + courseBadges(a.courses) + '</div></div></div>';
     });
     html += '</div></section>';
   }
@@ -887,6 +895,7 @@ async function viewPanel() {
   if (t) {
     html += '<section><h2 class="font-serif text-2xl font-semibold mb-4">Acciones rapidas</h2><div class="flex flex-wrap gap-2">';
     html += '<button class="btn btn-primary" data-action="new-subject" type="button">' + icon('plus') + 'Nueva materia</button>';
+    html += '<button class="btn btn-ghost" data-action="new-assignment" type="button">' + icon('plus') + 'Nueva tarea</button>';
     html += '<button class="btn btn-ghost" data-action="new-announcement" type="button">' + icon('plus') + 'Nuevo aviso</button>';
     html += '<button class="btn btn-ghost" data-action="new-event" type="button">' + icon('plus') + 'Nuevo evento</button>';
     html += '</div></section>';
@@ -1001,9 +1010,12 @@ async function viewTareas() {
       }
       html += '<li class="card p-4"><div class="flex items-start justify-between gap-4 flex-wrap">';
       html += '<div><p class="font-semibold">' + esc(a.title) + '</p>';
-      html += '<p class="text-xs text-muted mt-1">' + esc(subjectName) + ' - ' + courseBadges(a.courses) + '</p>';
+      html += '<p class="text-xs text-muted mt-1">' + esc(subjectName) + '</p>';
       if (a.description) html += '<p class="text-sm text-muted mt-1">' + esc(a.description) + '</p>';
-      html += '<p class="text-xs text-muted mt-2">Vence: ' + esc(fmtShort.format(due)) + (isOverdue ? ' (vencida)' : '') + '</p></div>';
+      html += '<div class="mt-2 flex flex-wrap items-center gap-2">';
+      html += '<p class="text-xs text-muted">Vence: ' + esc(fmtShort.format(due)) + (isOverdue ? ' (vencida)' : '') + '</p>';
+      html += '<div class="flex gap-1">' + courseBadges(a.courses) + '</div>';
+      html += '</div></div>';
       html += '<div class="flex items-center gap-2">';
       if (isTeacher()) {
         html += '<button class="btn btn-sm btn-ghost" data-action="view-submissions" data-id="' + esc(a.id) + '" data-subject="' + esc(a.subject_id) + '" type="button">Ver entregas</button>';
@@ -1025,7 +1037,7 @@ async function viewTareas() {
   return html;
 }
 
-/* ============== CALIFICACIONES (ACORDEON) ============== */
+/* ============== CALIFICACIONES (ACORDEON PHIDIAS) ============== */
 async function viewCalificaciones() {
   state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
   const allAssignments = await db.getAssignments();
@@ -1056,7 +1068,7 @@ async function viewCalificaciones() {
         grouped[subjectId].forEach(function (a) {
           html += '<div>';
           html += '<button class="acc-head" data-action="toggle-acc" data-target="acc-act-' + esc(a.id) + '" type="button">';
-          html += '<span><span class="font-medium">' + esc(a.title) + '</span><span class="ml-2 text-xs text-muted">Vence ' + esc(fmtShort.format(new Date(a.due_date))) + '</span></span>';
+          html += '<div><span class="font-medium">' + esc(a.title) + '</span><span class="ml-2 text-xs text-muted">Vence ' + esc(fmtShort.format(new Date(a.due_date))) + '</span><div class="mt-1 flex gap-1">' + courseBadges(a.courses) + '</div></div>';
           html += icon('chevDown');
           html += '</button>';
           html += '<div id="acc-act-' + esc(a.id) + '" class="px-5 pb-4" hidden data-assignment="' + esc(a.id) + '" data-courses="' + esc(JSON.stringify(a.courses || [])) + '" data-loaded="0">';
@@ -1117,7 +1129,7 @@ async function loadAccordionGrades(container) {
   students.forEach(function (s) {
     const g = gradeMap[s.id] || {};
     html += '<div class="flex flex-wrap items-end gap-2 border-b pb-2 last:border-0" data-grade-row data-student="' + esc(s.id) + '">';
-    html += '<div class="min-w-[9rem] flex-1"><p class="text-sm font-medium">' + esc(s.full_name) + '</p><p class="text-xs text-muted">' + esc(s.course) + '</p></div>';
+    html += '<div class="min-w-[9rem] flex-1"><p class="text-sm font-medium">' + esc(s.full_name) + '</p><p class="text-xs text-muted">Curso ' + esc(s.course) + '</p></div>';
     html += '<label class="text-xs"><span class="block text-muted mb-1">Nota (0.0-5.0)</span><input type="number" class="input w-24" min="0" max="' + CONFIG.MAX_SCORE + '" step="0.1" data-grade-score value="' + (g.score != null ? g.score : '') + '"></label>';
     html += '<label class="text-xs flex-1 min-w-[10rem]"><span class="block text-muted mb-1">Observacion</span><input type="text" class="input" data-grade-obs value="' + esc(g.observation || '') + '"></label>';
     html += '<button class="btn btn-sm btn-primary" data-action="save-activity-grade" data-assignment="' + esc(assignmentId) + '" type="button">Guardar</button>';
@@ -1129,23 +1141,27 @@ async function loadAccordionGrades(container) {
 }
 
 async function viewAvisos() {
-  state.announcements = await db.getAnnouncements();
+  const allAnnouncements = await db.getAnnouncements();
+  const visible = isTeacher() ? allAnnouncements : allAnnouncements.filter(visibleForMe);
+
   let html = '<div><div class="flex items-center justify-between mb-8">';
   html += '<h1 class="font-serif text-4xl font-semibold">Avisos</h1>';
   if (isTeacher()) html += '<button class="btn btn-primary" data-action="new-announcement" type="button">' + icon('plus') + 'Publicar aviso</button>';
   html += '</div>';
 
-  if (!state.announcements.length) {
+  if (!visible.length) {
     html += '<div class="card p-8 text-center"><p class="text-muted">Sin avisos por ahora</p></div>';
   } else {
     html += '<div class="space-y-3">';
-    state.announcements.forEach(function (a) {
+    visible.forEach(function (a) {
       html += '<div class="card p-5 ' + (a.pinned ? 'border-gold' : '') + '">';
       if (a.pinned) html += '<span class="badge bg-gold/15 text-goldtext text-xs mb-2">Fijado</span>';
       html += '<h3 class="font-semibold text-lg">' + esc(a.title) + '</h3>';
       html += '<p class="text-muted mt-2">' + esc(a.content) + '</p>';
-      html += '<p class="text-xs text-muted mt-3">' + esc(fmtShort.format(new Date(a.created_at))) + '</p>';
-      html += '</div>';
+      html += '<div class="mt-3 flex flex-wrap items-center justify-between gap-2">';
+      html += '<p class="text-xs text-muted">' + esc(fmtShort.format(new Date(a.created_at))) + '</p>';
+      html += '<div class="flex gap-1">' + courseBadges(a.courses) + '</div>';
+      html += '</div></div>';
     });
     html += '</div>';
   }
@@ -1167,12 +1183,7 @@ const EVENT_TONE = {
 
 async function viewCalendarioGrid() {
   const allEvents = await db.getEvents();
-  state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
-  state.events = isTeacher() ? allEvents : allEvents.filter(function (e) {
-    if (!e.subject_id) return true;
-    const subj = state.subjects.find(function (s) { return s.id === e.subject_id; });
-    return subj ? visibleForMe(subj) : true;
-  });
+  state.events = isTeacher() ? allEvents : allEvents.filter(visibleForMe);
 
   const now = getNow();
   if (!state.calView) state.calView = { year: now.getFullYear(), month: now.getMonth() };
@@ -1310,12 +1321,13 @@ const actions = {
     });
   },
 
+  // 1. NUEVA MATERIA: CON SELECTOR DE CURSOS
   'new-subject': function () {
     openModal(
       'Nueva materia',
-      '<label class="block"><span class="block text-sm font-medium mb-1">Nombre</span><input class="input" name="name" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseSelectorHtml('courses', []) + '</label>',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Nombre</span><input class="input" name="name" required placeholder="Ej: Filosofia"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3" placeholder="Descripcion de la materia"></textarea></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos que ven esta materia</span>' + courseSelectorHtml('courses', []) + '</label>',
       'Crear',
       async function (fd, form) {
         const courses = getCourseSelectorValue(form.querySelector('[data-course-selector]'));
@@ -1367,21 +1379,25 @@ const actions = {
     await withBusy(btn, function () { return downloadFile(btn.dataset.path, btn.dataset.name); });
   },
 
+  // 2. NUEVO AVISO: CON SELECTOR DE CURSOS
   'new-announcement': function () {
     openModal(
       'Nuevo aviso',
       '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Contenido</span><textarea class="input" name="content" rows="4" required></textarea></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Dirigido a</span><select class="input" name="target_role"><option value="all">Todos</option><option value="student">Estudiantes</option><option value="teacher">Profesores</option></select></label>',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Dirigido a</span><select class="input" name="target_role"><option value="all">Todos</option><option value="student">Estudiantes</option><option value="teacher">Profesores</option></select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos que veran el aviso (dejar vacio para todos)</span>' + courseSelectorHtml('courses', []) + '</label>',
       'Publicar',
-      async function (fd) {
-        await db.createAnnouncement(fd.get('title'), fd.get('content'), fd.get('target_role'));
+      async function (fd, form) {
+        const courses = getCourseSelectorValue(form.querySelector('[data-course-selector]'));
+        await db.createAnnouncement(fd.get('title'), fd.get('content'), fd.get('target_role'), courses);
         toast('Aviso publicado', 'ok');
         render();
       }
     );
   },
 
+  // 3. NUEVA TAREA: CON SELECTOR DE CURSOS
   'new-assignment': async function () {
     state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
     if (!state.subjects.length) { toast('Crea primero una materia.', 'warn'); return; }
@@ -1393,8 +1409,8 @@ const actions = {
       '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="kind"><option value="task">Tarea (entregable)</option><option value="exam">Evaluacion</option></select></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Fecha limite</span><input class="input" type="date" name="due_date" required min="' + minVal + '"></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseSelectorHtml('courses', []) + '</label>',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Fecha limite (solo dia)</span><input class="input" type="date" name="due_date" required min="' + minVal + '"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos a los que se asigna</span>' + courseSelectorHtml('courses', []) + '</label>',
       'Publicar',
       async function (fd, form) {
         const courses = getCourseSelectorValue(form.querySelector('[data-course-selector]'));
@@ -1406,6 +1422,7 @@ const actions = {
     );
   },
 
+  // 4. NUEVO EVENTO: CON SELECTOR DE CURSOS
   'new-event': function () {
     openModal(
       'Nuevo evento',
@@ -1413,10 +1430,12 @@ const actions = {
       '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Fecha</span><input class="input" type="date" name="event_date" required></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="event_type"><option value="Examen">Examen</option><option value="Tarea">Tarea</option><option value="Quiz">Quiz</option><option value="Otro">Otro</option></select></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Materia (opcional)</span><select class="input" name="subject_id"><option value="">Sin materia</option>' + subjectOptions() + '</select></label>',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Materia (opcional)</span><select class="input" name="subject_id"><option value="">Sin materia</option>' + subjectOptions() + '</select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos que veran este evento (dejar vacio para todos)</span>' + courseSelectorHtml('courses', []) + '</label>',
       'Crear',
-      async function (fd) {
-        await db.createEvent(fd.get('title'), fd.get('description'), fd.get('event_date'), fd.get('event_type'), fd.get('subject_id') || null);
+      async function (fd, form) {
+        const courses = getCourseSelectorValue(form.querySelector('[data-course-selector]'));
+        await db.createEvent(fd.get('title'), fd.get('description'), fd.get('event_date'), fd.get('event_type'), fd.get('subject_id') || null, courses);
         toast('Evento creado', 'ok');
         render();
       }
@@ -1449,7 +1468,7 @@ const actions = {
       body = '<div class="space-y-3">';
       subs.forEach(function (s) {
         body += '<div class="p-3 border rounded-md bg-sunk" data-grade-row data-student="' + esc(s.student_id) + '">';
-        body += '<p class="font-medium">' + esc((s.profiles && s.profiles.full_name) || 'Estudiante') + '</p>';
+        body += '<p class="font-medium">' + esc((s.profiles && s.profiles.full_name) || 'Estudiante') + ' <span class="text-xs text-muted">(' + esc(s.profiles && s.profiles.course ? s.profiles.course : 'Sin curso') + ')</span></p>';
         body += '<p class="text-xs text-muted mt-1">' + esc(s.file_name) + '</p>';
         if (s.comment) body += '<p class="text-sm mt-1">' + esc(s.comment) + '</p>';
         body += '<button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="' + esc(s.file_path) + '" data-name="' + esc(s.file_name) + '" type="button">' + icon('download') + 'Descargar</button>';
