@@ -123,10 +123,10 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
         </div>
       </div>
 
+      <!-- SOLO 2 PESTANAS: INICIAR SESION O REGISTRARSE -->
       <div id="authTabs" class="mb-6 flex gap-1 rounded-md bg-sunk p-1" role="tablist">
-        <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium">Contrasena</button>
-        <button id="tabOtp" role="tab" aria-selected="false" data-tab="otp" class="flex-1 rounded px-3 py-2 text-sm font-medium">Codigo por correo</button>
-        <button id="tabRegister" role="tab" aria-selected="false" data-tab="register" class="flex-1 rounded px-3 py-2 text-sm font-medium">Registrarse</button>
+        <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium bg-card shadow-sm">Iniciar sesion</button>
+        <button id="tabRegister" role="tab" aria-selected="false" data-tab="register" class="flex-1 rounded px-3 py-2 text-sm font-medium text-muted hover:text-ink">Registrarse</button>
       </div>
 
       <h2 id="authTitle" class="font-serif text-3xl font-semibold">Iniciar sesion</h2>
@@ -135,23 +135,20 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
       <p id="authError" class="mb-4 rounded-md border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-800 dark:text-rose-300" role="alert" hidden></p>
       <p id="authInfo" class="mb-4 rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-900 dark:text-emerald-300" role="status" hidden></p>
 
+      <!-- FORMULARIO DE LOGIN NORMAL -->
       <form id="loginForm" class="space-y-4">
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
           <input class="input" type="email" name="email" required placeholder="ejemplo@colegio.edu"></label>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Contrasena</span>
           <input class="input" type="password" name="password" required minlength="6"></label>
         <button class="btn btn-primary w-full" type="submit">Iniciar sesion</button>
-        <p class="text-xs text-muted text-center">Si tu cuenta no esta confirmada, <button type="button" id="btnResendConfirm" class="text-goldtext underline">reenviar correo de confirmacion</button></p>
       </form>
 
-      <form id="otpRequestForm" class="space-y-4" hidden>
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo institucional</span>
-          <input class="input" type="email" name="email" required placeholder="ejemplo@colegio.edu"></label>
-        <button class="btn btn-primary w-full" type="submit">Enviar codigo de acceso</button>
-      </form>
-
+      <!-- VERIFICACION DE CODIGO (SOLO APARECE DESPUES DE REGISTRARSE) -->
       <form id="otpVerifyForm" class="space-y-4" hidden>
-        <p class="text-sm text-muted">Ingresa el codigo de 6 digitos enviado a <span id="otpEmailLabel" class="font-medium text-ink"></span></p>
+        <div class="rounded-md border border-gold/30 bg-gold/5 p-4 text-sm text-ink mb-2">
+          Te enviamos un codigo de 6 digitos a <strong id="otpEmailLabel" class="text-goldtext"></strong>. Ingrésalo abajo para confirmar tu cuenta y entrar de una vez.
+        </div>
         <div class="flex justify-between gap-2" id="otpBoxes">
           <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="0">
           <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="1">
@@ -160,10 +157,11 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
           <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="4">
           <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="5">
         </div>
-        <button class="btn btn-primary w-full" type="submit">Verificar e ingresar</button>
-        <button type="button" id="btnOtpBack" class="btn btn-ghost w-full">Usar otro correo</button>
+        <button class="btn btn-primary w-full" type="submit">Confirmar cuenta e ingresar</button>
+        <button type="button" id="btnCancelOtp" class="btn btn-ghost w-full">Volver al inicio</button>
       </form>
 
+      <!-- FORMULARIO DE REGISTRO -->
       <form id="registerForm" class="space-y-4" hidden>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Nombre completo</span>
           <input class="input" type="text" name="full_name" required minlength="3" maxlength="80"></label>
@@ -174,11 +172,11 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
           </select></label>
         <label class="block" id="regCourseWrap"><span class="mb-1.5 block text-sm font-medium">Curso</span>
           <select class="input" name="course" id="regCourse"></select></label>
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
-          <input class="input" type="email" name="email" required></label>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo institucional</span>
+          <input class="input" type="email" name="email" required placeholder="ejemplo@pioxii.edu.co"></label>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Contrasena</span>
-          <input class="input" type="password" name="password" required minlength="8">
-          <span class="mt-1 block text-xs text-muted">Minimo 8 caracteres.</span></label>
+          <input class="input" type="password" name="password" required minlength="6">
+          <span class="mt-1 block text-xs text-muted">Minimo 6 caracteres.</span></label>
         <button class="btn btn-primary w-full" type="submit">Crear cuenta</button>
       </form>
     </div>
@@ -309,10 +307,10 @@ function errMsg(e) {
   const raw = (e && (e.message || e.error_description)) || String(e);
   const m = raw.toLowerCase();
   if (m.indexOf('invalid login') !== -1) return 'Correo o contrasena incorrectos.';
-  if (m.indexOf('email not confirmed') !== -1) return 'Tu correo aun no ha sido confirmado. Revisa tu bandeja o reenvia el correo.';
-  if (m.indexOf('token has expired') !== -1 || m.indexOf('otp_expired') !== -1) return 'El codigo expiro o es invalido. Solicita uno nuevo.';
+  if (m.indexOf('email not confirmed') !== -1) return 'Tu correo aun no ha sido confirmado. Revisa tu bandeja de entrada.';
+  if (m.indexOf('token has expired') !== -1 || m.indexOf('otp_expired') !== -1) return 'El codigo expiro o es invalido.';
   if (m.indexOf('not found') !== -1) return 'Recurso no encontrado.';
-  if (m.indexOf('duplicate') !== -1) return 'Ese registro ya existe.';
+  if (m.indexOf('duplicate') !== -1) return 'Ese correo ya esta registrado.';
   if (m.indexOf('rate limit') !== -1) return 'Demasiados intentos. Espera un momento.';
   if (m.indexOf('permission denied') !== -1) return 'No tienes permiso para realizar esta accion.';
   if (m.indexOf('failed to fetch') !== -1) return 'No hay conexion con el servidor.';
@@ -490,9 +488,7 @@ const db = {
         subject_id: subjectId,
         created_by: state.user.id
       });
-    } catch (evErr) {
-      toast('La tarea se creo, pero no se pudo sincronizar con el calendario.', 'warn');
-    }
+    } catch (evErr) {}
 
     return data;
   },
@@ -648,28 +644,20 @@ function toggleRegCourse() {
   $('#regCourse').required = isStudent;
 }
 
-const AUTH_FORMS = ['loginForm', 'otpRequestForm', 'otpVerifyForm', 'registerForm'];
-const AUTH_TITLES = {
-  login: { title: 'Iniciar sesion', sub: 'Usa tus credenciales institucionales.' },
-  otp: { title: 'Codigo por correo', sub: 'Te enviaremos un codigo de 6 digitos a tu correo institucional.' },
-  register: { title: 'Registrarse', sub: 'Elige tu rol y curso para continuar.' }
-};
-
 function setAuthTab(tab) {
-  AUTH_FORMS.forEach(function (id) { $('#' + id).hidden = true; });
-  if (tab === 'login') $('#loginForm').hidden = false;
-  if (tab === 'otp') $('#otpRequestForm').hidden = false;
-  if (tab === 'register') $('#registerForm').hidden = false;
+  const isLogin = tab === 'login';
+  $('#loginForm').hidden = !isLogin;
+  $('#registerForm').hidden = isLogin;
+  $('#otpVerifyForm').hidden = true;
+  $('#authTabs').hidden = false;
 
-  ['tabLogin', 'tabOtp', 'tabRegister'].forEach(function (id) {
-    const active = (id === 'tabLogin' && tab === 'login') || (id === 'tabOtp' && tab === 'otp') || (id === 'tabRegister' && tab === 'register');
-    $('#' + id).setAttribute('aria-selected', active);
-    $('#' + id).className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (active ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
-  });
+  $('#tabLogin').setAttribute('aria-selected', isLogin);
+  $('#tabRegister').setAttribute('aria-selected', !isLogin);
+  $('#tabLogin').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (isLogin ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
+  $('#tabRegister').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (!isLogin ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
 
-  const info = AUTH_TITLES[tab] || AUTH_TITLES.login;
-  $('#authTitle').textContent = info.title;
-  $('#authSub').textContent = info.sub;
+  $('#authTitle').textContent = isLogin ? 'Iniciar sesion' : 'Registrarse';
+  $('#authSub').textContent = isLogin ? 'Usa tus credenciales institucionales.' : 'Elige tu rol y curso para continuar.';
   $('#authError').hidden = true;
   $('#authInfo').hidden = true;
 }
@@ -690,39 +678,34 @@ async function onLogin(ev) {
   });
 }
 
-async function onResendConfirm() {
-  const email = $('#loginForm [name=email]').value.trim();
-  if (!email) { toast('Escribe tu correo primero.', 'warn'); return; }
-  try {
-    const res = await sb.auth.resend({ type: 'signup', email: email });
-    if (res.error) throw res.error;
-    const info = $('#authInfo');
-    info.textContent = 'Correo de confirmacion reenviado. Revisa tu bandeja de entrada.';
-    info.hidden = false;
-    $('#authError').hidden = true;
-  } catch (e) {
-    toast(errMsg(e), 'err');
-  }
-}
-
-async function onOtpRequest(ev) {
+async function onRegister(ev) {
   ev.preventDefault();
   const form = ev.target;
   const btn = form.querySelector('[type=submit]');
   const err = $('#authError');
   const email = form.email.value.trim();
+  const role = form.role.value;
+  const course = role === 'student' ? form.course.value : null;
+
   await withBusy(btn, async function () {
     try {
-      const res = await sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: false } });
+      const res = await sb.auth.signUp({
+        email: email,
+        password: form.password.value,
+        options: { data: { full_name: form.full_name.value.trim(), role: role, course: course } }
+      });
       if (res.error) throw res.error;
+
+      // Pasa a la pantalla del código OTP
       state.pendingOtpEmail = email;
       $('#otpEmailLabel').textContent = email;
-      $('#otpRequestForm').hidden = true;
+      $('#registerForm').hidden = true;
+      $('#loginForm').hidden = true;
+      $('#authTabs').hidden = true;
       $('#otpVerifyForm').hidden = false;
+      $('#authTitle').textContent = 'Confirmar correo';
+      $('#authSub').textContent = 'Revisa tu bandeja e ingresa el código.';
       err.hidden = true;
-      const info = $('#authInfo');
-      info.textContent = 'Codigo enviado. Revisa tu correo.';
-      info.hidden = false;
       const first = $('[data-otp-idx="0"]');
       if (first) first.focus();
     } catch (e) {
@@ -745,7 +728,7 @@ async function onOtpVerify(ev) {
   if (code.length !== 6) { err.textContent = 'Ingresa los 6 digitos del codigo.'; err.hidden = false; return; }
   await withBusy(btn, async function () {
     try {
-      const res = await sb.auth.verifyOtp({ email: state.pendingOtpEmail, token: code, type: 'email' });
+      const res = await sb.auth.verifyOtp({ email: state.pendingOtpEmail, token: code, type: 'signup' });
       if (res.error) throw res.error;
       err.hidden = true;
     } catch (e) {
@@ -771,35 +754,6 @@ function bindOtpBoxes() {
       text.split('').forEach(function (ch, i) { if (boxes[i]) boxes[i].value = ch; });
       if (boxes[Math.min(text.length, boxes.length - 1)]) boxes[Math.min(text.length, boxes.length - 1)].focus();
     });
-  });
-}
-
-async function onRegister(ev) {
-  ev.preventDefault();
-  const form = ev.target;
-  const btn = form.querySelector('[type=submit]');
-  const err = $('#authError');
-  const info = $('#authInfo');
-  const role = form.role.value;
-  const course = role === 'student' ? form.course.value : null;
-  await withBusy(btn, async function () {
-    try {
-      const res = await sb.auth.signUp({
-        email: form.email.value.trim(),
-        password: form.password.value,
-        options: { data: { full_name: form.full_name.value.trim(), role: role, course: course } }
-      });
-      if (res.error) throw res.error;
-      form.reset();
-      setAuthTab('login');
-      info.textContent = 'Cuenta creada. Revisa tu correo para confirmar y luego inicia sesion.';
-      info.hidden = false;
-      err.hidden = true;
-    } catch (e) {
-      err.textContent = errMsg(e);
-      err.hidden = false;
-      info.hidden = true;
-    }
   });
 }
 
@@ -1490,25 +1444,16 @@ const actions = {
   'view-submissions': async function (btn) {
     const assignmentId = btn.dataset.id;
     const subs = await db.getSubmissions(assignmentId);
-    const grades = await db.getGradesByAssignment(assignmentId);
-    const gradeMap = {};
-    grades.forEach(function (g) { gradeMap[g.student_id] = g; });
-
     let body = '';
     if (subs.length) {
       body = '<div class="space-y-3">';
       subs.forEach(function (s) {
-        const g = gradeMap[s.student_id] || {};
         body += '<div class="p-3 border rounded-md bg-sunk" data-grade-row data-student="' + esc(s.student_id) + '">';
         body += '<p class="font-medium">' + esc((s.profiles && s.profiles.full_name) || 'Estudiante') + '</p>';
         body += '<p class="text-xs text-muted mt-1">' + esc(s.file_name) + '</p>';
         if (s.comment) body += '<p class="text-sm mt-1">' + esc(s.comment) + '</p>';
         body += '<button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="' + esc(s.file_path) + '" data-name="' + esc(s.file_name) + '" type="button">' + icon('download') + 'Descargar</button>';
-        body += '<div class="mt-3 flex flex-wrap items-end gap-2 border-t pt-3">';
-        body += '<label class="text-xs"><span class="block text-muted mb-1">Nota (0.0-5.0)</span><input type="number" class="input w-24" min="0" max="' + CONFIG.MAX_SCORE + '" step="0.1" data-grade-score value="' + (g.score != null ? g.score : '') + '"></label>';
-        body += '<label class="text-xs flex-1 min-w-[10rem]"><span class="block text-muted mb-1">Observacion</span><input type="text" class="input" data-grade-obs value="' + esc(g.observation || '') + '"></label>';
-        body += '<button class="btn btn-sm btn-primary" data-action="save-activity-grade" data-assignment="' + esc(assignmentId) + '" type="button">Guardar</button>';
-        body += '</div></div>';
+        body += '</div>';
       });
       body += '</div>';
     } else {
@@ -1558,9 +1503,12 @@ document.addEventListener('click', async function (e) {
   }
 });
 
-$('#btnLogout').addEventListener('click', async function () {
-  await sb.auth.signOut();
-});
+const logoutBtn = $('#btnLogout');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async function () {
+    await sb.auth.signOut();
+  });
+}
 
 $('#themeBtn').addEventListener('click', function () {
   const isDark = document.documentElement.classList.toggle('dark');
@@ -1575,16 +1523,11 @@ $('#nav').addEventListener('click', function (e) {
 });
 
 $('#loginForm').addEventListener('submit', onLogin);
-$('#otpRequestForm').addEventListener('submit', onOtpRequest);
 $('#otpVerifyForm').addEventListener('submit', onOtpVerify);
 $('#registerForm').addEventListener('submit', onRegister);
 $('#regRole').addEventListener('change', toggleRegCourse);
-$('#btnResendConfirm').addEventListener('click', onResendConfirm);
-$('#btnOtpBack').addEventListener('click', function () {
-  $('#otpVerifyForm').hidden = true;
-  $('#otpRequestForm').hidden = false;
-  $('#authInfo').hidden = true;
-  $('#authError').hidden = true;
+$('#btnCancelOtp').addEventListener('click', function () {
+  setAuthTab('login');
 });
 
 $('#dlg').addEventListener('click', function (e) {
@@ -1607,7 +1550,9 @@ sb.auth.onAuthStateChange(function (_event, session) {
 });
 
 sb.auth.getSession().then(function (res) {
-  handleSession(res.data.session);
+  handleSession(res.data ? res.data.session : null);
+}).catch(function () {
+  handleSession(null);
 });
 </script>
 </body>
