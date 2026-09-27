@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Aula Central: materias, evaluaciones y material de estudio del Colegio Pio XII.">
+<meta name="description" content="Aula Central: materias, evaluaciones y material de estudio del Colegio Pío XII.">
 <meta name="theme-color" content="#0F1B33">
-<title>Aula Central - Colegio Pio XII</title>
+<title>Aula Central - Colegio Pío XII</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -113,14 +113,14 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
       <span class="grid h-11 w-11 place-items-center rounded-full border border-gold font-serif text-2xl text-gold">A</span>
       <div>
         <p class="font-serif text-xl leading-tight">Aula Central</p>
-        <p class="text-sm text-[#AEB8CC]">Colegio Pio XII</p>
+        <p class="text-sm text-[#AEB8CC]">Colegio Pío XII</p>
       </div>
     </div>
     <div>
-      <h1 class="max-w-xl font-serif text-5xl font-semibold leading-[1.1] tracking-tight">Todo el ano escolar, en un solo lugar.</h1>
-      <p class="mt-6 max-w-md text-lg leading-relaxed text-[#C5CEDF]">Materias, evaluaciones y material de estudio conectados para estudiantes, profesores y coordinacion.</p>
+      <h1 class="max-w-xl font-serif text-5xl font-semibold leading-[1.1] tracking-tight">Todo el año escolar, en un solo lugar.</h1>
+      <p class="mt-6 max-w-md text-lg leading-relaxed text-[#C5CEDF]">Materias, evaluaciones y material de estudio conectados para estudiantes, profesores y coordinación.</p>
     </div>
-    <p class="text-sm text-[#AEB8CC]">Ano lectivo 2026</p>
+    <p class="text-sm text-[#AEB8CC]">Año lectivo 2026</p>
   </div>
 
   <div class="flex min-h-screen items-center justify-center px-5 py-10 sm:px-10 lg:min-h-0">
@@ -129,33 +129,33 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
         <span class="grid h-10 w-10 place-items-center rounded-full border border-gold font-serif text-xl text-goldtext">A</span>
         <div>
           <p class="font-serif text-lg leading-tight">Aula Central</p>
-          <p class="text-xs text-muted">Colegio Pio XII</p>
+          <p class="text-xs text-muted">Colegio Pío XII</p>
         </div>
       </div>
 
       <div id="authTabs" class="mb-6 flex gap-1 rounded-md bg-sunk p-1" role="tablist">
-        <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium bg-card shadow-sm">Iniciar sesion</button>
+        <button id="tabLogin" role="tab" aria-selected="true" data-tab="login" class="flex-1 rounded px-3 py-2 text-sm font-medium bg-card shadow-sm">Iniciar sesión</button>
         <button id="tabRegister" role="tab" aria-selected="false" data-tab="register" class="flex-1 rounded px-3 py-2 text-sm font-medium text-muted hover:text-ink">Registrarse</button>
       </div>
 
-      <h2 id="authTitle" class="font-serif text-3xl font-semibold">Iniciar sesion</h2>
-      <p id="authSub" class="mt-1 mb-6 text-muted">Usa tus credenciales institucionales.</p>
+      <h2 id="authTitle" class="font-serif text-3xl font-semibold">Iniciar sesión</h2>
+      <p id="authSub" class="mt-1 mb-6 text-muted">Ingresa con tus credenciales institucionales.</p>
 
       <p id="authError" class="mb-4 rounded-md border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-800 dark:text-rose-300" role="alert" hidden></p>
       <p id="authInfo" class="mb-4 rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-900 dark:text-emerald-300" role="status" hidden></p>
 
       <form id="loginForm" class="space-y-4">
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
-          <input class="input" type="email" name="email" required placeholder="ejemplo@colegio.edu"></label>
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Contrasena</span>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo electrónico</span>
+          <input class="input" type="email" name="email" required placeholder="ejemplo@pioxii.edu.co"></label>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Contraseña</span>
           <input class="input" type="password" name="password" required minlength="6"></label>
-        <button class="btn btn-primary w-full" type="submit">Iniciar sesion</button>
-        <p class="text-xs text-muted text-center">Si tu cuenta no esta confirmada, <button type="button" id="btnResendConfirm" class="text-goldtext underline">reenviar correo de confirmacion</button></p>
+        <button class="btn btn-primary w-full" type="submit">Iniciar sesión</button>
+        <p class="text-xs text-muted text-center">¿No te llegó el correo de confirmación? <button type="button" id="btnResendConfirm" class="text-goldtext underline">Reenviar correo</button></p>
       </form>
 
       <form id="otpVerifyForm" class="space-y-4" hidden>
         <div class="rounded-md border border-gold/30 bg-gold/5 p-4 text-sm text-ink mb-2">
-          Te enviamos un codigo de 6 digitos a <strong id="otpEmailLabel" class="text-goldtext"></strong>. Ingrésalo abajo para confirmar tu cuenta y entrar.
+          Te enviamos un código de 6 dígitos a <strong id="otpEmailLabel" class="text-goldtext"></strong>. Ingrésalo abajo para confirmar tu cuenta e ingresar al sistema.
         </div>
         <div class="flex justify-between gap-2" id="otpBoxes">
           <input class="otp-box" maxlength="1" inputmode="numeric" data-otp-idx="0">
@@ -171,20 +171,20 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
 
       <form id="registerForm" class="space-y-4" hidden>
         <label class="block"><span class="mb-1.5 block text-sm font-medium">Nombre completo</span>
-          <input class="input" type="text" name="full_name" required minlength="3" maxlength="80"></label>
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Rol</span>
+          <input class="input" type="text" name="full_name" required minlength="3" maxlength="80" placeholder="Ej: Alejandro Pasuy"></label>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Rol institucional</span>
           <select class="input" name="role" id="regRole" required>
             <option value="student">Estudiante</option>
             <option value="teacher">Profesor</option>
-            <option value="coordinator">Coordinacion / Directivo</option>
+            <option value="coordinator">Coordinación / Directivo</option>
           </select></label>
-        <label class="block" id="regCourseWrap"><span class="mb-1.5 block text-sm font-medium">Curso</span>
+        <label class="block" id="regCourseWrap"><span class="mb-1.5 block text-sm font-medium">Curso / Salón</span>
           <select class="input" name="course" id="regCourse"></select></label>
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo</span>
-          <input class="input" type="email" name="email" required></label>
-        <label class="block"><span class="mb-1.5 block text-sm font-medium">Contrasena</span>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Correo institucional</span>
+          <input class="input" type="email" name="email" required placeholder="ejemplo@pioxii.edu.co"></label>
+        <label class="block"><span class="mb-1.5 block text-sm font-medium">Contraseña</span>
           <input class="input" type="password" name="password" required minlength="8">
-          <span class="mt-1 block text-xs text-muted">Minimo 8 caracteres.</span></label>
+          <span class="mt-1 block text-xs text-muted">Mínimo 8 caracteres.</span></label>
         <button class="btn btn-primary w-full" type="submit">Crear cuenta</button>
       </form>
     </div>
@@ -200,7 +200,7 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
       </a>
 
       <div class="ml-auto flex items-center gap-3 md:order-last">
-        <button id="themeBtn" class="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10" aria-label="Tema" type="button">
+        <button id="themeBtn" class="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10" aria-label="Cambiar tema" type="button">
           <svg class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
           <svg class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         </button>
@@ -219,7 +219,7 @@ dialog::backdrop { background: rgba(6, 10, 20, .65); }
   </header>
 
   <main id="view" tabindex="-1" class="mx-auto max-w-7xl px-4 py-8 outline-none sm:py-10"></main>
-  <footer class="mx-auto max-w-7xl px-4 pb-10 text-xs text-muted">Aula Central, Colegio Pio XII. Ano lectivo 2026.</footer>
+  <footer class="mx-auto max-w-7xl px-4 pb-10 text-xs text-muted">Aula Central - Colegio Pío XII. Año lectivo 2026.</footer>
 </div>
 
 <div id="simWidget" class="fixed bottom-4 left-4 z-50" hidden></div>
@@ -252,16 +252,16 @@ const esc = function (v) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 };
-const ROLE_LABEL = { student: 'Estudiante', teacher: 'Profesor', coordinator: 'Coordinacion' };
+const ROLE_LABEL = { student: 'Estudiante', teacher: 'Profesor', coordinator: 'Coordinación' };
 const initials = function (name) {
   return (name || '?').trim().split(/\s+/).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase();
 };
 const safeName = function (name) {
   return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 50);
 };
-const fmtShort = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
-const fmtLong = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', year: 'numeric' });
-const WEEKDAYS = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+const fmtShort = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+const fmtLong = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 const ICONS = {
@@ -318,14 +318,14 @@ function withTimeout(promise, ms, fallback) {
 function errMsg(e) {
   const raw = (e && (e.message || e.error_description)) || String(e);
   const m = raw.toLowerCase();
-  if (m.indexOf('invalid login') !== -1) return 'Correo o contrasena incorrectos.';
-  if (m.indexOf('email not confirmed') !== -1) return 'Tu correo aun no ha sido confirmado. Revisa tu bandeja o reenvia el correo.';
-  if (m.indexOf('token has expired') !== -1 || m.indexOf('otp_expired') !== -1) return 'El codigo expiro o es invalido.';
+  if (m.indexOf('invalid login') !== -1) return 'Correo o contraseña incorrectos.';
+  if (m.indexOf('email not confirmed') !== -1) return 'Tu correo aún no ha sido confirmado. Revisa tu bandeja de entrada.';
+  if (m.indexOf('token has expired') !== -1 || m.indexOf('otp_expired') !== -1) return 'El código expiró o es inválido.';
   if (m.indexOf('not found') !== -1) return 'Recurso no encontrado.';
-  if (m.indexOf('duplicate') !== -1) return 'Ese correo ya esta registrado.';
+  if (m.indexOf('duplicate') !== -1) return 'Ese correo o registro ya existe.';
   if (m.indexOf('rate limit') !== -1) return 'Demasiados intentos. Espera un momento.';
-  if (m.indexOf('permission denied') !== -1) return 'No tienes permiso para realizar esta accion.';
-  if (m.indexOf('failed to fetch') !== -1) return 'No hay conexion con el servidor.';
+  if (m.indexOf('permission denied') !== -1) return 'No tienes permiso para realizar esta acción.';
+  if (m.indexOf('failed to fetch') !== -1) return 'No hay conexión con el servidor.';
   return raw || 'Error desconocido.';
 }
 
@@ -346,10 +346,10 @@ function renderSimWidget() {
   const now = getNow();
   box.innerHTML =
     '<div class="card p-3 shadow-xl w-64">' +
-      '<p class="text-xs font-semibold text-goldtext mb-1">Simulador Pio XII</p>' +
+      '<p class="text-xs font-semibold text-goldtext mb-1">Simulador Pío XII</p>' +
       '<p class="text-xs text-muted mb-2">' + esc(fmtShort.format(now)) + '</p>' +
       '<div class="flex gap-2">' +
-        '<button class="btn btn-sm btn-ghost flex-1" data-action="sim-add-day" type="button">+1 Dia</button>' +
+        '<button class="btn btn-sm btn-ghost flex-1" data-action="sim-add-day" type="button">+1 Día</button>' +
         '<button class="btn btn-sm btn-ghost flex-1" data-action="sim-add-week" type="button">+1 Semana</button>' +
         '<button class="btn btn-sm btn-ghost" data-action="sim-reset" type="button">Reset</button>' +
       '</div>' +
@@ -393,7 +393,7 @@ function visibleForMe(row) {
   return arr.indexOf(c) !== -1;
 }
 
-/* ============== SUPABASE QUERIES ============== */
+/* ============== CONSULTAS A SUPABASE ============== */
 const db = {
   async getProfile(userId) {
     const { data, error } = await sb.from('profiles').select('*').eq('id', userId).single();
@@ -685,7 +685,7 @@ document.addEventListener('change', function (e) {
   setCourseSelectorValue(container, current);
 });
 
-/* ============== AUTENTICACION ============== */
+/* ============== AUTENTICACIÓN ============== */
 function fillRegCourse() {
   const sel = $('#regCourse');
   sel.innerHTML = COURSES.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
@@ -709,8 +709,8 @@ function setAuthTab(tab) {
   $('#tabLogin').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (isLogin ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
   $('#tabRegister').className = 'flex-1 rounded px-3 py-2 text-sm font-medium ' + (!isLogin ? 'bg-card shadow-sm' : 'text-muted hover:text-ink');
 
-  $('#authTitle').textContent = isLogin ? 'Iniciar sesion' : 'Registrarse';
-  $('#authSub').textContent = isLogin ? 'Usa tus credenciales institucionales.' : 'Elige tu rol para continuar.';
+  $('#authTitle').textContent = isLogin ? 'Iniciar sesión' : 'Registrarse';
+  $('#authSub').textContent = isLogin ? 'Ingresa con tus credenciales institucionales.' : 'Elige tu rol para continuar.';
   $('#authError').hidden = true;
   $('#authInfo').hidden = true;
 }
@@ -733,12 +733,12 @@ async function onLogin(ev) {
 
 async function onResendConfirm() {
   const email = $('#loginForm [name=email]').value.trim();
-  if (!email) { toast('Escribe tu correo primero.', 'warn'); return; }
+  if (!email) { toast('Escribe tu correo institucional primero.', 'warn'); return; }
   try {
     const res = await sb.auth.resend({ type: 'signup', email: email });
     if (res.error) throw res.error;
     const info = $('#authInfo');
-    info.textContent = 'Correo de confirmacion reenviado. Revisa tu bandeja de entrada.';
+    info.textContent = 'Correo de confirmación reenviado. Revisa tu bandeja de entrada.';
     info.hidden = false;
     $('#authError').hidden = true;
   } catch (e) {
@@ -770,8 +770,8 @@ async function onRegister(ev) {
       $('#loginForm').hidden = true;
       $('#authTabs').hidden = true;
       $('#otpVerifyForm').hidden = false;
-      $('#authTitle').textContent = 'Confirmar correo';
-      $('#authSub').textContent = 'Revisa tu bandeja e ingresa el codigo.';
+      $('#authTitle').textContent = 'Confirmar correo electrónico';
+      $('#authSub').textContent = 'Revisa tu bandeja e ingresa el código de acceso.';
       err.hidden = true;
       const first = $('[data-otp-idx="0"]');
       if (first) first.focus();
@@ -792,7 +792,7 @@ async function onOtpVerify(ev) {
   const btn = form.querySelector('[type=submit]');
   const err = $('#authError');
   const code = getOtpValue();
-  if (code.length !== 6) { err.textContent = 'Ingresa los 6 digitos del codigo.'; err.hidden = false; return; }
+  if (code.length !== 6) { err.textContent = 'Ingresa los 6 dígitos del código.'; err.hidden = false; return; }
   await withBusy(btn, async function () {
     try {
       const res = await sb.auth.verifyOtp({ email: state.pendingOtpEmail, token: code, type: 'signup' });
@@ -865,7 +865,7 @@ async function handleSession(session) {
   render();
 }
 
-/* ============== ROUTING ============== */
+/* ============== ENRUTAMIENTO ============== */
 const NAV_ITEMS = [
   ['panel', 'Panel'],
   ['materias', 'Materias'],
@@ -923,7 +923,7 @@ async function render() {
     window.scrollTo({ top: 0 });
   } catch (e) {
     if (token === state.renderId) {
-      root.innerHTML = '<div class="card p-8 text-center"><p class="font-serif text-xl">Error cargando</p><p class="text-muted mt-1">' + esc(errMsg(e)) + '</p><button class="btn btn-primary mt-4" data-action="retry" type="button">Reintentar</button></div>';
+      root.innerHTML = '<div class="card p-8 text-center"><p class="font-serif text-xl">Error cargando el contenido</p><p class="text-muted mt-1">' + esc(errMsg(e)) + '</p><button class="btn btn-primary mt-4" data-action="retry" type="button">Reintentar</button></div>';
     }
   }
 }
@@ -965,7 +965,7 @@ async function viewPanel() {
     html += '<p class="text-muted mb-8">Bienvenido ' + esc(state.profile.full_name || state.user.email) + '</p>';
     const circulares = state.announcements.filter(isCircular).slice(0, 3);
     if (circulares.length) {
-      html += '<section class="mb-8"><h2 class="font-serif text-2xl font-semibold mb-4">Circulares de Coordinacion</h2><div class="space-y-3">';
+      html += '<section class="mb-8"><h2 class="font-serif text-2xl font-semibold mb-4">Circulares de Coordinación</h2><div class="space-y-3">';
       circulares.forEach(function (a) {
         html += '<div class="card p-4 border-gold"><span class="badge bg-gold/15 text-goldtext text-xs mb-1">Circular oficial</span>';
         html += '<p class="font-semibold">' + esc(a.title) + '</p><p class="text-sm text-muted mt-1">' + esc(a.content) + '</p>';
@@ -973,7 +973,7 @@ async function viewPanel() {
       });
       html += '</div></section>';
     }
-    html += '<section><h2 class="font-serif text-2xl font-semibold mb-4">Acciones rapidas</h2><div class="flex flex-wrap gap-2">';
+    html += '<section><h2 class="font-serif text-2xl font-semibold mb-4">Acciones rápidas</h2><div class="flex flex-wrap gap-2">';
     html += '<button class="btn btn-primary" data-action="new-subject" type="button">' + icon('plus') + 'Nueva materia</button>';
     html += '<button class="btn btn-ghost" data-action="new-assignment" type="button">' + icon('plus') + 'Nueva tarea</button>';
     html += '<button class="btn btn-ghost" data-action="new-announcement" type="button">' + icon('plus') + 'Nuevo aviso</button>';
@@ -1008,14 +1008,14 @@ async function viewMaterias() {
   html += '</div>';
 
   if (!visible.length) {
-    html += '<div class="card p-8 text-center"><p class="text-muted">Sin materias por ahora</p></div>';
+    html += '<div class="card p-8 text-center"><p class="text-muted">Aún no hay materias registradas</p></div>';
   } else {
     html += '<div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">';
     visible.forEach(function (s) {
       html += '<a href="#materias/' + esc(s.id) + '" class="card block p-5 hover:border-gold transition">';
       html += '<h3 class="font-serif text-xl font-semibold">' + esc(s.name) + '</h3>';
       if (s.profiles && s.profiles.full_name) html += '<p class="text-xs text-goldtext mt-1">Docente: ' + esc(s.profiles.full_name) + '</p>';
-      html += '<p class="text-sm text-muted mt-2 line-clamp-2">' + esc(s.description || 'Sin descripcion') + '</p>';
+      html += '<p class="text-sm text-muted mt-2 line-clamp-2">' + esc(s.description || 'Sin descripción') + '</p>';
       html += '<div class="mt-3 flex flex-wrap gap-1.5">' + courseBadges(s.courses) + '</div>';
       html += '</a>';
     });
@@ -1048,7 +1048,7 @@ async function viewSubjectDetail(id) {
   html += '</div>';
 
   if (!topics.length) {
-    html += '<div class="card border-dashed p-8 text-center"><p class="font-serif text-xl">Sin temas todavia</p><p class="text-muted mt-1">' + (staff ? 'Crea el primer tema para organizar el material.' : 'El profesor aun no ha publicado temas.') + '</p></div>';
+    html += '<div class="card border-dashed p-8 text-center"><p class="font-serif text-xl">Sin temas todavía</p><p class="text-muted mt-1">' + (staff ? 'Crea el primer tema para organizar el material.' : 'El docente aún no ha publicado temas.') + '</p></div>';
   } else {
     html += '<div class="space-y-5">';
     topics.forEach(function (topic) {
@@ -1067,7 +1067,7 @@ async function viewSubjectDetail(id) {
           html += '</li>';
         });
       } else {
-        html += '<li class="py-3 text-sm text-muted">Sin documentos en este tema.</li>';
+        html += '<li class="py-3 text-sm text-muted">Sin documentos publicados en este tema.</li>';
       }
       html += '</ul></article>';
     });
@@ -1085,12 +1085,12 @@ async function viewTareas() {
   const now = getNow();
 
   let html = '<div><div class="flex items-center justify-between mb-8">';
-  html += '<h1 class="font-serif text-4xl font-semibold">Tareas</h1>';
+  html += '<h1 class="font-serif text-4xl font-semibold">Tareas y Evaluaciones</h1>';
   if (isStaff()) html += '<button class="btn btn-primary" data-action="new-assignment" type="button">' + icon('plus') + 'Nueva tarea</button>';
   html += '</div>';
 
   if (!visible.length) {
-    html += '<div class="card p-8 text-center"><p class="text-muted">Sin tareas por ahora</p></div>';
+    html += '<div class="card p-8 text-center"><p class="text-muted">No hay tareas asignadas por ahora</p></div>';
   } else {
     html += '<ul class="space-y-3">';
     for (const a of visible) {
@@ -1106,7 +1106,7 @@ async function viewTareas() {
       html += '<div><p class="font-semibold">' + esc(a.title) + '</p>';
       html += '<p class="text-xs text-muted mt-1">' + esc(subjectName) + ' - ' + courseBadges(a.courses) + '</p>';
       if (a.description) html += '<p class="text-sm text-muted mt-1">' + esc(a.description) + '</p>';
-      html += '<p class="text-xs text-muted mt-2">Vence: ' + esc(fmtShort.format(due)) + (isOverdue ? ' (vencida)' : '') + '</p></div>';
+      html += '<p class="text-xs text-muted mt-2">Plazo límite: ' + esc(fmtShort.format(due)) + (isOverdue ? ' (vencida)' : '') + '</p></div>';
       html += '<div class="flex items-center gap-2">';
       if (isStaff()) {
         html += '<button class="btn btn-sm btn-ghost" data-action="view-submissions" data-id="' + esc(a.id) + '" data-subject="' + esc(a.subject_id) + '" type="button">Ver entregas</button>';
@@ -1117,7 +1117,7 @@ async function viewTareas() {
         } else if (isOverdue) {
           html += '<span class="badge bg-rose-600/10 text-rose-800 dark:text-rose-300">Vencida</span>';
         } else {
-          html += '<button class="btn btn-sm btn-primary" data-action="submit-assignment" data-id="' + esc(a.id) + '" type="button">Entregar</button>';
+          html += '<button class="btn btn-sm btn-primary" data-action="submit-assignment" data-id="' + esc(a.id) + '" type="button">Entregar tarea</button>';
         }
       }
       html += '</div></div></li>';
@@ -1128,7 +1128,7 @@ async function viewTareas() {
   return html;
 }
 
-/* ============== CALIFICACIONES (ACORDEON) ============== */
+/* ============== CALIFICACIONES (ACORDEÓN) ============== */
 async function viewCalificaciones() {
   state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
   const allAssignments = await db.getAssignments();
@@ -1136,7 +1136,7 @@ async function viewCalificaciones() {
   const staff = isStaff();
 
   let html = '<div>';
-  html += '<h1 class="font-serif text-4xl font-semibold mb-8">Calificaciones</h1>';
+  html += '<h1 class="font-serif text-4xl font-semibold mb-8">Libro de Calificaciones</h1>';
 
   if (staff) {
     const grouped = {};
@@ -1146,7 +1146,7 @@ async function viewCalificaciones() {
     });
 
     if (!allAssignments.length) {
-      html += '<div class="card p-8 text-center"><p class="text-muted">Aun no hay actividades creadas</p></div>';
+      html += '<div class="card p-8 text-center"><p class="text-muted">Aún no se han creado actividades para calificar</p></div>';
     } else {
       html += '<div class="space-y-4">';
       Object.keys(grouped).forEach(function (subjectId) {
@@ -1161,13 +1161,13 @@ async function viewCalificaciones() {
           html += '<div>';
           html += '<div class="acc-head">';
           html += '<button class="flex-1 flex items-center justify-between gap-3 text-left" data-action="toggle-acc" data-target="acc-act-' + esc(a.id) + '" type="button">';
-          html += '<span><span class="font-medium">' + esc(a.title) + '</span><span class="ml-2 text-xs text-muted">Vence ' + esc(fmtShort.format(new Date(a.due_date))) + '</span></span>';
+          html += '<span><span class="font-medium">' + esc(a.title) + '</span><span class="ml-2 text-xs text-muted">Límite: ' + esc(fmtShort.format(new Date(a.due_date))) + '</span></span>';
           html += icon('chevDown');
           html += '</button>';
-          html += '<button class="btn btn-ghost btn-sm ml-2" data-action="print-grades" data-assignment="' + esc(a.id) + '" type="button">' + icon('print') + 'Imprimir</button>';
+          html += '<button class="btn btn-ghost btn-sm ml-2" data-action="print-grades" data-assignment="' + esc(a.id) + '" type="button">' + icon('print') + 'Imprimir planilla</button>';
           html += '</div>';
           html += '<div id="acc-act-' + esc(a.id) + '" class="px-5 pb-4" hidden data-assignment="' + esc(a.id) + '" data-courses="' + esc(JSON.stringify(a.courses || [])) + '" data-loaded="0">';
-          html += '<p class="text-sm text-muted py-3">Cargando...</p>';
+          html += '<p class="text-sm text-muted py-3">Cargando planilla...</p>';
           html += '</div></div>';
         });
         html += '</div></div>';
@@ -1179,11 +1179,11 @@ async function viewCalificaciones() {
     const scored = rows.filter(function (r) { return r.score != null; });
     const avg = scored.length ? scored.reduce(function (sum, r) { return sum + Number(r.score); }, 0) / scored.length : null;
 
-    html += '<div class="card p-5 mb-8"><p class="text-muted text-sm">Promedio general</p>';
+    html += '<div class="card p-5 mb-8"><p class="text-muted text-sm">Promedio acumulado general</p>';
     html += '<p class="font-serif text-4xl font-semibold mt-2 ' + (avg != null && avg >= CONFIG.PASS_SCORE ? 'text-emerald-600 dark:text-emerald-400' : avg != null ? 'text-rose-600 dark:text-rose-400' : '') + '">' + (avg != null ? avg.toFixed(1) : '-') + '</p></div>';
 
     if (!rows.length) {
-      html += '<div class="card p-8 text-center"><p class="text-muted">Aun no tienes calificaciones registradas</p></div>';
+      html += '<div class="card p-8 text-center"><p class="text-muted">Aún no tienes calificaciones registradas</p></div>';
     } else {
       html += '<div class="card divide-y">';
       rows.forEach(function (r) {
@@ -1224,9 +1224,9 @@ async function loadAccordionGrades(container) {
   students.forEach(function (s) {
     const g = gradeMap[s.id] || {};
     html += '<div class="flex flex-wrap items-end gap-2 border-b pb-2 last:border-0" data-grade-row data-student="' + esc(s.id) + '">';
-    html += '<div class="min-w-[9rem] flex-1"><p class="text-sm font-medium">' + esc(s.full_name) + '</p><p class="text-xs text-muted">' + esc(s.course) + '</p></div>';
-    html += '<label class="text-xs"><span class="block text-muted mb-1">Nota (0.0-5.0)</span><input type="number" class="input w-24" min="0" max="' + CONFIG.MAX_SCORE + '" step="0.1" data-grade-score value="' + (g.score != null ? g.score : '') + '"></label>';
-    html += '<label class="text-xs flex-1 min-w-[10rem]"><span class="block text-muted mb-1">Observacion</span><input type="text" class="input" data-grade-obs value="' + esc(g.observation || '') + '"></label>';
+    html += '<div class="min-w-[9rem] flex-1"><p class="text-sm font-medium">' + esc(s.full_name) + '</p><p class="text-xs text-muted">Curso ' + esc(s.course) + '</p></div>';
+    html += '<label class="text-xs"><span class="block text-muted mb-1">Nota (0.0 - 5.0)</span><input type="number" class="input w-24" min="0" max="' + CONFIG.MAX_SCORE + '" step="0.1" data-grade-score value="' + (g.score != null ? g.score : '') + '"></label>';
+    html += '<label class="text-xs flex-1 min-w-[10rem]"><span class="block text-muted mb-1">Observación pedagógica</span><input type="text" class="input" data-grade-obs value="' + esc(g.observation || '') + '"></label>';
     html += '<button class="btn btn-sm btn-primary" data-action="save-activity-grade" data-assignment="' + esc(assignmentId) + '" type="button">Guardar</button>';
     html += '</div>';
   });
@@ -1237,7 +1237,7 @@ async function loadAccordionGrades(container) {
 
 async function printGradeSheet(assignmentId) {
   const a = state.assignments.find(function (x) { return x.id === assignmentId; });
-  if (!a) { toast('No se encontro la actividad.', 'err'); return; }
+  if (!a) { toast('No se encontró la actividad.', 'err'); return; }
   const subject = state.subjects.find(function (s) { return s.id === a.subject_id; });
   const subjectName = subject ? subject.name : 'Materia';
   const students = await db.getStudentsByCourses(a.courses || []);
@@ -1253,15 +1253,15 @@ async function printGradeSheet(assignmentId) {
 
   const html =
     '<div class="print-header">' +
-      '<p style="font-family:Lora,serif;font-size:22px;font-weight:600;margin:0;">Colegio Pio XII</p>' +
-      '<p style="margin:2px 0 0;font-size:13px;">Planilla oficial de calificaciones - Ano lectivo 2026</p>' +
+      '<p style="font-family:Lora,serif;font-size:22px;font-weight:600;margin:0;">Colegio Pío XII</p>' +
+      '<p style="margin:2px 0 0;font-size:13px;">Planilla oficial de calificaciones - Año lectivo 2026</p>' +
     '</div>' +
-    '<p style="margin:0 0 4px;font-size:14px;"><strong>Materia:</strong> ' + esc(subjectName) + '</p>' +
-    '<p style="margin:0 0 4px;font-size:14px;"><strong>Actividad:</strong> ' + esc(a.title) + '</p>' +
-    '<p style="margin:0 0 4px;font-size:14px;"><strong>Fecha limite:</strong> ' + esc(fmtLong.format(new Date(a.due_date))) + '</p>' +
+    '<p style="margin:0 0 4px;font-size:14px;"><strong>Asignatura:</strong> ' + esc(subjectName) + '</p>' +
+    '<p style="margin:0 0 4px;font-size:14px;"><strong>Actividad evaluativa:</strong> ' + esc(a.title) + '</p>' +
+    '<p style="margin:0 0 4px;font-size:14px;"><strong>Fecha límite:</strong> ' + esc(fmtLong.format(new Date(a.due_date))) + '</p>' +
     '<p style="margin:0 0 16px;font-size:14px;"><strong>Cursos:</strong> ' + esc((a.courses || []).join(', ')) + '</p>' +
-    '<table><thead><tr><th>N.</th><th>Estudiante</th><th>Curso</th><th>Nota</th><th>Observacion</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    '<p style="margin-top:24px;font-size:11px;">Generado el ' + esc(fmtLong.format(getNow())) + ' por Aula Central.</p>';
+    '<table><thead><tr><th>N.º</th><th>Estudiante</th><th>Curso</th><th>Calificación</th><th>Observación</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<p style="margin-top:24px;font-size:11px;">Documento generado el ' + esc(fmtLong.format(getNow())) + ' mediante Aula Central.</p>';
 
   $('#printArea').innerHTML = html;
   window.print();
@@ -1273,26 +1273,26 @@ async function viewAvisos() {
   const others = state.announcements.filter(function (a) { return !isCircular(a); });
 
   let html = '<div><div class="flex items-center justify-between mb-8">';
-  html += '<h1 class="font-serif text-4xl font-semibold">Avisos</h1>';
-  if (isStaff()) html += '<button class="btn btn-primary" data-action="new-announcement" type="button">' + icon('plus') + (isCoordinator() ? 'Emitir circular' : 'Nuevo aviso') + '</button>';
+  html += '<h1 class="font-serif text-4xl font-semibold">Avisos y Circulares</h1>';
+  if (isStaff()) html += '<button class="btn btn-primary" data-action="new-announcement" type="button">' + icon('plus') + (isCoordinator() ? 'Emitir circular oficial' : 'Publicar aviso') + '</button>';
   html += '</div>';
 
   if (circulares.length) {
-    html += '<section class="mb-8"><h2 class="font-serif text-2xl font-semibold mb-4">Circulares de Coordinacion</h2><div class="space-y-3">';
+    html += '<section class="mb-8"><h2 class="font-serif text-2xl font-semibold mb-4">Circulares de Coordinación</h2><div class="space-y-3">';
     circulares.forEach(function (a) {
       html += '<div class="card p-5 border-gold">';
       html += '<span class="badge bg-gold/15 text-goldtext text-xs mb-2">Circular oficial</span>';
       html += '<h3 class="font-semibold text-lg">' + esc(a.title) + '</h3>';
       html += '<p class="text-muted mt-2">' + esc(a.content) + '</p>';
-      html += '<p class="text-xs text-muted mt-3">Dirigido a: ' + esc(a.target_role === 'all' ? 'toda la comunidad' : (a.target_role === 'teacher' ? 'profesores' : 'estudiantes')) + (a.target_courses && a.target_courses.length ? ' (' + a.target_courses.join(', ') + ')' : '') + ' - ' + esc(fmtShort.format(new Date(a.created_at))) + '</p>';
+      html += '<p class="text-xs text-muted mt-3">Dirigido a: ' + esc(a.target_role === 'all' ? 'Toda la comunidad' : (a.target_role === 'teacher' ? 'Docentes' : 'Estudiantes')) + (a.target_courses && a.target_courses.length ? ' (' + a.target_courses.join(', ') + ')' : '') + ' - ' + esc(fmtShort.format(new Date(a.created_at))) + '</p>';
       html += '</div>';
     });
     html += '</div></section>';
   }
 
-  html += '<section><h2 class="font-serif text-2xl font-semibold mb-4">Otros avisos</h2>';
+  html += '<section><h2 class="font-serif text-2xl font-semibold mb-4">Otros comunicados</h2>';
   if (!others.length) {
-    html += '<div class="card p-8 text-center"><p class="text-muted">Sin avisos adicionales</p></div>';
+    html += '<div class="card p-8 text-center"><p class="text-muted">No hay comunicados adicionales</p></div>';
   } else {
     html += '<div class="space-y-3">';
     others.forEach(function (a) {
@@ -1365,7 +1365,7 @@ async function viewCalendarioGrid() {
 
   let html = '<div>';
   html += '<div class="flex items-center justify-between mb-6 flex-wrap gap-3">';
-  html += '<h1 class="font-serif text-4xl font-semibold">Calendario</h1>';
+  html += '<h1 class="font-serif text-4xl font-semibold">Calendario Académico</h1>';
   if (isStaff()) html += '<button class="btn btn-primary" data-action="new-event" type="button">' + icon('plus') + 'Nuevo evento</button>';
   html += '</div>';
 
@@ -1375,7 +1375,7 @@ async function viewCalendarioGrid() {
   html += '<button class="btn btn-ghost btn-sm" data-action="cal-next" type="button">' + icon('chevRight') + '</button>';
   html += '<button class="btn btn-ghost btn-sm" data-action="cal-today" type="button">Hoy</button>';
   html += '</div>';
-  html += '<p class="font-serif text-xl">' + MONTHS[month] + ' ' + year + '</p>';
+  html += '<p class="font-serif text-xl">' + MONTHS[month] + ' de ' + year + '</p>';
   html += '</div>';
 
   html += '<div class="grid grid-cols-7 gap-px overflow-hidden rounded-lg border bg-line text-center text-xs font-medium text-muted">';
@@ -1394,7 +1394,7 @@ async function viewCalendarioGrid() {
       const tone = EVENT_TONE[e.event_type] || EVENT_TONE.Otro;
       html += '<div class="truncate rounded px-1.5 py-0.5 text-[10px] font-medium ' + tone + '" title="' + esc(e.title) + '">' + esc(e.title) + '</div>';
     });
-    if (dayEvents.length > 3) html += '<p class="text-[10px] text-muted">+' + (dayEvents.length - 3) + ' mas</p>';
+    if (dayEvents.length > 3) html += '<p class="text-[10px] text-muted">+' + (dayEvents.length - 3) + ' más</p>';
     html += '</div></div>';
   });
   html += '</div>';
@@ -1461,12 +1461,12 @@ const actions = {
     const score = row.querySelector('[data-grade-score]').value;
     const obs = row.querySelector('[data-grade-obs]').value;
     if (score !== '' && (Number(score) < 0 || Number(score) > CONFIG.MAX_SCORE)) {
-      toast('La nota debe estar entre 0.0 y ' + CONFIG.MAX_SCORE.toFixed(1), 'warn');
+      toast('La calificación debe estar entre 0.0 y ' + CONFIG.MAX_SCORE.toFixed(1), 'warn');
       return;
     }
     await withBusy(btn, async function () {
       await db.setActivityGrade(btn.dataset.assignment, row.dataset.student, score, obs);
-      toast('Nota guardada', 'ok');
+      toast('Calificación guardada exitosamente', 'ok');
     });
   },
 
@@ -1474,22 +1474,22 @@ const actions = {
     let teacherSelectHtml = '';
     if (isCoordinator()) {
       if (!state.teachers.length) state.teachers = await db.getTeachers();
-      if (!state.teachers.length) { toast('No hay profesores registrados aun.', 'warn'); return; }
+      if (!state.teachers.length) { toast('No hay profesores registrados en el sistema.', 'warn'); return; }
       teacherSelectHtml = '<label class="block"><span class="block text-sm font-medium mb-1">Docente titular</span><select class="input" name="teacher_id" required>' + state.teachers.map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(t.full_name) + '</option>'; }).join('') + '</select></label>';
     }
     openModal(
       'Nueva materia',
-      '<label class="block"><span class="block text-sm font-medium mb-1">Nombre</span><input class="input" name="name" required placeholder="Ej: Filosofia"></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3" placeholder="Descripcion de la materia"></textarea></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Nombre de la asignatura</span><input class="input" name="name" required placeholder="Ej: Filosofía, Matemáticas"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripción del curso</span><textarea class="input" name="description" rows="3" placeholder="Objetivos y temario general..."></textarea></label>' +
       teacherSelectHtml +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseSelectorHtml('courses', []) + '</label>',
-      'Crear',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos que ven esta materia</span>' + courseSelectorHtml('courses', []) + '</label>',
+      'Crear materia',
       async function (fd, form) {
         const courses = getCourseSelectorValue(form.querySelector('[data-course-selector]'));
         if (!courses.length) throw new Error('Selecciona al menos un curso.');
         const teacherId = isCoordinator() ? fd.get('teacher_id') : state.user.id;
         await db.createSubject(fd.get('name'), fd.get('description'), courses, teacherId);
-        toast('Materia creada', 'ok');
+        toast('Materia creada correctamente', 'ok');
         render();
       }
     );
@@ -1498,13 +1498,13 @@ const actions = {
   'new-topic': function () {
     const subjectId = state.currentSubjectId;
     openModal(
-      'Nuevo tema',
-      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>',
-      'Crear',
+      'Nuevo tema o unidad',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Título de la unidad</span><input class="input" name="title" required placeholder="Ej: Unidad 1: Introducción"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>',
+      'Crear tema',
       async function (fd) {
         await db.createTopic(subjectId, fd.get('title'), fd.get('description'));
-        toast('Tema creado', 'ok');
+        toast('Tema creado correctamente', 'ok');
         render();
       }
     );
@@ -1513,19 +1513,19 @@ const actions = {
   'upload-resource': async function () {
     const subjectId = state.currentSubjectId;
     const topics = await db.getTopics(subjectId);
-    if (!topics.length) { toast('Crea primero un tema en esta materia.', 'warn'); return; }
+    if (!topics.length) { toast('Crea primero un tema o unidad en esta materia.', 'warn'); return; }
     openModal(
-      'Subir archivo',
-      '<label class="block"><span class="block text-sm font-medium mb-1">Tema</span><select class="input" name="topic_id" required>' + topics.map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(t.title) + '</option>'; }).join('') + '</select></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo del documento</span><input class="input" name="title" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Archivo (PDF, Word, imagenes; maximo 25 MB)</span><input class="input" type="file" name="file" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg"></label>',
-      'Publicar',
+      'Subir documento o recurso',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Tema / Unidad</span><select class="input" name="topic_id" required>' + topics.map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(t.title) + '</option>'; }).join('') + '</select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Título del documento</span><input class="input" name="title" required placeholder="Ej: Guía de estudio N.º 1"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Archivo (PDF, Word, imágenes; máximo 25 MB)</span><input class="input" type="file" name="file" required accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg"></label>',
+      'Publicar archivo',
       async function (fd) {
         const file = fd.get('file');
-        if (!file || !file.size) throw new Error('Selecciona un archivo');
-        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo supera ' + CONFIG.MAX_FILE_MB + ' MB');
+        if (!file || !file.size) throw new Error('Selecciona un archivo.');
+        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo supera ' + CONFIG.MAX_FILE_MB + ' MB.');
         await db.uploadResource(fd.get('topic_id'), subjectId, fd.get('title'), file);
-        toast('Archivo publicado', 'ok');
+        toast('Documento publicado con éxito', 'ok');
         render();
       }
     );
@@ -1537,15 +1537,15 @@ const actions = {
 
   'new-announcement': function () {
     const options = isCoordinator()
-      ? '<option value="all">Toda la comunidad</option><option value="teacher">Solo profesores</option><option value="student">Estudiantes</option>'
-      : '<option value="all">Todos</option><option value="student">Estudiantes</option>';
+      ? '<option value="all">Toda la comunidad educativa</option><option value="teacher">Solo profesores</option><option value="student">Estudiantes</option>'
+      : '<option value="all">Toda la comunidad educativa</option><option value="student">Estudiantes</option>';
     openModal(
       isCoordinator() ? 'Emitir circular oficial' : 'Nuevo aviso',
-      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Contenido</span><textarea class="input" name="content" rows="4" required></textarea></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Dirigido a</span><select class="input" name="target_role" id="annTargetRole">' + options + '</select></label>' +
-      '<div id="annCourseWrap" hidden><label class="block"><span class="block text-sm font-medium mb-1">Cursos especificos (vacio = todos los estudiantes)</span>' + courseSelectorHtml('target_courses', []) + '</label></div>',
-      'Publicar',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Título del comunicado</span><input class="input" name="title" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Contenido</span><textarea class="input" name="content" rows="4" required placeholder="Escribe el mensaje institucional..."></textarea></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Destinatarios</span><select class="input" name="target_role" id="annTargetRole">' + options + '</select></label>' +
+      '<div id="annCourseWrap" hidden><label class="block"><span class="block text-sm font-medium mb-1">Cursos específicos (dejar vacío para todos)</span>' + courseSelectorHtml('target_courses', []) + '</label></div>',
+      'Publicar comunicado',
       async function (fd, form) {
         const targetRole = fd.get('target_role');
         let targetCourses = [];
@@ -1554,7 +1554,7 @@ const actions = {
           if (sel) targetCourses = getCourseSelectorValue(sel);
         }
         await db.createAnnouncement(fd.get('title'), fd.get('content'), targetRole, targetCourses);
-        toast(isCoordinator() ? 'Circular publicada' : 'Aviso publicado', 'ok');
+        toast(isCoordinator() ? 'Circular oficial emitida' : 'Aviso publicado', 'ok');
         render();
       },
       function (form) {
@@ -1569,23 +1569,23 @@ const actions = {
 
   'new-assignment': async function () {
     state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
-    if (!state.subjects.length) { toast('Crea primero una materia.', 'warn'); return; }
+    if (!state.subjects.length) { toast('Crea primero una materia en el sistema.', 'warn'); return; }
     const nowLocal = getNow();
     const minVal = nowLocal.getFullYear() + '-' + pad2(nowLocal.getMonth() + 1) + '-' + pad2(nowLocal.getDate());
     openModal(
-      'Nueva tarea',
+      'Nueva tarea o evaluación',
       '<label class="block"><span class="block text-sm font-medium mb-1">Materia</span><select class="input" name="subject_id" required>' + subjectOptions() + '</select></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="kind"><option value="task">Tarea (entregable)</option><option value="exam">Evaluacion</option></select></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Fecha limite</span><input class="input" type="date" name="due_date" required min="' + minVal + '"></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos</span>' + courseSelectorHtml('courses', []) + '</label>',
-      'Publicar',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Título de la actividad</span><input class="input" name="title" required placeholder="Ej: Taller 1 o Examen final"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Indicaciones</span><textarea class="input" name="description" rows="3" placeholder="Instrucciones para los estudiantes..."></textarea></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Tipo de actividad</span><select class="input" name="kind"><option value="task">Tarea (entrega de archivo)</option><option value="exam">Evaluación presencial / escrita</option></select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Fecha límite</span><input class="input" type="date" name="due_date" required min="' + minVal + '"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Cursos a los que se asigna</span>' + courseSelectorHtml('courses', []) + '</label>',
+      'Publicar actividad',
       async function (fd, form) {
         const courses = getCourseSelectorValue(form.querySelector('[data-course-selector]'));
         if (!courses.length) throw new Error('Selecciona al menos un curso.');
         await db.createAssignment(fd.get('subject_id'), fd.get('title'), fd.get('description'), fd.get('kind'), fd.get('due_date'), courses);
-        toast('Tarea publicada y sincronizada con el calendario', 'ok');
+        toast('Actividad publicada y sincronizada con el calendario', 'ok');
         render();
       }
     );
@@ -1593,16 +1593,16 @@ const actions = {
 
   'new-event': function () {
     openModal(
-      'Nuevo evento',
-      '<label class="block"><span class="block text-sm font-medium mb-1">Titulo</span><input class="input" name="title" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Descripcion</span><textarea class="input" name="description" rows="3"></textarea></label>' +
+      'Nuevo evento en el calendario',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Título del evento</span><input class="input" name="title" required placeholder="Ej: Entrega de boletines"></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripción</span><textarea class="input" name="description" rows="3"></textarea></label>' +
       '<label class="block"><span class="block text-sm font-medium mb-1">Fecha</span><input class="input" type="date" name="event_date" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Tipo</span><select class="input" name="event_type"><option value="Examen">Examen</option><option value="Tarea">Tarea</option><option value="Quiz">Quiz</option><option value="Otro">Otro</option></select></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Materia (opcional)</span><select class="input" name="subject_id"><option value="">Sin materia</option>' + subjectOptions() + '</select></label>',
-      'Crear',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Tipo de evento</span><select class="input" name="event_type"><option value="Examen">Examen</option><option value="Tarea">Tarea</option><option value="Quiz">Quiz</option><option value="Otro">Otro</option></select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Asignatura (opcional)</span><select class="input" name="subject_id"><option value="">General / Sin asignatura</option>' + subjectOptions() + '</select></label>',
+      'Crear evento',
       async function (fd) {
         await db.createEvent(fd.get('title'), fd.get('description'), fd.get('event_date'), fd.get('event_type'), fd.get('subject_id') || null);
-        toast('Evento creado', 'ok');
+        toast('Evento agregado al calendario', 'ok');
         render();
       }
     );
@@ -1612,15 +1612,15 @@ const actions = {
     const assignmentId = btn.dataset.id;
     openModal(
       'Entregar tarea',
-      '<label class="block"><span class="block text-sm font-medium mb-1">Archivo</span><input class="input" type="file" name="file" required></label>' +
-      '<label class="block"><span class="block text-sm font-medium mb-1">Comentario (opcional)</span><textarea class="input" name="comment" rows="3"></textarea></label>',
-      'Enviar',
+      '<label class="block"><span class="block text-sm font-medium mb-1">Archivo de entrega</span><input class="input" type="file" name="file" required></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Comentario para el docente (opcional)</span><textarea class="input" name="comment" rows="3"></textarea></label>',
+      'Subir entrega',
       async function (fd) {
         const file = fd.get('file');
-        if (!file || !file.size) throw new Error('Selecciona un archivo');
-        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo es demasiado grande');
+        if (!file || !file.size) throw new Error('Selecciona un archivo para enviar.');
+        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo supera los ' + CONFIG.MAX_FILE_MB + ' MB permitidos.');
         await db.submitAssignment(assignmentId, file, fd.get('comment'));
-        toast('Tarea entregada', 'ok');
+        toast('Tarea entregada exitosamente', 'ok');
         render();
       }
     );
@@ -1641,16 +1641,16 @@ const actions = {
         body += '<p class="font-medium">' + esc((s.profiles && s.profiles.full_name) || 'Estudiante') + '</p>';
         body += '<p class="text-xs text-muted mt-1">' + esc(s.file_name) + '</p>';
         if (s.comment) body += '<p class="text-sm mt-1">' + esc(s.comment) + '</p>';
-        body += '<button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="' + esc(s.file_path) + '" data-name="' + esc(s.file_name) + '" type="button">' + icon('download') + 'Descargar</button>';
+        body += '<button class="btn btn-sm btn-ghost mt-2" data-action="download-file" data-path="' + esc(s.file_path) + '" data-name="' + esc(s.file_name) + '" type="button">' + icon('download') + 'Descargar entrega</button>';
         body += '<div class="mt-3 flex flex-wrap items-end gap-2 border-t pt-3">';
-        body += '<label class="text-xs"><span class="block text-muted mb-1">Nota (0.0-5.0)</span><input type="number" class="input w-24" min="0" max="' + CONFIG.MAX_SCORE + '" step="0.1" data-grade-score value="' + (g.score != null ? g.score : '') + '"></label>';
-        body += '<label class="text-xs flex-1 min-w-[10rem]"><span class="block text-muted mb-1">Observacion</span><input type="text" class="input" data-grade-obs value="' + esc(g.observation || '') + '"></label>';
+        body += '<label class="text-xs"><span class="block text-muted mb-1">Calificación (0.0 - 5.0)</span><input type="number" class="input w-24" min="0" max="' + CONFIG.MAX_SCORE + '" step="0.1" data-grade-score value="' + (g.score != null ? g.score : '') + '"></label>';
+        body += '<label class="text-xs flex-1 min-w-[10rem]"><span class="block text-muted mb-1">Observación pedagógica</span><input type="text" class="input" data-grade-obs value="' + esc(g.observation || '') + '"></label>';
         body += '<button class="btn btn-sm btn-primary" data-action="save-activity-grade" data-assignment="' + esc(assignmentId) + '" type="button">Guardar</button>';
         body += '</div></div>';
       });
       body += '</div>';
     } else {
-      body = '<p class="text-muted">Sin entregas aun</p>';
+      body = '<p class="text-muted">Aún no hay entregas registradas para esta tarea.</p>';
     }
     openModal('Entregas recibidas', body, null, null);
   },
@@ -1730,7 +1730,7 @@ window.addEventListener('hashchange', function () {
   if (state.user) render();
 });
 
-/* ============== INIT ============== */
+/* ============== INICIALIZACIÓN ============== */
 buildNav();
 fillRegCourse();
 toggleRegCourse();
