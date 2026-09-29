@@ -243,6 +243,13 @@ const CONFIG = {
 
 const COURSES = ['6-1', '6-2', '6-3', '7-1', '7-2', '8-1', '8-2', '9-1', '9-2', '10-1', '10-2', '11-1', '11-2'];
 
+const OBS_TYPES = ['Felicitación', 'Llamado de atención', 'Compromiso académico'];
+const OBS_TONE = {
+  'Felicitación': 'bg-emerald-600/15 text-emerald-800 dark:text-emerald-300',
+  'Llamado de atención': 'bg-amber-500/25 text-amber-900 dark:text-amber-300',
+  'Compromiso académico': 'bg-sky-600/15 text-sky-900 dark:text-sky-300'
+};
+
 const sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 const $ = (s, r) => (r || document).querySelector(s);
@@ -251,6 +258,9 @@ const esc = function (v) {
   return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
+};
+const norm = function (s) {
+  return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 };
 const ROLE_LABEL = { student: 'Estudiante', teacher: 'Profesor', coordinator: 'Coordinación' };
 const initials = function (name) {
@@ -324,7 +334,7 @@ function errMsg(e) {
   if (m.indexOf('not found') !== -1) return 'Recurso no encontrado.';
   if (m.indexOf('duplicate') !== -1) return 'Ese correo o registro ya existe.';
   if (m.indexOf('rate limit') !== -1) return 'Demasiados intentos. Espera un momento.';
-  if (m.indexOf('permission denied') !== -1) return 'No tienes permiso para realizar esta acción.';
+  if (m.indexOf('permission denied') !== -1 || m.indexOf('row-level security') !== -1) return 'No tienes permiso para realizar esta acción.';
   if (m.indexOf('failed to fetch') !== -1) return 'No hay conexión con el servidor.';
   return raw || 'Error desconocido.';
 }
@@ -376,7 +386,8 @@ const state = {
   currentSubjectId: null,
   calView: null,
   renderId: 0,
-  pendingOtpEmail: null
+  pendingOtpEmail: null,
+  pendingCount: 0
 };
 
 function isTeacher() { return state.profile && state.profile.role === 'teacher'; }
@@ -451,9 +462,21 @@ const db = {
     if (error) throw error;
     return data;
   },
+  async getMySubmittedIds(studentId) {
+    const { data, error } = await sb.from('submissions').select('assignment_id').eq('student_id', studentId);
+    if (error) throw error;
+    const map = {};
+    (data || []).forEach(function (r) { map[r.assignment_id] = true; });
+    return map;
+  },
   async getStudentsByCourses(courses) {
     if (!courses || !courses.length) return [];
     const { data, error } = await sb.from('profiles').select('id,full_name,course').eq('role', 'student').in('course', courses).order('full_name');
+    if (error) throw error;
+    return data;
+  },
+  async getAllStudents() {
+    const { data, error } = await sb.from('profiles').select('id,full_name,course').eq('role', 'student').order('full_name');
     if (error) throw error;
     return data;
   },
@@ -464,6 +487,24 @@ const db = {
   },
   async getMyGrades(studentId) {
     const { data, error } = await sb.from('activity_grades').select('*, assignments:assignment_id(title,subject_id,due_date)').eq('student_id', studentId);
+    if (error) throw error;
+    return data;
+  },
+  async getObservations(studentId) {
+    const { data, error } = await sb.from('student_observations')
+      .select('*, profiles:author_id(full_name,role)')
+      .eq('student_id', studentId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+  async createObservation(studentId, type, description) {
+    const { data, error } = await sb.from('student_observations').insert({
+      student_id: studentId,
+      author_id: state.user.id,
+      observation_type: type,
+      description: description
+    }).select().single();
     if (error) throw error;
     return data;
   },
@@ -594,6 +635,35 @@ async function downloadFile(filePath, fileName) {
     throw new Error('No se pudo descargar el archivo: ' + errMsg(e));
   }
 }
+
+/* ============== BUSCADOR EN TIEMPO REAL ============== */
+function searchBar(listId, placeholder) {
+  return '<div class="mb-6"><input type="search" class="input" autocomplete="off" placeholder="' + esc(placeholder) + '" aria-label="' + esc(placeholder) + '" data-filter-list="' + esc(listId) + '"></div>';
+}
+
+function emptyFilterMsg(listId) {
+  return '<p id="' + esc(listId) + '-empty" class="card p-8 text-center text-muted" hidden>No se encontraron resultados para la búsqueda.</p>';
+}
+
+function applyFilter(input) {
+  const list = document.getElementById(input.dataset.filterList);
+  if (!list) return;
+  const terms = norm(input.value).split(/\s+/).filter(Boolean);
+  let shown = 0;
+  $$('[data-search]', list).forEach(function (el) {
+    const hay = el.dataset.search || '';
+    const ok = terms.every(function (t) { return hay.indexOf(t) !== -1; });
+    el.hidden = !ok;
+    if (ok) shown++;
+  });
+  const empty = document.getElementById(input.dataset.filterList + '-empty');
+  if (empty) empty.hidden = shown > 0;
+}
+
+document.addEventListener('input', function (e) {
+  const inp = e.target.closest('[data-filter-list]');
+  if (inp) applyFilter(inp);
+});
 
 /* ============== SELECTOR DE CURSOS PERSONALIZADO ============== */
 function courseSelectorHtml(name, preselected) {
@@ -831,6 +901,8 @@ async function handleSession(session) {
     setAuthTab('login');
     state.user = null;
     state.profile = null;
+    state.pendingCount = 0;
+    paintNavBadge();
     renderSimWidget();
     return;
   }
@@ -871,6 +943,7 @@ const NAV_ITEMS = [
   ['materias', 'Materias'],
   ['tareas', 'Tareas'],
   ['calificaciones', 'Calificaciones'],
+  ['observador', 'Observador'],
   ['avisos', 'Avisos'],
   ['calendario', 'Calendario']
 ];
@@ -879,6 +952,35 @@ function buildNav() {
   $('#nav').innerHTML = NAV_ITEMS.map(function (item) {
     return '<a href="#' + item[0] + '" data-nav="' + item[0] + '" class="navlink">' + item[1] + '</a>';
   }).join('');
+}
+
+/* ============== CONTADOR DE TAREAS PENDIENTES ============== */
+function paintNavBadge() {
+  const a = $('[data-nav="tareas"]');
+  if (!a) return;
+  const n = (state.profile && state.profile.role === 'student') ? state.pendingCount : 0;
+  a.textContent = 'Tareas' + (n > 0 ? ' (' + n + ')' : '');
+  if (n > 0) a.setAttribute('aria-label', 'Tareas, ' + n + (n === 1 ? ' pendiente' : ' pendientes'));
+  else a.removeAttribute('aria-label');
+}
+
+async function updatePending() {
+  if (!state.user || !state.profile || state.profile.role !== 'student') {
+    state.pendingCount = 0;
+    paintNavBadge();
+    return;
+  }
+  try {
+    const all = await db.getAssignments();
+    const done = await db.getMySubmittedIds(state.user.id);
+    const now = getNow();
+    state.pendingCount = all.filter(function (a) {
+      return a.kind === 'task' && visibleForMe(a) && new Date(a.due_date) >= now && !done[a.id];
+    }).length;
+  } catch (e) {
+    state.pendingCount = 0;
+  }
+  paintNavBadge();
 }
 
 function parseHash() {
@@ -913,6 +1015,7 @@ async function render() {
         materias: viewMaterias,
         tareas: viewTareas,
         calificaciones: viewCalificaciones,
+        observador: viewObservador,
         avisos: viewAvisos,
         calendario: viewCalendarioGrid
       }[parsed.view];
@@ -921,6 +1024,7 @@ async function render() {
     if (token !== state.renderId) return;
     root.innerHTML = html;
     window.scrollTo({ top: 0 });
+    updatePending();
   } catch (e) {
     if (token === state.renderId) {
       root.innerHTML = '<div class="card p-8 text-center"><p class="font-serif text-xl">Error cargando el contenido</p><p class="text-muted mt-1">' + esc(errMsg(e)) + '</p><button class="btn btn-primary mt-4" data-action="retry" type="button">Reintentar</button></div>';
@@ -987,7 +1091,8 @@ async function viewPanel() {
         const circ = isCircular(a);
         html += '<div class="card p-4 ' + (circ ? 'border-gold' : '') + '">';
         if (circ) html += '<span class="badge bg-gold/15 text-goldtext text-xs mb-1">Circular oficial</span>';
-        html += '<p class="font-semibold">' + esc(a.title) + '</p><p class="text-sm text-muted mt-1">' + esc(a.content) + '</p><p class="text-xs text-muted mt-2">' + esc(fmtShort.format(new Date(a.created_at))) + '</p></div>';
+        html += '<p class="font-semibold">' + esc(a.title) + '</p><p class="text-sm text-muted mt-1">' + esc(a.content) + '</p>';
+        html += '<p class="text-xs text-muted mt-2">' + esc(fmtShort.format(new Date(a.created_at))) + '</p></div>';
       });
       html += '</div></section>';
     }
@@ -1010,9 +1115,11 @@ async function viewMaterias() {
   if (!visible.length) {
     html += '<div class="card p-8 text-center"><p class="text-muted">Aún no hay materias registradas</p></div>';
   } else {
-    html += '<div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">';
+    html += searchBar('list-materias', 'Buscar por materia, docente o curso...');
+    html += '<div id="list-materias" class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">';
     visible.forEach(function (s) {
-      html += '<a href="#materias/' + esc(s.id) + '" class="card block p-5 hover:border-gold transition">';
+      const hay = norm([s.name, s.profiles && s.profiles.full_name, (s.courses || []).join(' '), s.description].join(' '));
+      html += '<a href="#materias/' + esc(s.id) + '" class="card block p-5 hover:border-gold transition" data-search="' + esc(hay) + '">';
       html += '<h3 class="font-serif text-xl font-semibold">' + esc(s.name) + '</h3>';
       if (s.profiles && s.profiles.full_name) html += '<p class="text-xs text-goldtext mt-1">Docente: ' + esc(s.profiles.full_name) + '</p>';
       html += '<p class="text-sm text-muted mt-2 line-clamp-2">' + esc(s.description || 'Sin descripción') + '</p>';
@@ -1020,6 +1127,7 @@ async function viewMaterias() {
       html += '</a>';
     });
     html += '</div>';
+    html += emptyFilterMsg('list-materias');
   }
   html += '</div>';
   return html;
@@ -1083,6 +1191,7 @@ async function viewTareas() {
   state.subjects = state.subjects.length ? state.subjects : await db.getSubjects();
   const visible = isStaff() ? all : all.filter(visibleForMe);
   const now = getNow();
+  const submitted = isStaff() ? {} : await db.getMySubmittedIds(state.user.id);
 
   let html = '<div><div class="flex items-center justify-between mb-8">';
   html += '<h1 class="font-serif text-4xl font-semibold">Tareas y Evaluaciones</h1>';
@@ -1092,17 +1201,15 @@ async function viewTareas() {
   if (!visible.length) {
     html += '<div class="card p-8 text-center"><p class="text-muted">No hay tareas asignadas por ahora</p></div>';
   } else {
-    html += '<ul class="space-y-3">';
+    html += searchBar('list-tareas', 'Buscar por título de tarea, materia o curso...');
+    html += '<ul id="list-tareas" class="space-y-3">';
     for (const a of visible) {
       const due = new Date(a.due_date);
       const isOverdue = due < now;
       const subjectName = (state.subjects.find(function (s) { return s.id === a.subject_id; }) || {}).name || 'Materia';
-      let sub = null;
-      if (!isStaff()) {
-        const subs = await db.getSubmissions(a.id, state.user.id);
-        sub = subs.length ? subs[0] : null;
-      }
-      html += '<li class="card p-4"><div class="flex items-start justify-between gap-4 flex-wrap">';
+      const hasSub = !!submitted[a.id];
+      const hay = norm([a.title, subjectName, (a.courses || []).join(' '), a.description].join(' '));
+      html += '<li class="card p-4" data-search="' + esc(hay) + '"><div class="flex items-start justify-between gap-4 flex-wrap">';
       html += '<div><p class="font-semibold">' + esc(a.title) + '</p>';
       html += '<p class="text-xs text-muted mt-1">' + esc(subjectName) + ' - ' + courseBadges(a.courses) + '</p>';
       if (a.description) html += '<p class="text-sm text-muted mt-1">' + esc(a.description) + '</p>';
@@ -1111,7 +1218,7 @@ async function viewTareas() {
       if (isStaff()) {
         html += '<button class="btn btn-sm btn-ghost" data-action="view-submissions" data-id="' + esc(a.id) + '" data-subject="' + esc(a.subject_id) + '" type="button">Ver entregas</button>';
       } else if (a.kind === 'task') {
-        if (sub) {
+        if (hasSub) {
           html += '<span class="badge bg-emerald-600/10 text-emerald-800 dark:text-emerald-300">Entregada</span>';
           if (!isOverdue) html += '<button class="btn btn-sm btn-ghost" data-action="submit-assignment" data-id="' + esc(a.id) + '" type="button">Reenviar</button>';
         } else if (isOverdue) {
@@ -1123,6 +1230,7 @@ async function viewTareas() {
       html += '</div></div></li>';
     }
     html += '</ul>';
+    html += emptyFilterMsg('list-tareas');
   }
   html += '</div>';
   return html;
@@ -1164,7 +1272,10 @@ async function viewCalificaciones() {
           html += '<span><span class="font-medium">' + esc(a.title) + '</span><span class="ml-2 text-xs text-muted">Límite: ' + esc(fmtShort.format(new Date(a.due_date))) + '</span></span>';
           html += icon('chevDown');
           html += '</button>';
-          html += '<button class="btn btn-ghost btn-sm ml-2" data-action="print-grades" data-assignment="' + esc(a.id) + '" type="button">' + icon('print') + 'Imprimir planilla</button>';
+          html += '<div class="ml-2 flex flex-wrap gap-2">';
+          html += '<button class="btn btn-ghost btn-sm" data-action="print-grades" data-assignment="' + esc(a.id) + '" type="button">' + icon('print') + 'Imprimir planilla</button>';
+          html += '<button class="btn btn-ghost btn-sm" data-action="export-grades" data-assignment="' + esc(a.id) + '" type="button">' + icon('download') + 'Exportar a Excel</button>';
+          html += '</div>';
           html += '</div>';
           html += '<div id="acc-act-' + esc(a.id) + '" class="px-5 pb-4" hidden data-assignment="' + esc(a.id) + '" data-courses="' + esc(JSON.stringify(a.courses || [])) + '" data-loaded="0">';
           html += '<p class="text-sm text-muted py-3">Cargando planilla...</p>';
@@ -1235,19 +1346,25 @@ async function loadAccordionGrades(container) {
   container.dataset.loaded = '1';
 }
 
-async function printGradeSheet(assignmentId) {
+async function getGradeSheetData(assignmentId) {
   const a = state.assignments.find(function (x) { return x.id === assignmentId; });
-  if (!a) { toast('No se encontró la actividad.', 'err'); return; }
+  if (!a) return null;
   const subject = state.subjects.find(function (s) { return s.id === a.subject_id; });
-  const subjectName = subject ? subject.name : 'Materia';
   const students = await db.getStudentsByCourses(a.courses || []);
   const grades = await db.getGradesByAssignment(assignmentId);
   const gradeMap = {};
   grades.forEach(function (g) { gradeMap[g.student_id] = g; });
+  return { a: a, subjectName: subject ? subject.name : 'Materia', students: students, gradeMap: gradeMap };
+}
+
+async function printGradeSheet(assignmentId) {
+  const data = await getGradeSheetData(assignmentId);
+  if (!data) { toast('No se encontró la actividad.', 'err'); return; }
+  const a = data.a;
 
   let rows = '';
-  students.forEach(function (s, idx) {
-    const g = gradeMap[s.id] || {};
+  data.students.forEach(function (s, idx) {
+    const g = data.gradeMap[s.id] || {};
     rows += '<tr><td>' + (idx + 1) + '</td><td>' + esc(s.full_name) + '</td><td>' + esc(s.course) + '</td><td>' + (g.score != null ? Number(g.score).toFixed(1) : '-') + '</td><td>' + esc(g.observation || '') + '</td></tr>';
   });
 
@@ -1256,7 +1373,7 @@ async function printGradeSheet(assignmentId) {
       '<p style="font-family:Lora,serif;font-size:22px;font-weight:600;margin:0;">Colegio Pío XII</p>' +
       '<p style="margin:2px 0 0;font-size:13px;">Planilla oficial de calificaciones - Año lectivo 2026</p>' +
     '</div>' +
-    '<p style="margin:0 0 4px;font-size:14px;"><strong>Asignatura:</strong> ' + esc(subjectName) + '</p>' +
+    '<p style="margin:0 0 4px;font-size:14px;"><strong>Asignatura:</strong> ' + esc(data.subjectName) + '</p>' +
     '<p style="margin:0 0 4px;font-size:14px;"><strong>Actividad evaluativa:</strong> ' + esc(a.title) + '</p>' +
     '<p style="margin:0 0 4px;font-size:14px;"><strong>Fecha límite:</strong> ' + esc(fmtLong.format(new Date(a.due_date))) + '</p>' +
     '<p style="margin:0 0 16px;font-size:14px;"><strong>Cursos:</strong> ' + esc((a.courses || []).join(', ')) + '</p>' +
@@ -1265,6 +1382,90 @@ async function printGradeSheet(assignmentId) {
 
   $('#printArea').innerHTML = html;
   window.print();
+}
+
+/* ============== EXPORTACIÓN A EXCEL (CSV) ============== */
+function csvCell(v) {
+  let s = String(v == null ? '' : v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+
+async function exportGradesCsv(assignmentId) {
+  const data = await getGradeSheetData(assignmentId);
+  if (!data) { toast('No se encontró la actividad.', 'err'); return; }
+  if (!data.students.length) { toast('No hay estudiantes en los cursos de esta actividad.', 'warn'); return; }
+
+  const lines = [['N.º', 'Estudiante', 'Curso', 'Calificación', 'Observación'].map(csvCell).join(';')];
+  data.students.forEach(function (s, idx) {
+    const g = data.gradeMap[s.id] || {};
+    const score = g.score != null ? Number(g.score).toFixed(1).replace('.', ',') : '';
+    lines.push([idx + 1, s.full_name, s.course, score, g.observation || ''].map(csvCell).join(';'));
+  });
+
+  const csv = '\uFEFF' + lines.join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'planilla_' + safeName(data.subjectName) + '_' + safeName(data.a.title) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  toast('Planilla exportada correctamente', 'ok');
+}
+
+/* ============== OBSERVADOR DEL ESTUDIANTE ============== */
+function observationItemHtml(o) {
+  const tone = OBS_TONE[o.observation_type] || 'bg-sunk text-muted';
+  const author = o.profiles && o.profiles.full_name ? o.profiles.full_name : 'Institución';
+  const authorRole = o.profiles && o.profiles.role ? ' (' + (ROLE_LABEL[o.profiles.role] || o.profiles.role) + ')' : '';
+  let html = '<article class="card p-4">';
+  html += '<div class="flex flex-wrap items-center justify-between gap-2">';
+  html += '<span class="badge ' + tone + '">' + esc(o.observation_type) + '</span>';
+  html += '<span class="text-xs text-muted">' + esc(fmtLong.format(new Date(o.created_at))) + '</span>';
+  html += '</div>';
+  html += '<p class="mt-3 whitespace-pre-line text-sm">' + esc(o.description) + '</p>';
+  html += '<p class="mt-3 text-xs text-muted">Registrado por: ' + esc(author) + esc(authorRole) + '</p>';
+  html += '</article>';
+  return html;
+}
+
+async function viewObservador() {
+  let html = '<div><h1 class="font-serif text-4xl font-semibold mb-2">Observador del Estudiante</h1>';
+
+  if (isStaff()) {
+    const students = await db.getAllStudents();
+    html += '<p class="text-muted mb-6">Busca a un estudiante por nombre o curso para registrar una anotación oficial o consultar su historial de convivencia y seguimiento escolar.</p>';
+    if (!students.length) {
+      html += '<div class="card p-8 text-center"><p class="text-muted">Aún no hay estudiantes registrados en el sistema</p></div>';
+    } else {
+      html += searchBar('list-observador', 'Buscar estudiante por nombre o curso...');
+      html += '<ul id="list-observador" class="card divide-y">';
+      students.forEach(function (s) {
+        html += '<li class="flex flex-wrap items-center justify-between gap-3 p-4" data-search="' + esc(norm(s.full_name + ' ' + s.course)) + '">';
+        html += '<div><p class="font-medium">' + esc(s.full_name) + '</p><p class="text-xs text-muted">Curso ' + esc(s.course || 'sin asignar') + '</p></div>';
+        html += '<div class="flex flex-wrap gap-2">';
+        html += '<button class="btn btn-sm btn-ghost" data-action="view-observations" data-student="' + esc(s.id) + '" data-name="' + esc(s.full_name) + '" type="button">Ver historial</button>';
+        html += '<button class="btn btn-sm btn-primary" data-action="new-observation" data-student="' + esc(s.id) + '" data-name="' + esc(s.full_name) + '" type="button">' + icon('plus') + 'Registrar anotación</button>';
+        html += '</div></li>';
+      });
+      html += '</ul>';
+      html += emptyFilterMsg('list-observador');
+    }
+  } else {
+    const rows = await db.getObservations(state.user.id);
+    html += '<p class="text-muted mb-6">Consulta de manera transparente el historial de anotaciones registradas por tus docentes y por Coordinación.</p>';
+    if (!rows.length) {
+      html += '<div class="card p-8 text-center"><p class="font-serif text-xl">Sin anotaciones registradas</p><p class="text-muted mt-1">Cuando tus docentes o Coordinación registren una observación, aparecerá aquí.</p></div>';
+    } else {
+      html += '<div class="space-y-3">' + rows.map(observationItemHtml).join('') + '</div>';
+    }
+  }
+
+  html += '</div>';
+  return html;
 }
 
 async function viewAvisos() {
@@ -1456,6 +1657,10 @@ const actions = {
     await withBusy(btn, function () { return printGradeSheet(btn.dataset.assignment); });
   },
 
+  'export-grades': async function (btn) {
+    await withBusy(btn, function () { return exportGradesCsv(btn.dataset.assignment); });
+  },
+
   'save-activity-grade': async function (btn) {
     const row = btn.closest('[data-grade-row]');
     const score = row.querySelector('[data-grade-score]').value;
@@ -1468,6 +1673,35 @@ const actions = {
       await db.setActivityGrade(btn.dataset.assignment, row.dataset.student, score, obs);
       toast('Calificación guardada exitosamente', 'ok');
     });
+  },
+
+  'new-observation': function (btn) {
+    const studentId = btn.dataset.student;
+    const studentName = btn.dataset.name;
+    openModal(
+      'Nueva anotación en el observador',
+      '<p class="text-sm text-muted">Estudiante: <strong class="text-ink">' + esc(studentName) + '</strong></p>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Tipo de anotación</span><select class="input" name="observation_type" required>' +
+        OBS_TYPES.map(function (t) { return '<option value="' + esc(t) + '">' + esc(t) + '</option>'; }).join('') +
+      '</select></label>' +
+      '<label class="block"><span class="block text-sm font-medium mb-1">Descripción pedagógica</span><textarea class="input" name="description" rows="5" required minlength="10" placeholder="Describe de manera detallada y respetuosa la situación, el contexto y las acciones de seguimiento acordadas..."></textarea></label>' +
+      '<p class="text-xs text-muted">La fecha se registra automáticamente. El estudiante podrá consultar esta anotación en su historial.</p>',
+      'Registrar anotación',
+      async function (fd) {
+        const description = String(fd.get('description') || '').trim();
+        if (description.length < 10) throw new Error('Describe la situación con mayor detalle pedagógico.');
+        await db.createObservation(studentId, fd.get('observation_type'), description);
+        toast('Anotación registrada en el observador', 'ok');
+      }
+    );
+  },
+
+  'view-observations': async function (btn) {
+    const rows = await db.getObservations(btn.dataset.student);
+    const body = rows.length
+      ? '<div class="space-y-3">' + rows.map(observationItemHtml).join('') + '</div>'
+      : '<p class="text-muted">Este estudiante aún no tiene anotaciones registradas.</p>';
+    openModal('Historial de ' + btn.dataset.name, body, null, null);
   },
 
   'new-subject': async function () {
@@ -1523,7 +1757,7 @@ const actions = {
       async function (fd) {
         const file = fd.get('file');
         if (!file || !file.size) throw new Error('Selecciona un archivo.');
-        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo supera ' + CONFIG.MAX_FILE_MB + ' MB.');
+        if (file.size > CONFIG.MAX_FILE_MB * 1048576) throw new Error('El archivo supera los ' + CONFIG.MAX_FILE_MB + ' MB permitidos.');
         await db.uploadResource(fd.get('topic_id'), subjectId, fd.get('title'), file);
         toast('Documento publicado con éxito', 'ok');
         render();
@@ -1637,6 +1871,7 @@ const actions = {
     if (subs.length) {
       body = '<div class="space-y-3">';
       subs.forEach(function (s) {
+        const g = gradeMap[s.student_id] || {};
         body += '<div class="p-3 border rounded-md bg-sunk" data-grade-row data-student="' + esc(s.student_id) + '">';
         body += '<p class="font-medium">' + esc((s.profiles && s.profiles.full_name) || 'Estudiante') + '</p>';
         body += '<p class="text-xs text-muted mt-1">' + esc(s.file_name) + '</p>';
